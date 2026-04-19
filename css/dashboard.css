@@ -87,6 +87,17 @@
   color: #fff;
   border-color: var(--amber);
 }
+.month-tab.future {
+  color: var(--muted);
+  border-style: dashed;
+}
+.month-tab.future:hover { color: var(--text-2); }
+.month-tab.future.active {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+  border-style: solid;
+}
 .mpanel { display: none; }
 .mpanel.visible { display: block; }
 

@@ -5,7 +5,7 @@
 
 (function () {
   const ds = window.DataStatic;
-  const { channels, palette, d2025, months } = ds;
+  const { channels, palette, d2025, months, monthsWith2026Data } = ds;
 
   const VIEW_TITLES = {
     'view-yoy':  'Comparativo interanual',
@@ -72,7 +72,8 @@
     const el = document.getElementById('kpi-yoy');
     if (!el) return;
     el.innerHTML = '';
-    months.forEach(m => {
+    // KPIs solo para meses con datos 2026 (los 4 meses cerrados/en curso)
+    monthsWith2026Data.forEach(m => {
       const t25 = tot(d2025[m]);
       const t26 = tot(d2026[m]);
       if (t26 === 0) {

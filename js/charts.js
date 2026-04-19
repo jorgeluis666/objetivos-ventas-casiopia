@@ -103,11 +103,14 @@
   const fmt = n => Math.round(n).toLocaleString('es-PE');
 
   // ── Evolución mensual ──
+  // Muestra los 12 meses. 2025 se pinta completo (12 pts), 2026 solo hasta
+  // donde el pipeline trajo datos (el resto queda en null → spanGaps:false).
+  const MONTH_SHORT_EVO = { Enero:'Ene', Febrero:'Feb', Marzo:'Mar', Abril:'Abr', Mayo:'May', Junio:'Jun', Julio:'Jul', Agosto:'Ago', Septiembre:'Sep', Octubre:'Oct', Noviembre:'Nov', Diciembre:'Dic' };
   function evoChart(d2026) {
     return mount('chart-evo', {
       type: 'line',
       data: {
-        labels: months,
+        labels: months.map(m => MONTH_SHORT_EVO[m] || m),
         datasets: [
           {
             label: '2025',
@@ -139,18 +142,20 @@
         responsive: true,
         maintainAspectRatio: false,
         animation: lineDraw(1600),
+        interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
           tooltip: {
             callbacks: {
+              title: ctx => months[ctx[0]?.dataIndex] || '',
               label: ctx => ctx.raw !== null
                 ? ' ' + ctx.dataset.label + ': S/. ' + ctx.raw.toLocaleString('es-PE')
-                : ' sin datos',
+                : ' ' + ctx.dataset.label + ': sin datos',
             },
           },
         },
         scales: {
-          x: { ticks: { color: axisColor, font: { family: fontFamily } }, grid: { display: false } },
+          x: { ticks: { color: axisColor, font: { family: fontFamily, size: 11 } }, grid: { display: false } },
           y: {
             ticks: { color: axisColor, font: { size: 11 }, callback: v => 'S/. ' + (v / 1000).toFixed(0) + 'k' },
             grid: { color: gridColor },

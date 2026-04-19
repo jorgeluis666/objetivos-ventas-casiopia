@@ -24,31 +24,47 @@
     avgTickets: {},
   };
 
-  // ── Calendar helpers (hoy vive en 2026) ──
+  // ── Calendar helpers (año en curso = 2026) ──
+  const YEAR = 2026;
   const today = new Date();
+  // Índice del mes que estamos viviendo hoy dentro de months[] (0=Enero, 11=Diciembre).
+  // -1 si today está fuera de 2026 (pasado o futuro).
+  function currentMonthIdx() {
+    if (today.getFullYear() < YEAR) return -2; // todo el año es futuro
+    if (today.getFullYear() > YEAR) return 12; // todo el año es pasado
+    return today.getMonth();
+  }
+  function monthStatus(m) {
+    const idx = months.indexOf(m);
+    const cur = currentMonthIdx();
+    if (idx < cur)  return 'past';
+    if (idx > cur)  return 'future';
+    return 'current';
+  }
   function daysPassed(m) {
-    if (m === 'Abril') {
-      if (today.getFullYear() < 2026) return 0;
-      if (today.getFullYear() > 2026 || today.getMonth() > 3) return monthDays.Abril;
-      if (today.getMonth() < 3) return 0;
-      return today.getDate();
-    }
-    return monthDays[m];
+    const s = monthStatus(m);
+    if (s === 'past')    return monthDays[m];
+    if (s === 'future')  return 0;
+    return today.getDate();
   }
   function daysRemaining(m) {
-    if (m === 'Abril') return Math.max(0, monthDays.Abril - daysPassed('Abril'));
-    return 0;
+    const s = monthStatus(m);
+    if (s === 'past')    return 0;
+    if (s === 'future')  return monthDays[m];
+    return Math.max(0, monthDays[m] - today.getDate());
   }
 
-  // ── Avg ticket por canal (monto / qty) ──
+  // ── Avg ticket por canal (monto / qty) — tolera meses sin data 2026 ──
   function computeAvgTickets(d2026, transactions) {
     const out = {};
     months.forEach(m => {
       const row = {}; let totalAmount = 0, totalQty = 0;
+      const d2026Month = d2026[m] || {};
+      const txMonth = transactions[m] || {};
       channels.forEach(ch => {
         const up = chToUpper[ch];
-        const amt = d2026[m][ch] || 0;
-        const qty = (transactions[m] && transactions[m][up]) || 0;
+        const amt = d2026Month[ch] || 0;
+        const qty = txMonth[up] || 0;
         row[up] = qty > 0 ? Math.round(amt / qty) : 0;
         totalAmount += amt;
         totalQty    += qty;
@@ -59,22 +75,40 @@
     return out;
   }
 
+  // Un mes está "vivo" (con datos 2026) si hay facturación registrada.
+  function isLiveMonth(m) {
+    const d = state.d2026?.[m];
+    return !!d && channels.some(ch => (d[ch] || 0) > 0);
+  }
+
   // ── Refrescar fila individual ──
   function refreshObjRow(m, ch) {
     state.targets[m][ch] = parseFloat(document.getElementById(`inp-${m}-${ch}`).value) || 0;
-    const real = state.d2026[m][ch];
+    const real = state.d2026?.[m]?.[ch] || 0;
     const tgt  = state.targets[m][ch];
     const p    = tgt > 0 ? real / tgt * 100 : 0;
-    const isApr = m === 'Abril';
+    const status = monthStatus(m);
 
     const pb = document.getElementById(`pb-${m}-${ch}`);
     const pv = document.getElementById(`pv-${m}-${ch}`);
     const gv = document.getElementById(`gv-${m}-${ch}`);
+    if (!pb || !pv || !gv) return;
 
-    if (isApr) {
+    if (status === 'future' || (status === 'current' && !isLiveMonth(m))) {
+      // Aún no arranca o sin data cargada
       pb.style.width = '0%'; pv.textContent = '—'; pv.style.color = 'var(--muted)';
-      gv.textContent = 'en curso'; gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
+      gv.textContent = status === 'future' ? 'futuro' : 'en curso';
+      gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
+    } else if (status === 'current') {
+      // En curso: avance parcial, sin brecha final
+      pb.style.width = Math.min(p, 100).toFixed(1) + '%';
+      pb.style.background = pctFill(p);
+      pv.textContent = p.toFixed(0) + '%';
+      pv.style.color = pctColor(p);
+      gv.textContent = 'en curso';
+      gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
     } else {
+      // Cerrado: brecha definitiva
       pb.style.width = Math.min(p, 100).toFixed(1) + '%';
       pb.style.background = pctFill(p);
       pv.textContent = p.toFixed(0) + '%';
@@ -88,20 +122,30 @@
   }
 
   function refreshObjTotal(m) {
-    const tr = channels.reduce((s, ch) => s + state.d2026[m][ch], 0);
+    const d2026Month = state.d2026?.[m] || {};
+    const tr = channels.reduce((s, ch) => s + (d2026Month[ch] || 0), 0);
     const tt = channels.reduce((s, ch) => s + (state.targets[m][ch] || 0), 0);
     const p = tt > 0 ? tr / tt * 100 : 0;
-    const isApr = m === 'Abril';
+    const status = monthStatus(m);
 
     const pb = document.getElementById(`pb-tot-${m}`);
     const pv = document.getElementById(`pv-tot-${m}`);
     const gv = document.getElementById(`gv-tot-${m}`);
     const mt = document.getElementById(`mt-${m}`);
+    if (!pb || !pv || !gv) return;
     if (mt) mt.textContent = 'S/. ' + fmt(tt);
 
-    if (isApr) {
+    if (status === 'future' || (status === 'current' && !isLiveMonth(m))) {
       pb.style.width = '0%'; pv.textContent = '—'; pv.style.color = 'var(--muted)';
-      gv.textContent = 'en curso'; gv.style.color = 'var(--muted)'; gv.className = 'gap-val';
+      gv.textContent = status === 'future' ? 'futuro' : 'en curso';
+      gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
+    } else if (status === 'current') {
+      pb.style.width = Math.min(p, 100).toFixed(1) + '%';
+      pb.style.background = pctFill(p);
+      pv.textContent = p.toFixed(0) + '%';
+      pv.style.color = pctColor(p);
+      gv.textContent = 'en curso';
+      gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
     } else {
       pb.style.width = Math.min(p, 100).toFixed(1) + '%';
       pb.style.background = pctFill(p);
@@ -117,26 +161,61 @@
     const el = document.getElementById(`pace-${m}`);
     if (!el) return;
 
+    const d2026Month = state.d2026?.[m] || {};
     const tt        = channels.reduce((s, ch) => s + (state.targets[m][ch] || 0), 0);
-    const real      = channels.reduce((s, ch) => s + state.d2026[m][ch], 0);
-    const isApr     = m === 'Abril';
+    const real      = channels.reduce((s, ch) => s + (d2026Month[ch] || 0), 0);
+    const status    = monthStatus(m);
     const remDays   = daysRemaining(m);
     const passed    = daysPassed(m);
     const faltante  = Math.max(0, tt - real);
     const dailyNeed = remDays > 0 ? faltante / remDays : 0;
-    const avgTk     = state.avgTickets[m].TOTAL;
+    const avgTk     = state.avgTickets[m]?.TOTAL || 0;
     const txnsNeed  = dailyNeed > 0 && avgTk > 0 ? Math.ceil(dailyNeed / avgTk) : 0;
 
     const pctMet    = tt > 0 ? real / tt * 100 : 0;
     const dailyReal = passed > 0 ? real / passed : 0;
 
-    if (isApr) {
+    // Para meses futuros: solo la meta + proyección diaria si no pasa nada hasta que llegue
+    if (status === 'future') {
+      el.innerHTML = `
+        <div class="pace-grid">
+          <div class="pace-card dark">
+            <div class="pace-lbl">Días del mes</div>
+            <div class="pace-val">${monthDays[m]}</div>
+            <div class="pace-sub">mes futuro</div>
+          </div>
+          <div class="pace-card brand-border">
+            <div class="pace-lbl">Meta propuesta</div>
+            <div class="pace-val brand">S/. ${fmt(tt)}</div>
+            <div class="pace-sub">editable debajo</div>
+          </div>
+          <div class="pace-card amber-border">
+            <div class="pace-lbl">Venta diaria necesaria</div>
+            <div class="pace-val">S/. ${fmt(tt / monthDays[m])}</div>
+            <div class="pace-sub">para alcanzar la meta</div>
+          </div>
+          <div class="pace-card">
+            <div class="pace-lbl">Ref. ${m} 2025</div>
+            <div class="pace-val">S/. ${fmt(tot(d2025[m] || {}))}</div>
+            <div class="pace-sub">cierre año anterior</div>
+          </div>
+        </div>`;
+      return;
+    }
+
+    if (status === 'current') {
+      // Referencia: mes cerrado anterior (si hay). Si no, usa marzo de respaldo.
+      const curIdx = months.indexOf(m);
+      const refMonth = curIdx > 0 ? months[curIdx - 1] : 'Marzo';
+      const refTxns = Math.round(Object.values(state.transactions?.[refMonth] || {}).reduce((a, b) => a + b, 0) / (monthDays[refMonth] || 30));
+      const refTk   = state.avgTickets?.[refMonth]?.TOTAL || 0;
+
       el.innerHTML = `
         <div class="pace-grid">
           <div class="pace-card dark">
             <div class="pace-lbl">Días restantes</div>
             <div class="pace-val">${remDays}</div>
-            <div class="pace-sub">de 30 en abril</div>
+            <div class="pace-sub">de ${monthDays[m]} en ${m.toLowerCase()}</div>
           </div>
           <div class="pace-card ${faltante > 0 ? 'red-border' : 'green-border'}">
             <div class="pace-lbl">Faltante para meta</div>
@@ -154,10 +233,10 @@
             <div class="pace-sub">ticket promedio S/. ${avgTk}</div>
           </div>
         </div>
-        <div class="pace-footnote">
-          Referencia de marzo: <strong>${Math.round(Object.values(state.transactions.Marzo || {}).reduce((a, b) => a + b, 0) / 31)} transacciones/día</strong>
-          con ticket promedio <strong>S/. ${state.avgTickets.Marzo.TOTAL}</strong> → para alcanzar la meta de abril necesitas mantener un ritmo similar o superior.
-        </div>`;
+        ${refTk > 0 ? `<div class="pace-footnote">
+          Referencia de ${refMonth.toLowerCase()}: <strong>${refTxns} transacciones/día</strong>
+          con ticket promedio <strong>S/. ${refTk}</strong> → para alcanzar la meta de ${m.toLowerCase()} necesitás mantener un ritmo similar o superior.
+        </div>` : ''}`;
     } else {
       const totalTx = avgTk > 0 ? Math.round(real / avgTk) : 0;
       const closeColor = real >= tt ? 'green' : pctMet >= 90 ? 'amber' : 'red';
@@ -181,7 +260,7 @@
           <div class="pace-card brand-border">
             <div class="pace-lbl">Transacciones totales</div>
             <div class="pace-val brand">${totalTx}</div>
-            <div class="pace-sub">ticket promedio S/. ${state.avgTickets[m].TOTAL}</div>
+            <div class="pace-sub">ticket promedio S/. ${state.avgTickets[m]?.TOTAL || 0}</div>
           </div>
         </div>`;
     }
@@ -206,26 +285,39 @@
     monthTabsEl.innerHTML   = '';
     monthPanelsEl.innerHTML = '';
 
+    // Tab activo por defecto: el mes en curso. Si today está fuera de 2026,
+    // el último mes con datos (o Enero como fallback).
+    const curIdx = currentMonthIdx();
+    let defaultIdx = (curIdx >= 0 && curIdx < months.length) ? curIdx : 0;
+    if (curIdx === 12) { // año ya pasado → último con datos reales
+      for (let i = months.length - 1; i >= 0; i--) {
+        if (isLiveMonth(months[i])) { defaultIdx = i; break; }
+      }
+    }
+
     months.forEach((m, i) => {
-      const isApr       = m === 'Abril';
-      const monthTotal  = channels.reduce((s, ch) => s + d2026[m][ch], 0);
-      const total2025   = tot(d2025[m]);
+      const status     = monthStatus(m);
+      const d2026Month = d2026[m] || {};
+      const monthTotal = channels.reduce((s, ch) => s + (d2026Month[ch] || 0), 0);
+      const total2025  = tot(d2025[m] || {});
 
       // Panel HTML
       const panel = document.createElement('div');
-      panel.className = 'mpanel' + (i === 0 ? ' visible' : '');
+      panel.className = 'mpanel' + (i === defaultIdx ? ' visible' : '');
       panel.id = 'mpanel-' + m;
+
+      const showReal = status === 'past' || (status === 'current' && isLiveMonth(m));
 
       let rows = '';
       channels.forEach(ch => {
-        const real  = d2026[m][ch];
-        const ref25 = d2025[m][ch];
-        const share = monthTotal > 0 ? (real / monthTotal * 100).toFixed(1) : '—';
+        const real  = d2026Month[ch] || 0;
+        const ref25 = (d2025[m] || {})[ch] || 0;
+        const share = showReal && monthTotal > 0 ? (real / monthTotal * 100).toFixed(1) : '—';
         rows += `<tr>
           <td><span class="ch-name"><span class="ch-pip" style="background:${palette[ch]}"></span>${ch}</span></td>
           <td class="r mono text-2">S/. ${fmt(ref25)}</td>
-          <td class="r mono">${isApr ? '<span class="muted">—</span>' : 'S/. ' + fmt(real)}</td>
-          <td class="r">${isApr ? '—' : share + '%'}</td>
+          <td class="r mono">${showReal ? 'S/. ' + fmt(real) : '<span class="muted">—</span>'}</td>
+          <td class="r">${showReal ? share + '%' : '—'}</td>
           <td class="r"><div class="stepper">
             <button class="step-btn" data-step="-${STEP}" data-month="${m}" data-ch="${ch}">−</button>
             <input class="obj-input" type="number" id="inp-${m}-${ch}" value="${state.targets[m][ch]}" min="0" step="${STEP}">
@@ -236,8 +328,14 @@
         </tr>`;
       });
 
+      const statusNote = status === 'current'
+        ? `<div class="period-note">${m} 2026 está en curso · ${daysPassed(m)} días transcurridos · Referencia 2025: <strong>S/. ${fmt(total2025)}</strong></div>`
+        : status === 'future'
+          ? `<div class="period-note" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-text);">${m} 2026 es mes futuro · Referencia 2025: <strong>S/. ${fmt(total2025)}</strong> · los objetivos se pueden planificar desde ya.</div>`
+          : '';
+
       panel.innerHTML = `
-        ${isApr ? `<div class="period-note">Abril 2026 está en curso · ${daysPassed('Abril')} días transcurridos · Referencia 2025: <strong>S/. ${fmt(total2025)}</strong></div>` : ''}
+        ${statusNote}
         <div id="pace-${m}" style="margin-bottom:16px;"></div>
         <div class="panel">
           <div class="panel-head">
@@ -260,8 +358,8 @@
               <tr style="background:#F8FAFC;">
                 <td><strong>Total</strong></td>
                 <td class="r mono text-2">S/. ${fmt(total2025)}</td>
-                <td class="r mono">${isApr ? '<span class="muted">—</span>' : 'S/. ' + fmt(monthTotal)}</td>
-                <td class="r">${isApr ? '—' : '100%'}</td>
+                <td class="r mono">${showReal ? 'S/. ' + fmt(monthTotal) : '<span class="muted">—</span>'}</td>
+                <td class="r">${showReal ? '100%' : '—'}</td>
                 <td class="r mono text-2" id="mt-${m}"></td>
                 <td class="r" style="min-width:140px;"><div class="pb-wrap"><div class="pb-bg"><div class="pb-fill" id="pb-tot-${m}"></div></div><span class="pct-val" id="pv-tot-${m}"></span></div></td>
                 <td class="r" id="gv-tot-${m}"></td>
@@ -290,8 +388,13 @@
 
       // Month tab button
       const tab = document.createElement('button');
-      tab.className = 'month-tab' + (i === 0 ? ' active' : '') + (isApr ? ' active-current' : '');
-      tab.textContent = m + (isApr ? ' ◉' : '');
+      const isCurrent = status === 'current';
+      const classes = ['month-tab'];
+      if (i === defaultIdx) classes.push('active');
+      if (isCurrent)        classes.push('active-current');
+      if (status === 'future') classes.push('future');
+      tab.className = classes.join(' ');
+      tab.textContent = m + (isCurrent ? ' ◉' : '');
       tab.addEventListener('click', () => {
         monthTabsEl.querySelectorAll('.month-tab').forEach(t => t.classList.remove('active'));
         monthPanelsEl.querySelectorAll('.mpanel').forEach(p => p.classList.remove('visible'));

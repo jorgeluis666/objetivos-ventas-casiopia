@@ -21,22 +21,51 @@
 
   const typeColors = ['#2563EB', '#7C3AED', '#059669', '#D97706', '#DB2777', '#65A30D', '#94A3B8'];
 
+  // Fallback 2025: datos conocidos por mes. El pipeline sobreescribe estos
+  // valores con d2025_live cuando viene del sheet (ver main.js adoptLive2025).
   const d2025 = {
-    Enero:   { Tienda: 44745.56, Web:  8196.80, WhatsApp: 1219.44, Showroom: 0, Instagram: 227.20, Facebook: 0 },
-    Febrero: { Tienda: 48628.60, Web:  9726.80, WhatsApp: 3510.80, Showroom: 0, Instagram: 0,      Facebook: 0 },
-    Marzo:   { Tienda: 63861.93, Web: 13518.50, WhatsApp: 3459.60, Showroom: 0, Instagram: 182.40, Facebook: 0 },
-    Abril:   { Tienda: 54762.89, Web:  9316.54, WhatsApp: 5367.70, Showroom: 0, Instagram: 0,      Facebook: 0 },
+    Enero:      { Tienda: 44745.56, Web:  8196.80, WhatsApp: 1219.44, Showroom: 0, Instagram: 227.20, Facebook: 0 },
+    Febrero:    { Tienda: 48628.60, Web:  9726.80, WhatsApp: 3510.80, Showroom: 0, Instagram: 0,      Facebook: 0 },
+    Marzo:      { Tienda: 63861.93, Web: 13518.50, WhatsApp: 3459.60, Showroom: 0, Instagram: 182.40, Facebook: 0 },
+    Abril:      { Tienda: 54762.89, Web:  9316.54, WhatsApp: 5367.70, Showroom: 0, Instagram: 0,      Facebook: 0 },
+    Mayo:       { Tienda: 0, Web: 0, WhatsApp: 0, Showroom: 0, Instagram: 0, Facebook: 0 },
+    Junio:      { Tienda: 0, Web: 0, WhatsApp: 0, Showroom: 0, Instagram: 0, Facebook: 0 },
+    Julio:      { Tienda: 0, Web: 0, WhatsApp: 0, Showroom: 0, Instagram: 0, Facebook: 0 },
+    Agosto:     { Tienda: 0, Web: 0, WhatsApp: 0, Showroom: 0, Instagram: 0, Facebook: 0 },
+    Septiembre: { Tienda: 0, Web: 0, WhatsApp: 0, Showroom: 0, Instagram: 0, Facebook: 0 },
+    Octubre:    { Tienda: 0, Web: 0, WhatsApp: 0, Showroom: 0, Instagram: 0, Facebook: 0 },
+    Noviembre:  { Tienda: 0, Web: 0, WhatsApp: 0, Showroom: 0, Instagram: 0, Facebook: 0 },
+    Diciembre:  { Tienda: 0, Web: 0, WhatsApp: 0, Showroom: 0, Instagram: 0, Facebook: 0 },
   };
 
   const defaultTargets = {
-    Enero:   { Tienda: 40000, Web: 11000, WhatsApp: 3500, Showroom: 4000, Instagram: 1500, Facebook: 0 },
-    Febrero: { Tienda: 46000, Web: 14000, WhatsApp: 4000, Showroom: 2500, Instagram:  500, Facebook: 0 },
-    Marzo:   { Tienda: 62000, Web: 12000, WhatsApp: 4500, Showroom: 3000, Instagram: 1000, Facebook: 0 },
-    Abril:   { Tienda: 56000, Web: 10000, WhatsApp: 5000, Showroom: 2500, Instagram:  500, Facebook: 0 },
+    Enero:      { Tienda: 40000, Web: 11000, WhatsApp: 3500, Showroom: 4000, Instagram: 1500, Facebook: 0 },
+    Febrero:    { Tienda: 46000, Web: 14000, WhatsApp: 4000, Showroom: 2500, Instagram:  500, Facebook: 0 },
+    Marzo:      { Tienda: 62000, Web: 12000, WhatsApp: 4500, Showroom: 3000, Instagram: 1000, Facebook: 0 },
+    Abril:      { Tienda: 56000, Web: 10000, WhatsApp: 5000, Showroom: 2500, Instagram:  500, Facebook: 0 },
+    Mayo:       { Tienda: 60000, Web: 12000, WhatsApp: 4500, Showroom: 3000, Instagram:  500, Facebook: 0 },
+    Junio:      { Tienda: 65000, Web: 13000, WhatsApp: 5000, Showroom: 3000, Instagram:  500, Facebook: 0 },
+    Julio:      { Tienda: 65000, Web: 13000, WhatsApp: 5000, Showroom: 3000, Instagram:  500, Facebook: 0 },
+    Agosto:     { Tienda: 70000, Web: 14000, WhatsApp: 5000, Showroom: 3000, Instagram:  500, Facebook: 0 },
+    Septiembre: { Tienda: 70000, Web: 14000, WhatsApp: 5000, Showroom: 3000, Instagram:  500, Facebook: 0 },
+    Octubre:    { Tienda: 75000, Web: 15000, WhatsApp: 5500, Showroom: 3500, Instagram:  500, Facebook: 0 },
+    Noviembre:  { Tienda: 85000, Web: 17000, WhatsApp: 6000, Showroom: 4000, Instagram:  500, Facebook: 0 },
+    Diciembre:  { Tienda: 90000, Web: 18000, WhatsApp: 6000, Showroom: 4000, Instagram:  500, Facebook: 0 },
   };
 
-  const monthDays = { Enero: 31, Febrero: 28, Marzo: 31, Abril: 30 };
-  const months = ['Enero', 'Febrero', 'Marzo', 'Abril'];
+  const monthDays = {
+    Enero: 31, Febrero: 28, Marzo: 31, Abril: 30,
+    Mayo: 31, Junio: 30, Julio: 31, Agosto: 31,
+    Septiembre: 30, Octubre: 31, Noviembre: 30, Diciembre: 31,
+  };
+  const months = [
+    'Enero', 'Febrero', 'Marzo', 'Abril',
+    'Mayo', 'Junio', 'Julio', 'Agosto',
+    'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+  ];
+  // Meses de 2026 que ya tienen datos cerrados/en curso (el pipeline solo
+  // lee estos del sheet). Se expanden conforme 2026 avanza.
+  const monthsWith2026Data = ['Enero', 'Febrero', 'Marzo', 'Abril'];
 
   const STEP = 500;
 
@@ -175,7 +204,7 @@
 
   global.DataStatic = {
     channels, palette, typeColors,
-    d2025, defaultTargets, monthDays, months,
+    d2025, defaultTargets, monthDays, months, monthsWith2026Data,
     STEP,
     prodTopUnits, prodTopRev, prodTopTicket, prodTypes,
     copurchaseData, nextSales, multiData, bundleIdeas,
