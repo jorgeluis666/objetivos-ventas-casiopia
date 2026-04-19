@@ -48,8 +48,8 @@
   function renderIndicator() {
     const el = document.getElementById('sync-indicator');
     if (!el) return;
-    const classes = ['sync-indicator'];
-    if (state.loading) classes.push('loading');
+    const classes = ['topbar-pill', 'sync'];
+    classes.push(state.loading ? 'loading' : 'ok');
     el.className = classes.join(' ');
     const rel = formatRelative(state.generated);
     const label = state.loading

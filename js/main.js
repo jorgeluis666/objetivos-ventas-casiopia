@@ -25,9 +25,9 @@
   // ── Navegación ──
   function showView(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('visible'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.s-item').forEach(n => n.classList.remove('active'));
     const view = document.getElementById(id);
-    const btn  = document.querySelector(`.nav-item[data-view="${id}"]`);
+    const btn  = document.querySelector(`.s-item[data-view="${id}"]`);
     if (view) view.classList.add('visible');
     if (btn)  btn.classList.add('active');
     const title = document.getElementById('topbar-title');
@@ -41,7 +41,7 @@
   }
 
   function wireNav() {
-    document.querySelectorAll('.nav-item').forEach(btn => {
+    document.querySelectorAll('.s-item[data-view]').forEach(btn => {
       btn.addEventListener('click', () => showView(btn.dataset.view));
     });
   }
@@ -61,8 +61,8 @@
         el.insertAdjacentHTML('beforeend', `
           <div class="kpi-card">
             <div class="kpi-icon amber">⏳</div>
-            <div class="kpi-label">${m} · en curso</div>
-            <div class="kpi-value muted" style="font-size:20px;">—</div>
+            <div class="kpi-lbl">${m} · en curso</div>
+            <div class="kpi-val muted" style="font-size:20px;">—</div>
             <div class="kpi-sub"><span class="pill amber">2025 · S/. ${fmt(t25)}</span></div>
           </div>`);
       } else {
@@ -71,8 +71,8 @@
         el.insertAdjacentHTML('beforeend', `
           <div class="kpi-card">
             <div class="kpi-icon ${up ? 'green' : 'red'}">${up ? '▲' : '▼'}</div>
-            <div class="kpi-label">${m} · YoY</div>
-            <div class="kpi-value">S/. ${fmt(t26)}</div>
+            <div class="kpi-lbl">${m} · YoY</div>
+            <div class="kpi-val ${up ? 'green' : 'red'}">S/. ${fmt(t26)}</div>
             <div class="kpi-sub">
               <span class="pill ${up ? 'green' : 'red'}">${up ? '+' : ''}${d.toFixed(1)}%</span>
               <span class="muted">vs S/. ${fmt(t25)}</span>
@@ -92,25 +92,26 @@
       let cells = `<tr><td><span class="ch-name"><span class="ch-pip" style="background:${palette[ch]}"></span>${ch}</span></td>`;
       cmpMonths.forEach(m => {
         const v25 = d2025[m][ch], v26 = d2026[m][ch];
-        if (v25 === 0 && v26 === 0) cells += `<td class="delta-zero">—</td>`;
-        else if (v25 === 0)         cells += `<td class="delta-pos">nuevo<span class="sub-val mono">S/. ${fmt(v26)}</span></td>`;
+        if (v25 === 0 && v26 === 0) cells += `<td class="r"><span class="muted">—</span></td>`;
+        else if (v25 === 0)         cells += `<td class="r green">nuevo<span class="sub-val mono">S/. ${fmt(v26)}</span></td>`;
         else {
           const d = (v26 - v25) / v25 * 100;
-          cells += `<td class="${d >= 0 ? 'delta-pos' : 'delta-neg'}">${d >= 0 ? '+' : ''}${d.toFixed(1)}%<span class="sub-val mono">S/. ${fmt(v26)}</span></td>`;
+          cells += `<td class="r ${d >= 0 ? 'green' : 'red'}">${d >= 0 ? '+' : ''}${d.toFixed(1)}%<span class="sub-val mono">S/. ${fmt(v26)}</span></td>`;
         }
       });
       rows += cells + '</tr>';
     });
-    let totRow = '<tr class="total-row"><td>Total</td>';
+    let totRow = '<tr style="background:#F8FAFC;"><td><strong>Total</strong></td>';
     cmpMonths.forEach(m => {
       const t25 = tot(d2025[m]);
       const t26 = tot(d2026[m]);
       const d = t25 > 0 ? (t26 - t25) / t25 * 100 : 0;
-      totRow += `<td class="${d >= 0 ? 'delta-pos' : 'delta-neg'}">${d >= 0 ? '+' : ''}${d.toFixed(1)}%<span class="sub-val mono">S/. ${fmt(t26)}</span></td>`;
+      totRow += `<td class="r ${d >= 0 ? 'green' : 'red'}">${d >= 0 ? '+' : ''}${d.toFixed(1)}%<span class="sub-val mono">S/. ${fmt(t26)}</span></td>`;
     });
     totRow += '</tr>';
-    host.innerHTML = `<table class="ds-table">
-      <thead><tr><th>Canal</th>${cmpMonths.map(m => `<th>${m}</th>`).join('')}</tr></thead>
+    const thRows = cmpMonths.map(m => `<th class="r">${m}</th>`).join('');
+    host.innerHTML = `<table>
+      <thead><tr><th>Canal</th>${thRows}</tr></thead>
       <tbody>${rows}${totRow}</tbody>
     </table>`;
   }
@@ -122,28 +123,28 @@
     if (kpi) {
       kpi.innerHTML = `
         <div class="kpi-card">
-          <div class="kpi-icon brand">$</div>
-          <div class="kpi-label">Ingresos netos</div>
-          <div class="kpi-value">S/. 29,055</div>
-          <div class="kpi-sub muted">136 SKUs · 238 uds</div>
+          <div class="kpi-icon blue"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div class="kpi-lbl">Ingresos netos</div>
+          <div class="kpi-val blue">S/. 29,055</div>
+          <div class="kpi-sub">136 SKUs · 238 uds</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-icon green">#</div>
-          <div class="kpi-label">Pedidos web</div>
-          <div class="kpi-value">225</div>
-          <div class="kpi-sub muted">1.06 uds / pedido promedio</div>
+          <div class="kpi-icon green"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <div class="kpi-lbl">Pedidos web</div>
+          <div class="kpi-val green">225</div>
+          <div class="kpi-sub">1.06 uds / pedido promedio</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-icon amber">¤</div>
-          <div class="kpi-label">Ticket promedio</div>
-          <div class="kpi-value">S/. 129</div>
-          <div class="kpi-sub muted">por unidad vendida</div>
+          <div class="kpi-icon amber"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
+          <div class="kpi-lbl">Ticket promedio</div>
+          <div class="kpi-val amber">S/. 129</div>
+          <div class="kpi-sub">por unidad vendida</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-icon purple">★</div>
-          <div class="kpi-label">Marca líder</div>
-          <div class="kpi-value" style="font-size:18px;">Martín Aranda</div>
-          <div class="kpi-sub muted">64.6% · S/. 18,778</div>
+          <div class="kpi-icon purple"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div class="kpi-lbl">Marca líder</div>
+          <div class="kpi-val" style="font-size:18px;">Martín Aranda</div>
+          <div class="kpi-sub">64.6% · S/. 18,778</div>
         </div>`;
     }
 
@@ -218,12 +219,12 @@
                 ${b.products.map(p => `<div class="bundle-product"><span class="arrow" style="color:${b.color};">▸</span>${p}</div>`).join('')}
               </div>
               <div class="bundle-mechanic">
-                <div class="bundle-mechanic-label">Mecánica</div>
+                <div class="bundle-mechanic-lbl">Mecánica</div>
                 <div class="bundle-mechanic-text">${b.mechanic}</div>
               </div>
               <div class="bundle-ticket-row">
-                <span class="bundle-ticket-label">Ticket estimado</span>
-                <span class="bundle-ticket-value" style="color:${b.color};">${b.ticket}</span>
+                <span class="bundle-ticket-lbl">Ticket estimado</span>
+                <span class="bundle-ticket-val" style="color:${b.color};">${b.ticket}</span>
               </div>
               <div class="bundle-why">${b.why}</div>
             </div>
@@ -271,7 +272,7 @@
       const host = document.getElementById('kpi-yoy');
       if (host) host.insertAdjacentHTML('beforebegin', `
         <div class="insight err" style="margin-bottom:14px;">
-          No se pudo cargar <code>data/ventas-2026.json</code>. El pipeline de GitHub Actions tiene que correr al menos una vez (o ejecutá <code>npm run fetch</code> local).
+          <b>Datos pendientes:</b> No se pudo cargar <code>data/ventas-2026.json</code>. El pipeline de GitHub Actions tiene que correr al menos una vez (o ejecutá <code>npm run fetch</code> local).
         </div>`);
     }
     renderAll(live);

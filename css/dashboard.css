@@ -1,43 +1,20 @@
 /* ============================================================
-   Dashboard-specific styles — usa tokens de ds.css
+   dashboard.css — estilos específicos que no viven en el DS base.
+   Pace cards, bundle cards, month tabs, chart legends, sync UI.
    ============================================================ */
 
-.topbar-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text);
-  letter-spacing: -0.01em;
-}
-.topbar-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* ── Vista ── */
+/* ── View container ── */
 .view { display: none; }
 .view.visible { display: block; }
 
-.section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-.section-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  letter-spacing: 0.02em;
-}
 .section-sub {
   font-size: 12px;
   color: var(--text-2);
-  margin-bottom: 18px;
+  margin-bottom: 16px;
+  max-width: 720px;
 }
 
-/* ── Chart wrappers ── */
+/* ── Chart helpers ── */
 .chart-wrap { position: relative; width: 100%; }
 .chart-wrap.h-200 { height: 200px; }
 .chart-wrap.h-220 { height: 220px; }
@@ -45,7 +22,6 @@
 .chart-wrap.h-260 { height: 260px; }
 .chart-wrap.h-300 { height: 300px; }
 
-/* ── Leyenda de charts ── */
 .chart-legend {
   display: flex;
   flex-wrap: wrap;
@@ -59,17 +35,26 @@
   font-size: 11px;
   color: var(--text-2);
 }
-.chart-legend .ld {
-  display: inline-block;
-  width: 14px;
-  height: 2.5px;
-  border-radius: 2px;
+.chart-legend .ld  { display: inline-block; width: 14px; height: 2.5px; border-radius: 2px; }
+.chart-legend .lsq { display: inline-block; width: 10px; height: 10px;  border-radius: 2px; }
+
+/* ── Delta colors (tabla YoY) ── */
+.delta-pos  { color: var(--green-text); font-weight: 500; }
+.delta-neg  { color: var(--red-text);   font-weight: 500; }
+.delta-zero { color: var(--muted); }
+.sub-val    { font-size: 11px; color: var(--muted); font-weight: 400; display: block; margin-top: 2px; }
+
+/* ── Canal pip ── */
+.ch-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
 }
-.chart-legend .lsq {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
+.ch-pip {
+  width: 8px; height: 8px;
   border-radius: 2px;
+  flex-shrink: 0;
 }
 
 /* ── Month tabs (dentro de Objetivos) ── */
@@ -81,10 +66,9 @@
 }
 .month-tab {
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-weight: 500;
   padding: 7px 16px;
-  border-radius: var(--r-xs);
+  border-radius: var(--r-sm);
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text-2);
@@ -92,7 +76,7 @@
   transition: all 0.15s;
   font-family: inherit;
 }
-.month-tab:hover { background: #F1F5F9; color: var(--text); }
+.month-tab:hover { background: #F8FAFC; color: var(--text); }
 .month-tab.active {
   background: var(--brand);
   color: #fff;
@@ -106,27 +90,7 @@
 .mpanel { display: none; }
 .mpanel.visible { display: block; }
 
-/* ── Channel pip (tabla) ── */
-.ch-name {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-}
-.ch-pip {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
-/* ── Delta colors ── */
-.delta-pos { color: var(--green-text); font-weight: 500; }
-.delta-neg { color: var(--red-text); font-weight: 500; }
-.delta-zero { color: var(--muted); }
-.sub-val { font-size: 11px; color: var(--muted); font-weight: 400; display:block; margin-top: 2px;}
-
-/* ── April note ── */
+/* ── Period note ── */
 .period-note {
   background: var(--amber-soft);
   border-left: 3px solid var(--amber);
@@ -157,32 +121,33 @@
   border-color: var(--sidebar-bg);
   color: #fff;
 }
-.pace-card.dark .pace-label { color: rgba(255,255,255,0.55); }
+.pace-card.dark .pace-lbl { color: rgba(255,255,255,0.55); }
 .pace-card.dark .pace-sub { color: rgba(255,255,255,0.5); }
-.pace-card.green  { border-left: 3px solid var(--green); }
-.pace-card.amber  { border-left: 3px solid var(--amber); }
-.pace-card.red    { border-left: 3px solid var(--red); }
-.pace-card.brand  { border-left: 3px solid var(--brand); }
-.pace-label {
+.pace-card.green-border { border-left: 3px solid var(--green); }
+.pace-card.amber-border { border-left: 3px solid var(--amber); }
+.pace-card.red-border   { border-left: 3px solid var(--red); }
+.pace-card.brand-border { border-left: 3px solid var(--brand); }
+
+.pace-lbl {
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--muted);
   margin-bottom: 4px;
 }
-.pace-value {
+.pace-val {
   font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   line-height: 1.1;
   color: var(--text);
 }
-.pace-card.dark .pace-value { color: #fff; }
-.pace-card .pace-value.red    { color: var(--red-text); }
-.pace-card .pace-value.green  { color: var(--green-text); }
-.pace-card .pace-value.amber  { color: var(--amber-text); }
-.pace-card .pace-value.brand  { color: var(--brand-text); }
+.pace-card.dark .pace-val { color: #fff; }
+.pace-val.red    { color: var(--red); }
+.pace-val.green  { color: var(--green); }
+.pace-val.amber  { color: var(--amber); }
+.pace-val.brand  { color: var(--brand); }
 .pace-sub {
   font-size: 11px;
   color: var(--text-2);
@@ -192,14 +157,14 @@
 .pace-footnote {
   margin-top: 10px;
   background: #F8FAFC;
-  border-radius: var(--r-xs);
+  border-radius: var(--r-sm);
   padding: 10px 14px;
   font-size: 12px;
   color: var(--text-2);
   border: 1px solid var(--border);
 }
 
-/* ── Bundle idea cards (productos view) ── */
+/* ── Bundle cards ── */
 .bundle-card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -214,19 +179,19 @@
   gap: 10px;
   color: #fff;
 }
-.bundle-icon { font-size: 24px; line-height: 1; }
+.bundle-icon { font-size: 22px; line-height: 1; }
 .bundle-tag {
   font-size: 10px;
   color: rgba(255,255,255,0.8);
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .bundle-title {
-  font-size: 15px;
+  font-size: 14px;
   color: #fff;
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
   line-height: 1.2;
 }
 .bundle-body { padding: 14px 18px; }
@@ -243,14 +208,14 @@
 .bundle-mechanic {
   background: #F8FAFC;
   border: 1px solid var(--border);
-  border-radius: var(--r-xs);
+  border-radius: var(--r-sm);
   padding: 8px 10px;
   margin-bottom: 10px;
 }
-.bundle-mechanic-label {
+.bundle-mechanic-lbl {
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   color: var(--muted);
   text-transform: uppercase;
   margin-bottom: 2px;
@@ -262,14 +227,14 @@
   align-items: center;
   margin-bottom: 8px;
 }
-.bundle-ticket-label {
+.bundle-ticket-lbl {
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   color: var(--muted);
   text-transform: uppercase;
 }
-.bundle-ticket-value { font-size: 14px; font-weight: 700; }
+.bundle-ticket-val { font-size: 14px; font-weight: 600; }
 .bundle-why {
   font-size: 11px;
   color: var(--text-2);
@@ -292,6 +257,7 @@
   font-weight: 600;
   color: var(--text);
   margin-bottom: 4px;
+  letter-spacing: -0.01em;
 }
 .copurchase-desc {
   font-size: 11px;
@@ -309,13 +275,13 @@
 .next-sale-card {
   background: #F8FAFC;
   border-left: 3px solid var(--brand);
-  border-radius: 0 var(--r-xs) var(--r-xs) 0;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
   padding: 12px 14px;
 }
 .next-sale-trigger {
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--brand-text);
   margin-bottom: 4px;
@@ -328,7 +294,7 @@
 }
 .next-sale-why { font-size: 11px; color: var(--text-2); }
 
-/* ── Multi-bars (productos) ── */
+/* ── Multi-bars ── */
 .multi-bar-row {
   display: grid;
   grid-template-columns: 220px 1fr 90px 110px;
@@ -359,14 +325,27 @@
   font-style: italic;
 }
 
-/* ── Footer ── */
+/* ── Sync indicator (usa .topbar-pill como base, agrega estados) ── */
+.topbar-pill.sync      { transition: background .2s, color .2s; }
+.topbar-pill.sync.ok   { background: var(--green-soft); color: var(--green-text); }
+.topbar-pill.sync.loading { background: var(--amber-soft); color: var(--amber-text); }
+.topbar-pill.sync.err  { background: var(--red-soft);   color: var(--red-text); }
+.topbar-pill.sync .sync-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.topbar-pill.sync.loading .sync-dot { animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .35; } }
+
+/* ── Site footer ── */
 .site-footer {
-  padding: 18px 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
   font-size: 11px;
   color: var(--muted);
-  border-top: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 24px;
 }

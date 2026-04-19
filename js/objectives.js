@@ -134,23 +134,23 @@
       el.innerHTML = `
         <div class="pace-grid">
           <div class="pace-card dark">
-            <div class="pace-label">Días restantes</div>
-            <div class="pace-value">${remDays}</div>
+            <div class="pace-lbl">Días restantes</div>
+            <div class="pace-val">${remDays}</div>
             <div class="pace-sub">de 30 en abril</div>
           </div>
-          <div class="pace-card ${faltante > 0 ? 'red' : 'green'}">
-            <div class="pace-label">Faltante para meta</div>
-            <div class="pace-value ${faltante > 0 ? 'red' : 'green'}">S/. ${fmt(faltante)}</div>
+          <div class="pace-card ${faltante > 0 ? 'red-border' : 'green-border'}">
+            <div class="pace-lbl">Faltante para meta</div>
+            <div class="pace-val ${faltante > 0 ? 'red' : 'green'}">S/. ${fmt(faltante)}</div>
             <div class="pace-sub">Meta total: S/. ${fmt(tt)}</div>
           </div>
-          <div class="pace-card amber">
-            <div class="pace-label">Venta diaria necesaria</div>
-            <div class="pace-value">S/. ${fmt(dailyNeed)}</div>
+          <div class="pace-card amber-border">
+            <div class="pace-lbl">Venta diaria necesaria</div>
+            <div class="pace-val">S/. ${fmt(dailyNeed)}</div>
             <div class="pace-sub">para los ${remDays} días restantes</div>
           </div>
-          <div class="pace-card brand">
-            <div class="pace-label">Transacciones necesarias</div>
-            <div class="pace-value brand">${txnsNeed}/día</div>
+          <div class="pace-card brand-border">
+            <div class="pace-lbl">Transacciones necesarias</div>
+            <div class="pace-val brand">${txnsNeed}/día</div>
             <div class="pace-sub">ticket promedio S/. ${avgTk}</div>
           </div>
         </div>
@@ -160,26 +160,27 @@
         </div>`;
     } else {
       const totalTx = avgTk > 0 ? Math.round(real / avgTk) : 0;
+      const closeColor = real >= tt ? 'green' : pctMet >= 90 ? 'amber' : 'red';
       el.innerHTML = `
         <div class="pace-grid">
-          <div class="pace-card ${real >= tt ? 'green' : pctMet >= 90 ? 'amber' : 'red'}">
-            <div class="pace-label">Cierre del mes</div>
-            <div class="pace-value ${real >= tt ? 'green' : pctMet >= 90 ? 'amber' : 'red'}">${pctMet.toFixed(1)}%</div>
+          <div class="pace-card ${closeColor}-border">
+            <div class="pace-lbl">Cierre del mes</div>
+            <div class="pace-val ${closeColor}">${pctMet.toFixed(1)}%</div>
             <div class="pace-sub">${real >= tt ? '✓ Objetivo alcanzado' : 'de la meta'}</div>
           </div>
-          <div class="pace-card ${real >= tt ? 'green' : 'red'}">
-            <div class="pace-label">${real >= tt ? 'Excedente' : 'Brecha final'}</div>
-            <div class="pace-value ${real >= tt ? 'green' : 'red'}">${real >= tt ? '+' : ''}S/. ${fmt(real - tt)}</div>
+          <div class="pace-card ${real >= tt ? 'green-border' : 'red-border'}">
+            <div class="pace-lbl">${real >= tt ? 'Excedente' : 'Brecha final'}</div>
+            <div class="pace-val ${real >= tt ? 'green' : 'red'}">${real >= tt ? '+' : ''}S/. ${fmt(real - tt)}</div>
             <div class="pace-sub">vs meta S/. ${fmt(tt)}</div>
           </div>
           <div class="pace-card">
-            <div class="pace-label">Venta diaria real</div>
-            <div class="pace-value">S/. ${fmt(dailyReal)}</div>
+            <div class="pace-lbl">Venta diaria real</div>
+            <div class="pace-val">S/. ${fmt(dailyReal)}</div>
             <div class="pace-sub">promedio sobre ${passed} días</div>
           </div>
-          <div class="pace-card brand">
-            <div class="pace-label">Transacciones totales</div>
-            <div class="pace-value brand">${totalTx}</div>
+          <div class="pace-card brand-border">
+            <div class="pace-lbl">Transacciones totales</div>
+            <div class="pace-val brand">${totalTx}</div>
             <div class="pace-sub">ticket promedio S/. ${state.avgTickets[m].TOTAL}</div>
           </div>
         </div>`;
@@ -223,16 +224,16 @@
         const share = monthTotal > 0 ? (real / monthTotal * 100).toFixed(1) : '—';
         rows += `<tr>
           <td><span class="ch-name"><span class="ch-pip" style="background:${palette[ch]}"></span>${ch}</span></td>
-          <td class="mono text-2" style="font-size:12px;">S/. ${fmt(ref25)}</td>
-          <td class="mono">${isApr ? '<span class="muted">—</span>' : 'S/. ' + fmt(real)}</td>
-          <td>${isApr ? '—' : share + '%'}</td>
-          <td><div class="stepper">
+          <td class="r mono text-2">S/. ${fmt(ref25)}</td>
+          <td class="r mono">${isApr ? '<span class="muted">—</span>' : 'S/. ' + fmt(real)}</td>
+          <td class="r">${isApr ? '—' : share + '%'}</td>
+          <td class="r"><div class="stepper">
             <button class="step-btn" data-step="-${STEP}" data-month="${m}" data-ch="${ch}">−</button>
             <input class="obj-input" type="number" id="inp-${m}-${ch}" value="${state.targets[m][ch]}" min="0" step="${STEP}">
             <button class="step-btn" data-step="${STEP}" data-month="${m}" data-ch="${ch}">+</button>
           </div></td>
-          <td style="min-width:120px;"><div class="pb-wrap"><div class="pb-bg"><div class="pb-fill" id="pb-${m}-${ch}"></div></div><span class="pct-val" id="pv-${m}-${ch}"></span></div></td>
-          <td id="gv-${m}-${ch}"></td>
+          <td class="r" style="min-width:140px;"><div class="pb-wrap"><div class="pb-bg"><div class="pb-fill" id="pb-${m}-${ch}"></div></div><span class="pct-val" id="pv-${m}-${ch}"></span></div></td>
+          <td class="r" id="gv-${m}-${ch}"></td>
         </tr>`;
       });
 
@@ -243,23 +244,42 @@
         ${isApr ? `<div class="period-note">Abril 2026 está en curso · ${daysPassed('Abril')} días transcurridos · Referencia 2025: <strong>S/. ${fmt(total2025)}</strong></div>` : ''}
         <div id="pace-${m}" style="margin-bottom:16px;"></div>
         <div class="panel" style="margin-bottom:16px;">
-          <div class="panel-title">Evolución semanal por canal</div>
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Evolución semanal por canal</div>
+              <div class="panel-sub">${m} 2026</div>
+            </div>
+          </div>
           <div class="chart-legend" id="week-legend-${m}"></div>
           <div class="chart-wrap h-300"><canvas id="week-chart-${m}" role="img" aria-label="Evolución semanal ${m}"></canvas></div>
           ${useProjection ? `<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);">Semanas 2–5 proyectadas sobre ritmo de marzo.</div>` : ''}
         </div>
         <div class="panel">
-          <table class="ds-table">
-            <thead><tr><th>Canal</th><th>Ref. 2025</th><th>Real 2026</th><th>% mes</th><th>Objetivo S/.</th><th style="min-width:120px;">Avance</th><th>Brecha</th></tr></thead>
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Avance por canal</div>
+              <div class="panel-sub">${m} 2026 · ajustable</div>
+            </div>
+          </div>
+          <table>
+            <thead><tr>
+              <th>Canal</th>
+              <th class="r">Ref. 2025</th>
+              <th class="r">Real 2026</th>
+              <th class="r">% mes</th>
+              <th class="r">Objetivo S/.</th>
+              <th class="r" style="min-width:140px;">Avance</th>
+              <th class="r">Brecha</th>
+            </tr></thead>
             <tbody>${rows}
-              <tr class="total-row">
-                <td>Total</td>
-                <td class="mono text-2" style="font-size:12px;">S/. ${fmt(total2025)}</td>
-                <td class="mono">${isApr ? '<span class="muted">—</span>' : 'S/. ' + fmt(monthTotal)}</td>
-                <td>${isApr ? '—' : '100%'}</td>
-                <td id="mt-${m}" class="mono text-2"></td>
-                <td style="min-width:120px;"><div class="pb-wrap"><div class="pb-bg"><div class="pb-fill" id="pb-tot-${m}"></div></div><span class="pct-val" id="pv-tot-${m}"></span></div></td>
-                <td id="gv-tot-${m}"></td>
+              <tr style="background:#F8FAFC;">
+                <td><strong>Total</strong></td>
+                <td class="r mono text-2">S/. ${fmt(total2025)}</td>
+                <td class="r mono">${isApr ? '<span class="muted">—</span>' : 'S/. ' + fmt(monthTotal)}</td>
+                <td class="r">${isApr ? '—' : '100%'}</td>
+                <td class="r mono text-2" id="mt-${m}"></td>
+                <td class="r" style="min-width:140px;"><div class="pb-wrap"><div class="pb-bg"><div class="pb-fill" id="pb-tot-${m}"></div></div><span class="pct-val" id="pv-tot-${m}"></span></div></td>
+                <td class="r" id="gv-tot-${m}"></td>
               </tr>
             </tbody>
           </table>

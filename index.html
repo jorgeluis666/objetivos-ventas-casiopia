@@ -13,178 +13,202 @@
 </head>
 <body>
 
-<div class="app">
+<div class="shell">
 
-  <!-- ── Sidebar ─────────────────────────────────────────── -->
+  <!-- ══ SIDEBAR ══════════════════════════════════════ -->
   <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-mark">LR</div>
-      <div>
-        <div class="brand-name">Lima Retail</div>
-        <div class="brand-sub">Ventas 2026</div>
-      </div>
+    <div class="s-brand">
+      <div class="s-title">Dashboard Ventas</div>
+      <div class="s-sub">Lima Retail · 2026</div>
     </div>
 
-    <div class="nav-section">Reportes</div>
-    <button class="nav-item active" data-view="view-yoy">
-      <span class="nav-icon">📊</span>Comparativo YoY
+    <div class="s-group-lbl">Reportes</div>
+    <button class="s-item active" data-view="view-yoy">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Comparativo YoY<span class="s-num">01</span>
     </button>
-    <button class="nav-item" data-view="view-prod">
-      <span class="nav-icon">🛍️</span>Productos Web
+    <button class="s-item" data-view="view-prod">
+      <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      Productos Web<span class="s-num">02</span>
     </button>
-    <button class="nav-item" data-view="view-dist">
-      <span class="nav-icon">📈</span>Distribución
+    <button class="s-item" data-view="view-dist">
+      <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      Distribución<span class="s-num">03</span>
     </button>
-    <button class="nav-item" data-view="view-obj">
-      <span class="nav-icon">🎯</span>Objetivos 2026
+    <button class="s-item" data-view="view-obj">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      Objetivos 2026<span class="s-num">04</span>
     </button>
 
-    <div class="nav-section" style="margin-top:auto;">Fuentes</div>
-    <div style="padding:6px 10px;font-size:11px;color:var(--sidebar-muted);line-height:1.5;">
-      Datos vía Google Sheets →<br>
-      pipeline automático cada 1h.
+    <div class="s-group-lbl" style="margin-top:auto;">Fuentes</div>
+    <div style="padding:6px 20px 16px;font-size:11px;color:var(--sidebar-muted);line-height:1.5;">
+      Google Sheets →<br>
+      pipeline horario
     </div>
   </aside>
 
-  <!-- ── Main ─────────────────────────────────────────────── -->
-  <div class="main">
+  <!-- ══ MAIN ═════════════════════════════════════════ -->
+  <main class="main">
 
-    <header class="topbar">
+    <div class="topbar">
       <div class="topbar-title" id="topbar-title">Comparativo interanual</div>
       <div class="topbar-meta">
-        <span class="sync-indicator" id="sync-indicator">
+        <span class="topbar-pill sync" id="sync-indicator">
           <span class="sync-dot"></span><span>cargando…</span>
         </span>
         <button class="btn ghost" id="btn-refresh" title="Forzar sincronización">
-          <span class="btn-icon">↻</span>Actualizar
+          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Actualizar
         </button>
         <button class="btn ghost" id="btn-settings" title="Configurar token">
-          <span class="btn-icon">⚙</span>
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
       </div>
-    </header>
+    </div>
 
-    <main class="content">
+    <div class="content">
 
-      <!-- VIEW: YoY -->
+      <!-- ══ VIEW: YoY ═══════════════════════════════════ -->
       <section class="view visible" id="view-yoy">
-        <div class="section-head">
-          <div class="section-title">Total facturado mes a mes</div>
+        <div class="sec-lbl">01 — Comparativo</div>
+        <div class="section-title">Total facturado mes a mes</div>
+        <div class="section-desc">
+          Evolución interanual 2025 vs 2026 de la facturación total por canal. Abril es mes en curso y se muestra sin comparativo directo hasta el cierre.
         </div>
-        <div class="grid-4" id="kpi-yoy" style="margin-bottom:20px;"></div>
+
+        <div class="grid-4" id="kpi-yoy" style="margin-bottom:18px;"></div>
 
         <div class="panel" style="margin-bottom:16px;">
-          <div class="panel-title">
-            Evolución mensual 2025 vs 2026 (S/.)
-            <span class="panel-sub">Ene – Abr</span>
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Evolución mensual 2025 vs 2026</div>
+              <div class="panel-sub">Enero – Abril</div>
+            </div>
           </div>
           <div class="chart-legend">
-            <span class="legend-item"><span class="ld" style="background:#94A3B8;border-top:2px dashed #94A3B8;height:0;"></span>2025</span>
+            <span class="legend-item"><span class="ld" style="background:#94A3B8"></span>2025</span>
             <span class="legend-item"><span class="ld" style="background:#2563EB"></span>2026</span>
           </div>
-          <div class="chart-wrap h-240"><canvas id="chart-evo" role="img" aria-label="Evolución mensual 2025 vs 2026"></canvas></div>
+          <div class="chart-wrap h-240"><canvas id="chart-evo"></canvas></div>
         </div>
 
         <div class="panel">
-          <div class="panel-title">Variación interanual por canal (%)</div>
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Variación interanual por canal</div>
+              <div class="panel-sub">Enero – Marzo (meses cerrados)</div>
+            </div>
+          </div>
           <div id="yoy-tables"></div>
         </div>
       </section>
 
-      <!-- VIEW: Productos -->
+      <!-- ══ VIEW: Productos ════════════════════════════ -->
       <section class="view" id="view-prod">
-        <div class="section-head">
-          <div class="section-title">Resumen canal web · Ene – Abr 2026</div>
+        <div class="sec-lbl">02 — Productos web</div>
+        <div class="section-title">Resumen del canal Web · Ene – Abr 2026</div>
+        <div class="section-desc">
+          Desglose por SKU, marca y tipo de prenda. Detecta patrones de co-compra y oportunidades de bundle a partir del ratio uds/pedido.
         </div>
-        <div class="grid-4" id="kpi-prod" style="margin-bottom:20px;"></div>
 
-        <div class="grid-2" style="margin-bottom:16px;">
+        <div class="grid-4" id="kpi-prod" style="margin-bottom:16px;"></div>
+
+        <div class="grid-2">
           <div class="panel">
-            <div class="panel-title">Top productos por unidades vendidas</div>
+            <div class="panel-head"><div class="panel-title">Top productos por unidades vendidas</div></div>
             <div class="chart-wrap h-260"><canvas id="chart-top-units"></canvas></div>
           </div>
           <div class="panel">
-            <div class="panel-title">Top productos por ingreso neto (S/.)</div>
+            <div class="panel-head"><div class="panel-title">Top productos por ingreso neto</div></div>
             <div class="chart-wrap h-260"><canvas id="chart-top-rev"></canvas></div>
           </div>
         </div>
 
-        <div class="grid-2" style="margin-bottom:16px;">
+        <div class="grid-2">
           <div class="panel">
-            <div class="panel-title">Mix por tipo de prenda (unidades)</div>
+            <div class="panel-head"><div class="panel-title">Mix por tipo de prenda</div></div>
             <div class="chart-wrap h-220"><canvas id="chart-types"></canvas></div>
           </div>
           <div class="panel">
-            <div class="panel-title">Mayor ticket promedio por pedido</div>
+            <div class="panel-head"><div class="panel-title">Mayor ticket promedio por pedido</div></div>
             <div class="chart-wrap h-220"><canvas id="chart-ticket"></canvas></div>
           </div>
         </div>
 
-        <div class="section-head" style="margin-top:8px;">
-          <div class="section-title">Patrones de compra · Oportunidades</div>
-        </div>
-        <div class="grid-3" id="copurchase-grid" style="margin-bottom:16px;"></div>
+        <div>
+          <div class="sec-lbl">Patrones de compra · Oportunidades</div>
+          <div class="grid-3" id="copurchase-grid" style="margin-bottom:16px;"></div>
 
-        <div class="panel" style="margin-bottom:16px;">
-          <div class="panel-title">Sugerencias next sale por perfil de cliente</div>
-          <div class="grid-2" id="next-sales-grid"></div>
+          <div class="panel" style="margin-bottom:16px;">
+            <div class="panel-head"><div class="panel-title">Sugerencias next sale por perfil de cliente</div></div>
+            <div class="grid-2" id="next-sales-grid"></div>
+          </div>
         </div>
 
-        <div class="section-head" style="margin-top:8px;">
-          <div class="section-title">Compra en cantidad · Oportunidad de bundle por tallas</div>
+        <div>
+          <div class="sec-lbl">Compra en cantidad · Bundle por tallas</div>
+          <p class="section-sub">
+            Productos donde los clientes compraron más de 1 unidad en el mismo pedido — probablemente tallas consecutivas o regalo doble. Candidatos a convertirse en pack oficial.
+          </p>
+          <div class="panel" style="margin-bottom:16px;">
+            <div class="panel-head"><div class="panel-title">Uds por pedido — productos con compra múltiple</div></div>
+            <div id="multi-bars"></div>
+          </div>
+
+          <div class="sec-lbl">Ideas de bundle para implementar</div>
+          <div class="grid-3" id="bundle-ideas"></div>
         </div>
-        <p class="section-sub">
-          Productos donde los clientes compraron más de 1 unidad en el mismo pedido, probablemente por tallas consecutivas o regalo doble. Cada uno tiene potencial de convertirse en un pack oficial con descuento.
-        </p>
-        <div class="panel" style="margin-bottom:16px;">
-          <div class="panel-title">Uds por pedido — productos con compra múltiple</div>
-          <div id="multi-bars"></div>
-        </div>
-        <div class="section-head">
-          <div class="section-title">Ideas de bundle para implementar</div>
-        </div>
-        <div class="grid-3" id="bundle-ideas"></div>
       </section>
 
-      <!-- VIEW: Distribución -->
+      <!-- ══ VIEW: Distribución ═════════════════════════ -->
       <section class="view" id="view-dist">
+        <div class="sec-lbl">03 — Distribución</div>
+        <div class="section-title">Mix de canales 2025 vs 2026</div>
+        <div class="section-desc">
+          Participación relativa y absoluta de cada canal sobre la facturación total. Permite ver cuándo el canal Web o WhatsApp desplazan ventas de Tienda.
+        </div>
+
         <div class="grid-2" style="margin-bottom:16px;">
           <div class="panel">
-            <div class="panel-title">Mix de canales 2025</div>
+            <div class="panel-head"><div class="panel-title">Mix de canales 2025</div></div>
             <div class="chart-legend" id="leg-2025"></div>
             <div class="chart-wrap h-220"><canvas id="chart-dist-2025"></canvas></div>
           </div>
           <div class="panel">
-            <div class="panel-title">Mix de canales 2026</div>
+            <div class="panel-head"><div class="panel-title">Mix de canales 2026</div></div>
             <div class="chart-legend" id="leg-2026"></div>
             <div class="chart-wrap h-220"><canvas id="chart-dist-2026"></canvas></div>
           </div>
         </div>
         <div class="panel">
-          <div class="panel-title">
-            Facturación por canal
-            <span class="panel-sub">2025 opaco · 2026 sólido</span>
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Facturación absoluta por canal</div>
+              <div class="panel-sub">2025 opaco · 2026 sólido</div>
+            </div>
           </div>
           <div class="chart-legend" id="leg-abs"></div>
           <div class="chart-wrap h-260"><canvas id="chart-abs"></canvas></div>
         </div>
       </section>
 
-      <!-- VIEW: Objetivos -->
+      <!-- ══ VIEW: Objetivos ═══════════════════════════ -->
       <section class="view" id="view-obj">
-        <p class="section-sub">
-          Usa <strong>+</strong> / <strong>−</strong> para ajustar el objetivo (pasos de S/. 500) o escríbelo directamente. La columna <em>Ref. 2025</em> muestra el cierre real del año anterior.
-        </p>
+        <div class="sec-lbl">04 — Planeación</div>
+        <div class="section-title">Objetivos 2026 · Simulador por canal</div>
+        <div class="section-desc">
+          Usa <strong>+</strong> / <strong>−</strong> para ajustar el objetivo en pasos de S/. 500, o escribe el valor directo. La columna <em>Ref. 2025</em> muestra el cierre real del año anterior.
+        </div>
         <div class="month-tabs" id="month-tabs"></div>
         <div id="month-panels"></div>
       </section>
 
       <div class="site-footer">
-        <span>Fuente: Tasa de ventas diarias 2026 · datos del cliente</span>
-        <span>Lima Retail · Dashboard interno</span>
+        <span>Fuente: Tasa de ventas diarias 2026 · pipeline automático</span>
+        <span>Lima Retail Design System v1.0</span>
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
 </div>
 
 <!-- Modal: PAT de GitHub para forzar sync -->
@@ -196,13 +220,13 @@
       <strong>Personal Access Token</strong> de GitHub con permiso <code>workflow</code>.
       El token se guarda solo en tu navegador (<code>localStorage</code>).
     </p>
-    <input class="inp" type="password" placeholder="ghp_..." style="width:100%;" autocomplete="off">
+    <input class="inp" type="password" placeholder="ghp_..." autocomplete="off">
     <p style="margin-top:10px;font-size:11px;color:var(--muted);">
       Si no tenés token, la data sigue actualizándose cada hora vía el cron del workflow.
     </p>
     <div class="modal-actions">
-      <button class="btn ghost" data-action="clear">Borrar</button>
-      <button class="btn ghost" data-action="cancel">Cancelar</button>
+      <button class="btn danger" data-action="clear">Borrar</button>
+      <button class="btn ghost"  data-action="cancel">Cancelar</button>
       <button class="btn primary" data-action="save">Guardar y sincronizar</button>
     </div>
   </div>
