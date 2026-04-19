@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Lee el Google Sheet "TASA DE VENTAS DIARIAS 2026" y genera data/ventas-2026.json
- * con totales mensuales, datos semanales y transacciones por canal.
+ * Lee los Google Sheets "TASA DE VENTAS DIARIAS 2025" y "... 2026" y genera
+ * data/ventas-2026.json con totales mensuales, datos semanales y transacciones
+ * por canal para ambos años.
  *
  * Modos:
  *   node scripts/fetch-data.js                   → lee desde Google Sheets API
@@ -11,17 +12,32 @@
 const fs = require('fs');
 const path = require('path');
 
-const SPREADSHEET_ID = '1WQhZyWVWq7cnLybU-LfXRBVg8B66jbNNPqfcYD_assM';
 const CREDENTIALS_PATH = path.join(__dirname, '..', 'credentials', 'service-account.json');
 const OUTPUT_PATH = path.join(__dirname, '..', 'data', 'ventas-2026.json');
 
-const MONTHS = [
-  { sheet: 'ENERO',   name: 'Enero',   monthIndex: 0, days: 31 },
-  { sheet: 'FEBRERO', name: 'Febrero', monthIndex: 1, days: 28 },
-  { sheet: 'MARZO',   name: 'Marzo',   monthIndex: 2, days: 31 },
-  { sheet: 'ABRIL',   name: 'Abril',   monthIndex: 3, days: 30 },
+function monthsForYear(year) {
+  return [
+    { sheet: 'ENERO',      name: 'Enero',      monthIndex: 0,  days: 31 },
+    { sheet: 'FEBRERO',    name: 'Febrero',    monthIndex: 1,  days: year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0) ? 29 : 28 },
+    { sheet: 'MARZO',      name: 'Marzo',      monthIndex: 2,  days: 31 },
+    { sheet: 'ABRIL',      name: 'Abril',      monthIndex: 3,  days: 30 },
+    { sheet: 'MAYO',       name: 'Mayo',       monthIndex: 4,  days: 31 },
+    { sheet: 'JUNIO',      name: 'Junio',      monthIndex: 5,  days: 30 },
+    { sheet: 'JULIO',      name: 'Julio',      monthIndex: 6,  days: 31 },
+    { sheet: 'AGOSTO',     name: 'Agosto',     monthIndex: 7,  days: 31 },
+    { sheet: 'SEPTIEMBRE', name: 'Septiembre', monthIndex: 8,  days: 30 },
+    { sheet: 'OCTUBRE',    name: 'Octubre',    monthIndex: 9,  days: 31 },
+    { sheet: 'NOVIEMBRE',  name: 'Noviembre',  monthIndex: 10, days: 30 },
+    { sheet: 'DICIEMBRE',  name: 'Diciembre',  monthIndex: 11, days: 31 },
+  ];
+}
+
+// Cada año con su sheet y los meses que hay que leer. 2025 = histórico (año completo),
+// 2026 = en curso (solo los cerrados + el actual).
+const SOURCES = [
+  { year: 2025, id: '13gqg8ZueL4YOj3wQ7gypf3Mem3oNBSFyPNJE67cICQ0', months: monthsForYear(2025) },
+  { year: 2026, id: '1WQhZyWVWq7cnLybU-LfXRBVg8B66jbNNPqfcYD_assM', months: monthsForYear(2026).slice(0, 4) },
 ];
-const YEAR = 2026;
 
 // Columnas del sheet (0-indexed dentro del rango A:I):
 // 0=FECHA, 1=CANT/MONTO, 2=WHATSAPP, 3=INSTAGRAM, 4=FACEBOOK, 5=SHOWROOM, 6=WEB, 7=TIENDA, 8=TOTAL
@@ -69,12 +85,12 @@ function buildWeekMap(year, monthIndex, daysInMonth) {
   return dayToWeek;
 }
 
-function parseSheet(rows, monthConfig) {
+function parseSheet(rows, monthConfig, year) {
   const totals = {};
   const transactions = {};
   CHANNEL_COLS.forEach(c => { totals[c.title] = 0; transactions[c.upper] = 0; });
 
-  const dayToWeek = buildWeekMap(YEAR, monthConfig.monthIndex, monthConfig.days);
+  const dayToWeek = buildWeekMap(year, monthConfig.monthIndex, monthConfig.days);
   const weekCount = dayToWeek[monthConfig.days];
 
   const weeklyTotals = [];
@@ -144,7 +160,9 @@ function parseCSVText(text) {
   return rows;
 }
 
-async function loadRowsFromApi(monthConfig) {
+let _sheetsClient = null;
+async function getSheetsClient() {
+  if (_sheetsClient) return _sheetsClient;
   if (!fs.existsSync(CREDENTIALS_PATH)) {
     throw new Error(`No existe ${CREDENTIALS_PATH}. Colocá la service account JSON ahí.`);
   }
@@ -153,26 +171,31 @@ async function loadRowsFromApi(monthConfig) {
     keyFile: CREDENTIALS_PATH,
     scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
   });
-  const sheets = google.sheets({ version: 'v4', auth });
+  _sheetsClient = google.sheets({ version: 'v4', auth });
+  return _sheetsClient;
+}
+
+async function loadRowsFromApi(monthConfig, spreadsheetId) {
+  const sheets = await getSheetsClient();
   const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
+    spreadsheetId,
     range: `${monthConfig.sheet}!A1:I100`,
     valueRenderOption: 'UNFORMATTED_VALUE',
   });
   return res.data.values || [];
 }
 
-function loadRowsFromCsv(monthConfig, csvDir) {
-  // Busca archivos del formato canónico "TASA DE VENTAS DIARIAS 2026 - <MES>*.csv"
-  // excluyendo copias ("Copia de ...") y sheets de años anteriores.
+function loadRowsFromCsv(monthConfig, csvDir, year) {
+  // Busca archivos del formato canónico "TASA DE VENTAS DIARIAS <año> - <MES>*.csv"
+  const yearStr = String(year);
   const candidates = fs.readdirSync(csvDir).filter(f => {
     const up = f.toUpperCase();
     if (!up.endsWith('.CSV')) return false;
-    if (!up.startsWith('TASA DE VENTAS DIARIAS 2026')) return false;
+    if (!up.startsWith(`TASA DE VENTAS DIARIAS ${yearStr}`)) return false;
     return up.includes(monthConfig.sheet);
   });
   if (candidates.length === 0) {
-    throw new Error(`No se encontró CSV para ${monthConfig.sheet} en ${csvDir}`);
+    throw new Error(`No se encontró CSV para ${monthConfig.sheet} (${year}) en ${csvDir}`);
   }
   const filePath = path.join(csvDir, candidates[0]);
   const text = fs.readFileSync(filePath, 'utf8');
@@ -187,45 +210,65 @@ function parseArgs(argv) {
   return args;
 }
 
+async function fetchYear(source, args) {
+  const totals = {};
+  const weekly = {};
+  const transactions = {};
+
+  for (const m of source.months) {
+    console.log(`[fetch ${source.year}] leyendo "${m.sheet}"...`);
+    let rows;
+    try {
+      rows = args.csvDir
+        ? loadRowsFromCsv(m, args.csvDir, source.year)
+        : await loadRowsFromApi(m, source.id);
+    } catch (err) {
+      console.error(`  ! ${source.year} ${m.sheet}: ${err.message}`);
+      totals[m.name] = Object.fromEntries(CHANNEL_COLS.map(c => [c.title, 0]));
+      transactions[m.name] = Object.fromEntries(CHANNEL_COLS.map(c => [c.upper, 0]));
+      weekly[m.name] = [];
+      continue;
+    }
+
+    const parsed = parseSheet(rows, m, source.year);
+    totals[m.name]       = parsed.totals;
+    transactions[m.name] = parsed.transactions;
+    weekly[m.name]       = parsed.weeklyTotals;
+
+    const monthTotal = round2(Object.values(parsed.totals).reduce((a, b) => a + b, 0));
+    console.log(`  ${source.year} · ${m.name}: S/. ${monthTotal.toLocaleString('es-PE')} · ${parsed.weeklyTotals.length} semanas`);
+  }
+
+  return { totals, weekly, transactions };
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   const source = args.csvDir ? `CSV (${args.csvDir})` : 'Google Sheets API';
   console.log(`[fetch] fuente: ${source}`);
 
-  const d2026 = {};
-  const weeklyData = {};
-  const transactions = {};
-
-  for (const m of MONTHS) {
-    console.log(`[fetch] leyendo "${m.sheet}"...`);
-    let rows;
-    try {
-      rows = args.csvDir
-        ? loadRowsFromCsv(m, args.csvDir)
-        : await loadRowsFromApi(m);
-    } catch (err) {
-      console.error(`  ! ${m.sheet}: ${err.message}`);
-      d2026[m.name] = Object.fromEntries(CHANNEL_COLS.map(c => [c.title, 0]));
-      transactions[m.name] = Object.fromEntries(CHANNEL_COLS.map(c => [c.upper, 0]));
-      weeklyData[m.name] = [];
-      continue;
-    }
-
-    const parsed = parseSheet(rows, m);
-    d2026[m.name] = parsed.totals;
-    transactions[m.name] = parsed.transactions;
-    weeklyData[m.name] = parsed.weeklyTotals;
-
-    const monthTotal = round2(Object.values(parsed.totals).reduce((a, b) => a + b, 0));
-    console.log(`  ${m.name}: S/. ${monthTotal.toLocaleString('es-PE')} · ${parsed.weeklyTotals.length} semanas`);
+  const results = {};
+  for (const src of SOURCES) {
+    results[src.year] = await fetchYear(src, args);
   }
 
-  // Timestamp en hora Lima (UTC-5), sin sufijo de zona, al estilo del ejemplo del spec
+  // Timestamp en hora Lima (UTC-5)
   const nowUtc = new Date();
   const lima = new Date(nowUtc.getTime() - 5 * 60 * 60 * 1000);
   const generated = lima.toISOString().replace(/\.\d{3}Z$/, '');
 
-  const output = { generated, d2026, weeklyData, transactions };
+  const output = {
+    generated,
+    // 2026 (en curso)
+    d2026:        results[2026].totals,
+    weeklyData:   results[2026].weekly,       // nombre legacy, usado por objectives.js
+    weekly2026:   results[2026].weekly,       // alias explícito
+    transactions: results[2026].transactions, // legacy → usado por pace cards
+    // 2025 (histórico, referencia anual)
+    d2025_live:        results[2025].totals,
+    weekly2025:        results[2025].weekly,
+    transactions2025:  results[2025].transactions,
+  };
 
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2) + '\n', 'utf8');

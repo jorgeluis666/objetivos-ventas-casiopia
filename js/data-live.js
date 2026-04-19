@@ -7,15 +7,25 @@
 (function (global) {
   const DATA_URL = 'data/ventas-2026.json';
 
+  const MONTHS_12 = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
   // Shape de fallback usado cuando no hay JSON disponible (lighthouse / primera carga).
   function emptyShape() {
     const zero = () => ({ Tienda: 0, Web: 0, WhatsApp: 0, Showroom: 0, Instagram: 0, Facebook: 0 });
     const zeroTx = () => ({ TIENDA: 0, WEB: 0, WHATSAPP: 0, SHOWROOM: 0, INSTAGRAM: 0, FACEBOOK: 0 });
+    const monthsShape = (names, factory) =>
+      Object.fromEntries(names.map(n => [n, factory()]));
+    const weeksShape = names =>
+      Object.fromEntries(names.map(n => [n, []]));
+
     return {
       generated: null,
-      d2026: { Enero: zero(), Febrero: zero(), Marzo: zero(), Abril: zero() },
-      weeklyData: { Enero: [], Febrero: [], Marzo: [], Abril: [] },
-      transactions: { Enero: zeroTx(), Febrero: zeroTx(), Marzo: zeroTx(), Abril: zeroTx() },
+      d2026:        monthsShape(['Enero','Febrero','Marzo','Abril'], zero),
+      weeklyData:   weeksShape(['Enero','Febrero','Marzo','Abril']),
+      transactions: monthsShape(['Enero','Febrero','Marzo','Abril'], zeroTx),
+      weekly2025:        weeksShape(MONTHS_12),
+      d2025_live:        monthsShape(MONTHS_12, zero),
+      transactions2025:  monthsShape(MONTHS_12, zeroTx),
     };
   }
 
@@ -25,10 +35,14 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
       return {
-        generated: json.generated || null,
-        d2026: json.d2026,
-        weeklyData: json.weeklyData,
-        transactions: json.transactions,
+        generated:         json.generated || null,
+        d2026:             json.d2026,
+        weeklyData:        json.weeklyData,
+        transactions:      json.transactions,
+        // Nuevos (2025 live completo)
+        weekly2025:        json.weekly2025       || {},
+        d2025_live:        json.d2025_live       || {},
+        transactions2025:  json.transactions2025 || {},
         source: 'live',
       };
     } catch (err) {

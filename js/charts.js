@@ -391,8 +391,110 @@
     });
   }
 
+  // ── Combined weekly — 2025 full year (ref) + 2026 available ──
+  function combinedWeeklyChart(weekly2025, weekly2026) {
+    const ALL_MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const MONTH_SHORT = { Enero:'Ene', Febrero:'Feb', Marzo:'Mar', Abril:'Abr', Mayo:'May', Junio:'Jun', Julio:'Jul', Agosto:'Ago', Septiembre:'Sep', Octubre:'Oct', Noviembre:'Nov', Diciembre:'Dic' };
+
+    // Aplana las semanas del año en una serie continua
+    const flatten = (weekMap) => {
+      const labels = [];
+      const values = [];
+      ALL_MONTHS.forEach(m => {
+        const weeks = weekMap[m] || [];
+        weeks.forEach((w, i) => {
+          // Primera semana del mes muestra la abreviatura; las demás solo "S<n>"
+          labels.push(i === 0 ? `${MONTH_SHORT[m]} S${w.w}` : `S${w.w}`);
+          values.push(w.TOTAL || 0);
+        });
+      });
+      return { labels, values };
+    };
+
+    // 2025 da la longitud del eje X (año completo como referencia)
+    const ref = flatten(weekly2025);
+    const cur = flatten(weekly2026);
+
+    // 2026 se alinea al inicio de la serie (su primera semana = primera de Enero)
+    const curAligned = ref.labels.map((_, i) =>
+      i < cur.values.length && cur.values[i] > 0 ? cur.values[i] : null
+    );
+
+    return mount('chart-weekly-combined', {
+      type: 'line',
+      data: {
+        labels: ref.labels,
+        datasets: [
+          {
+            label: '2025 (referencia)',
+            data: ref.values,
+            borderColor: '#94A3B8',
+            backgroundColor: 'rgba(148,163,184,0.08)',
+            borderWidth: 1.5,
+            borderDash: [5, 4],
+            pointBackgroundColor: '#94A3B8',
+            pointRadius: 2.5,
+            pointHoverRadius: 5,
+            tension: 0.3,
+            fill: false,
+          },
+          {
+            label: '2026',
+            data: curAligned,
+            borderColor: '#2563EB',
+            backgroundColor: 'rgba(37,99,235,0.1)',
+            borderWidth: 2.5,
+            pointBackgroundColor: '#2563EB',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            tension: 0.3,
+            fill: true,
+            spanGaps: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: lineDraw(2000),
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ctx.raw !== null
+                ? ` ${ctx.dataset.label}: S/. ${ctx.raw.toLocaleString('es-PE')}`
+                : ` ${ctx.dataset.label}: sin datos`,
+            },
+          },
+          datalabels: { display: false },
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: axisColor,
+              font: { size: 10 },
+              autoSkip: true,
+              maxRotation: 0,
+              callback(v, i) {
+                const lbl = this.getLabelForValue(v);
+                // Solo mostrar los labels que empiezan con abreviatura de mes
+                return /^[A-Z][a-z]{2} /.test(lbl) ? lbl.split(' ')[0] : '';
+              },
+            },
+            grid: { display: false },
+          },
+          y: {
+            ticks: { color: axisColor, font: { size: 10 }, callback: v => 'S/. ' + (v / 1000).toFixed(0) + 'k' },
+            grid: { color: gridColor },
+          },
+        },
+      },
+    });
+  }
+
   global.Charts = {
-    evoChart, distCharts, absChart, productCharts, weeklyChart,
+    evoChart, distCharts, absChart, productCharts, weeklyChart, combinedWeeklyChart,
     destroy, replay,
     destroyAll: () => { instances.forEach(c => c.destroy()); instances.clear(); },
     tot, fmt,

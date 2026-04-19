@@ -188,24 +188,23 @@
   }
 
   // ── Render principal de la vista ──
-  function render({ d2026, weeklyData, transactions }) {
+  function render({ d2026, weeklyData, transactions, weekly2025 }) {
     state.d2026        = d2026;
     state.weeklyData   = weeklyData;
     state.transactions = transactions;
+    state.weekly2025   = weekly2025 || {};
     state.avgTickets   = computeAvgTickets(d2026, transactions);
+
+    // Chart combinado arriba de los month tabs (52 semanas 2025 + 2026 disponibles)
+    if (global.Charts?.combinedWeeklyChart) {
+      global.Charts.combinedWeeklyChart(state.weekly2025, state.weeklyData);
+    }
 
     const monthTabsEl   = document.getElementById('month-tabs');
     const monthPanelsEl = document.getElementById('month-panels');
     if (!monthTabsEl || !monthPanelsEl) return;
     monthTabsEl.innerHTML   = '';
     monthPanelsEl.innerHTML = '';
-
-    // Mapas para el weekly chart
-    const chUp     = chToUpper;
-    const chLabel  = { TOTAL: 'Total', TIENDA: 'Tienda', WEB: 'Web', WHATSAPP: 'WhatsApp', SHOWROOM: 'Showroom', INSTAGRAM: 'Instagram', FACEBOOK: 'Facebook' };
-    const colMap   = { TOTAL: '#0F172A', TIENDA: palette.Tienda, WEB: palette.Web, WHATSAPP: palette.WhatsApp, SHOWROOM: palette.Showroom, INSTAGRAM: palette.Instagram, FACEBOOK: palette.Facebook };
-    const dashMap  = { TOTAL: [], TIENDA: [], WEB: [5,3], WHATSAPP: [3,2], SHOWROOM: [7,3], INSTAGRAM: [3,2], FACEBOOK: [3,2] };
-    const widthMap = { TOTAL: 2.5, TIENDA: 2, WEB: 1.8, WHATSAPP: 1.6, SHOWROOM: 1.6, INSTAGRAM: 1.6, FACEBOOK: 1.4 };
 
     months.forEach((m, i) => {
       const isApr       = m === 'Abril';
@@ -237,23 +236,9 @@
         </tr>`;
       });
 
-      const hasRealWeekly = (weeklyData[m] || []).some(w => w.TOTAL > 0);
-      const useProjection = isApr && !hasRealWeekly;
-
       panel.innerHTML = `
         ${isApr ? `<div class="period-note">Abril 2026 está en curso · ${daysPassed('Abril')} días transcurridos · Referencia 2025: <strong>S/. ${fmt(total2025)}</strong></div>` : ''}
         <div id="pace-${m}" style="margin-bottom:16px;"></div>
-        <div class="panel" style="margin-bottom:16px;">
-          <div class="panel-head">
-            <div>
-              <div class="panel-title">Evolución semanal por canal</div>
-              <div class="panel-sub">${m} 2026</div>
-            </div>
-          </div>
-          <div class="chart-legend" id="week-legend-${m}"></div>
-          <div class="chart-wrap h-300"><canvas id="week-chart-${m}" role="img" aria-label="Evolución semanal ${m}"></canvas></div>
-          ${useProjection ? `<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);">Semanas 2–5 proyectadas sobre ritmo de marzo.</div>` : ''}
-        </div>
         <div class="panel">
           <div class="panel-head">
             <div>
@@ -302,53 +287,6 @@
         refreshObjRow(m, ch);
       });
       refreshPaceCards(m);
-
-      // Weekly chart
-      const activeChs = useProjection
-        ? ['TOTAL', 'TIENDA', 'WEB', 'WHATSAPP', 'SHOWROOM']
-        : ['TOTAL', ...channels.filter(ch => weeklyData[m] && weeklyData[m].some(w => w[chUp[ch]] > 0)).map(ch => chUp[ch])];
-
-      const wdata = weeklyData[m] || [];
-      let datasets;
-      if (useProjection) {
-        const aprTarget = channels.reduce((s, c) => s + (state.targets[m][c] || 0), 0);
-        const scale = aprTarget > 0 ? aprTarget / 78848.30 : 1;
-        const proj = {
-          TOTAL:    [2150, 18031, 18801, 19094, 4170],
-          TIENDA:   [ 800, 13000, 13600, 13800, 3020],
-          WEB:      [   0,  2100,  3400,  3300,  830],
-          WHATSAPP: [ 220,  1060,  1980,  1500,  640],
-          SHOWROOM: [   0,  1200,     0,   780,    0],
-        };
-        datasets = activeChs.map(ch => ({
-          label: chLabel[ch], data: proj[ch].map(v => Math.round(v * scale)),
-          borderColor: colMap[ch], backgroundColor: 'transparent',
-          borderWidth: widthMap[ch] || 1.5, borderDash: dashMap[ch] || [4, 3],
-          pointBackgroundColor: colMap[ch], pointRadius: 5, pointHoverRadius: 7,
-          tension: 0.3, fill: false,
-        }));
-      } else {
-        datasets = activeChs.map(ch => ({
-          label: chLabel[ch], data: wdata.map(w => w[ch] || 0),
-          borderColor: colMap[ch], backgroundColor: 'transparent',
-          borderWidth: widthMap[ch] || 1.5, borderDash: dashMap[ch] || [],
-          pointBackgroundColor: colMap[ch], pointRadius: 5, pointHoverRadius: 7,
-          tension: 0.3, fill: false,
-        }));
-      }
-
-      const weekLabels = useProjection
-        ? ['S1 (1-5)', 'S2 (6-12)', 'S3 (13-19)', 'S4 (20-26)', 'S5 (27-30)']
-        : wdata.map(w => `S${w.w}`);
-
-      const legEl = document.getElementById(`week-legend-${m}`);
-      if (legEl) {
-        legEl.innerHTML = activeChs.map(ch =>
-          `<span class="legend-item"><span class="ld" style="background:${colMap[ch]}"></span>${chLabel[ch]}</span>`
-        ).join('');
-      }
-
-      global.Charts.weeklyChart(m, weekLabels, activeChs, datasets);
 
       // Month tab button
       const tab = document.createElement('button');

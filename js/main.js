@@ -20,13 +20,14 @@
     'view-yoy':  ['chart-evo'],
     'view-prod': ['chart-top-units', 'chart-top-rev', 'chart-types', 'chart-ticket'],
     'view-dist': ['chart-dist-2025', 'chart-dist-2026', 'chart-abs'],
-    'view-obj':  ['week-chart-*'],
+    'view-obj':  ['chart-weekly-combined'],
   };
 
   const state = {
     d2026: null,
     weeklyData: null,
     transactions: null,
+    weekly2025: null,
     generated: null,
     renderedProducts: false,
   };
@@ -255,6 +256,7 @@
     state.d2026        = liveData.d2026;
     state.weeklyData   = liveData.weeklyData;
     state.transactions = liveData.transactions;
+    state.weekly2025   = liveData.weekly2025 || {};
     state.generated    = liveData.generated;
 
     renderKpisYoY(state.d2026);
@@ -269,6 +271,7 @@
       d2026: state.d2026,
       weeklyData: state.weeklyData,
       transactions: state.transactions,
+      weekly2025: state.weekly2025,
     });
 
     if (state.renderedProducts) renderProducts();
