@@ -13,6 +13,57 @@
   const gridColor = 'rgba(15,23,42,0.06)';
   const fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif';
 
+  // ── Animaciones ──
+  // Barras: crecen desde la base del eje (axis = 'y' para verticales, 'x' para horizontales).
+  const barGrow = (axis = 'y') => ({
+    duration: 900,
+    easing: 'easeOutCubic',
+    animations: {
+      [axis]: {
+        from: ctx => ctx.chart.scales[axis]?.getPixelForValue(0) ?? 0,
+      },
+    },
+  });
+
+  // Líneas: trazo de izquierda a derecha, cada segmento sale del punto anterior.
+  function lineDraw(totalDuration = 1400) {
+    const previousY = ctx => {
+      if (ctx.index === 0) return ctx.chart.scales.y.getPixelForValue(0);
+      const meta = ctx.chart.getDatasetMeta(ctx.datasetIndex);
+      const prev = meta.data[ctx.index - 1];
+      return prev ? prev.getProps(['y'], true).y : ctx.chart.scales.y.getPixelForValue(0);
+    };
+    const segmentFor = ctx => {
+      const count = ctx.chart.data.labels?.length || 1;
+      return totalDuration / count;
+    };
+    return {
+      duration: totalDuration,
+      x: {
+        type: 'number',
+        easing: 'linear',
+        duration: segmentFor,
+        from: NaN,
+        delay(ctx) {
+          if (ctx.type !== 'data' || ctx.xStarted) return 0;
+          ctx.xStarted = true;
+          return ctx.index * segmentFor(ctx);
+        },
+      },
+      y: {
+        type: 'number',
+        easing: 'linear',
+        duration: segmentFor,
+        from: previousY,
+        delay(ctx) {
+          if (ctx.type !== 'data' || ctx.yStarted) return 0;
+          ctx.yStarted = true;
+          return ctx.index * segmentFor(ctx);
+        },
+      },
+    };
+  }
+
   const instances = new Map();
   function destroy(id) {
     if (instances.has(id)) {
@@ -69,6 +120,7 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: lineDraw(1600),
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -123,6 +175,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          animation: barGrow('y'),
           plugins: {
             legend: { display: false },
             tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.raw + '%' } },
@@ -174,6 +227,7 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: barGrow('y'),
         plugins: {
           legend: { display: false },
           tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': S/. ' + ctx.raw.toLocaleString('es-PE') } },
@@ -198,6 +252,7 @@
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        animation: barGrow('x'),
         plugins: {
           legend: { display: false },
           tooltip: { callbacks: { label: ctx => ` ${suffix} ${ctx.raw.toLocaleString('es-PE')}` } },
@@ -261,6 +316,7 @@
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        animation: barGrow('x'),
         plugins: {
           legend: { display: false },
           tooltip: { callbacks: { label: ctx => ` S/. ${ctx.raw}/pedido` } },
@@ -281,6 +337,7 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: lineDraw(1600),
         layout: { padding: { top: 28, right: 20, left: 4 } },
         plugins: {
           legend: { display: false },
@@ -293,7 +350,14 @@
             align: 'top', anchor: 'end', offset: 3,
             color: ctx => ctx.dataset.borderColor,
             font: { size: 10, weight: '500' },
-            display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
+            display: ctx => {
+              if (ctx.dataset.data[ctx.dataIndex] <= 0) return false;
+              // Esperar a que el punto termine su animación de entrada
+              const point = ctx.chart.getDatasetMeta(ctx.datasetIndex).data[ctx.dataIndex];
+              if (!point) return false;
+              const { x } = point.getProps(['x'], true);
+              return typeof x === 'number' && !isNaN(x);
+            },
             formatter: v =>
               v === 0 ? null
               : v >= 10000 ? 'S/.' + Math.round(v / 1000) + 'k'
