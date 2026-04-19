@@ -186,6 +186,28 @@ async function getSheetsClient() {
   return _sheetsClient;
 }
 
+// Diagnóstico: lista los nombres EXACTOS de los tabs de un spreadsheet.
+async function listTabs(spreadsheetId) {
+  const sheets = await getSheetsClient();
+  try {
+    const res = await sheets.spreadsheets.get({
+      spreadsheetId,
+      fields: 'sheets.properties.title',
+    });
+    return (res.data.sheets || []).map(s => s.properties.title);
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+// Matcher case-insensitive: dado un nombre deseado (ej. 'ENERO') devuelve el
+// tab real que coincide ignorando mayúsculas/espacios — o null si no hay match.
+function resolveTabName(wantedUpper, availableTabs) {
+  const norm = s => String(s).trim().toUpperCase();
+  const wantedNorm = norm(wantedUpper);
+  return availableTabs.find(t => norm(t) === wantedNorm) || null;
+}
+
 async function loadRowsFromApi(monthConfig, spreadsheetId, rangeSpec) {
   const sheets = await getSheetsClient();
   const res = await sheets.spreadsheets.values.get({
@@ -226,15 +248,41 @@ async function fetchYear(source, args) {
   const weekly = {};
   const transactions = {};
 
+  // Diagnóstico: tabs que efectivamente existen en el spreadsheet
+  let availableTabs = null;
+  if (!args.csvDir) {
+    const probe = await listTabs(source.id);
+    if (Array.isArray(probe)) {
+      availableTabs = probe;
+      console.log(`[fetch ${source.year}] tabs en el sheet: ${probe.map(t => `"${t}"`).join(', ')}`);
+    } else {
+      console.error(`[fetch ${source.year}] no pude listar tabs: ${probe.error}`);
+    }
+  }
+
   for (const m of source.months) {
-    console.log(`[fetch ${source.year}] leyendo "${m.sheet}"...`);
+    // Si conocemos los tabs reales, resolvemos el nombre ignorando mayúsculas/espacios.
+    const resolvedSheet = availableTabs
+      ? resolveTabName(m.sheet, availableTabs)
+      : m.sheet;
+
+    if (availableTabs && !resolvedSheet) {
+      console.error(`  ! ${source.year} ${m.sheet}: no hay tab que coincida (case-insensitive)`);
+      totals[m.name] = Object.fromEntries(source.cols.map(c => [c.title, 0]));
+      transactions[m.name] = Object.fromEntries(source.cols.map(c => [c.upper, 0]));
+      weekly[m.name] = [];
+      continue;
+    }
+
+    const effectiveMonth = { ...m, sheet: resolvedSheet || m.sheet };
+    console.log(`[fetch ${source.year}] leyendo "${effectiveMonth.sheet}"...`);
     let rows;
     try {
       rows = args.csvDir
-        ? loadRowsFromCsv(m, args.csvDir, source.year)
-        : await loadRowsFromApi(m, source.id, source.range);
+        ? loadRowsFromCsv(effectiveMonth, args.csvDir, source.year)
+        : await loadRowsFromApi(effectiveMonth, source.id, source.range);
     } catch (err) {
-      console.error(`  ! ${source.year} ${m.sheet}: ${err.message}`);
+      console.error(`  ! ${source.year} ${effectiveMonth.sheet}: ${err.message}`);
       totals[m.name] = Object.fromEntries(source.cols.map(c => [c.title, 0]));
       transactions[m.name] = Object.fromEntries(source.cols.map(c => [c.upper, 0]));
       weekly[m.name] = [];
