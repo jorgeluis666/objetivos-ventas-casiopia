@@ -347,52 +347,10 @@
     });
   }
 
-  // ── Weekly por mes (dentro de Objetivos) ──
-  function weeklyChart(monthName, weekLabels, activeChs, datasets) {
-    return mount('week-chart-' + monthName, {
-      type: 'line',
-      data: { labels: weekLabels, datasets },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: lineDraw(1600),
-        layout: { padding: { top: 28, right: 20, left: 4 } },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: ctx => ` ${ctx.dataset.label}: S/. ${ctx.raw.toLocaleString('es-PE')}`,
-            },
-          },
-          datalabels: {
-            align: 'top', anchor: 'end', offset: 3,
-            color: ctx => ctx.dataset.borderColor,
-            font: { size: 10, weight: '500' },
-            display: ctx => {
-              if (ctx.dataset.data[ctx.dataIndex] <= 0) return false;
-              // Esperar a que el punto termine su animación de entrada
-              const point = ctx.chart.getDatasetMeta(ctx.datasetIndex).data[ctx.dataIndex];
-              if (!point) return false;
-              const { x } = point.getProps(['x'], true);
-              return typeof x === 'number' && !isNaN(x);
-            },
-            formatter: v =>
-              v === 0 ? null
-              : v >= 10000 ? 'S/.' + Math.round(v / 1000) + 'k'
-              : v >= 1000  ? 'S/.' + (v / 1000).toFixed(1) + 'k'
-              : 'S/.' + Math.round(v),
-          },
-        },
-        scales: {
-          x: { ticks: { color: axisColor, font: { size: 11 } }, grid: { display: false } },
-          y: { ticks: { color: axisColor, font: { size: 10 }, callback: v => 'S/. ' + (v / 1000).toFixed(0) + 'k' }, grid: { color: gridColor } },
-        },
-      },
-    });
-  }
-
   // ── Combined weekly — 2025 full year (ref) + 2026 available ──
-  function combinedWeeklyChart(weekly2025, weekly2026) {
+  // weeklyRef  = 12 meses del año anterior (referencia, gris punteada)
+  // weeklyCurrent = meses disponibles del año en curso (azul sólido)
+  function combinedWeeklyChart(weeklyRef, weeklyCurrent) {
     const ALL_MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
     const MONTH_SHORT = { Enero:'Ene', Febrero:'Feb', Marzo:'Mar', Abril:'Abr', Mayo:'May', Junio:'Jun', Julio:'Jul', Agosto:'Ago', Septiembre:'Sep', Octubre:'Oct', Noviembre:'Nov', Diciembre:'Dic' };
 
@@ -411,11 +369,11 @@
       return { labels, values };
     };
 
-    // 2025 da la longitud del eje X (año completo como referencia)
-    const ref = flatten(weekly2025);
-    const cur = flatten(weekly2026);
+    // La referencia (2025) da la longitud del eje X (año completo)
+    const ref = flatten(weeklyRef);
+    const cur = flatten(weeklyCurrent);
 
-    // 2026 se alinea al inicio de la serie (su primera semana = primera de Enero)
+    // El año en curso se alinea al inicio de la serie (primera semana = Enero)
     const curAligned = ref.labels.map((_, i) =>
       i < cur.values.length && cur.values[i] > 0 ? cur.values[i] : null
     );
@@ -494,7 +452,7 @@
   }
 
   global.Charts = {
-    evoChart, distCharts, absChart, productCharts, weeklyChart, combinedWeeklyChart,
+    evoChart, distCharts, absChart, productCharts, combinedWeeklyChart,
     destroy, replay,
     destroyAll: () => { instances.forEach(c => c.destroy()); instances.clear(); },
     tot, fmt,

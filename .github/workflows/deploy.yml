@@ -3,6 +3,13 @@ name: Deploy a GitHub Pages
 on:
   push:
     branches: [main]
+  # Redeploy automático cuando el pipeline de datos commitea nueva data.
+  # Por defecto, los pushes del GITHUB_TOKEN no encadenan workflows, así que
+  # usamos workflow_run para disparar este deploy después de un fetch exitoso.
+  workflow_run:
+    workflows: ["Actualizar datos de ventas"]
+    types: [completed]
+    branches: [main]
   workflow_dispatch: {}
 
 permissions:
@@ -16,6 +23,8 @@ concurrency:
 
 jobs:
   build-deploy:
+    # Si vino por workflow_run, correr solo si el upstream pasó en verde
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages

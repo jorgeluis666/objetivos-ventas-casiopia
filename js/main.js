@@ -253,6 +253,9 @@
 
   // ── Render completo con datos live ──
   function renderAll(liveData) {
+    // Merge el 2025 live (12 meses) sobre el hardcoded (Ene-Abr).
+    adoptLive2025(liveData.d2025_live);
+
     state.d2026        = liveData.d2026;
     state.weeklyData   = liveData.weeklyData;
     state.transactions = liveData.transactions;
@@ -276,6 +279,20 @@
 
     if (state.renderedProducts) renderProducts();
     window.Sheets.updateGenerated(state.generated);
+  }
+
+  // Si el pipeline trajo d2025_live con valores, lo preferimos sobre el
+  // hardcoded. Se mergea en el objeto compartido para que charts.js /
+  // objectives.js lo vean sin cambios.
+  function adoptLive2025(d2025Live) {
+    if (!d2025Live) return;
+    const hasValues = Object.values(d2025Live).some(
+      m => m && Object.values(m).some(v => v > 0)
+    );
+    if (!hasValues) return;
+    Object.keys(d2025Live).forEach(m => {
+      ds.d2025[m] = { ...(ds.d2025[m] || {}), ...d2025Live[m] };
+    });
   }
 
   // ── Init ──
