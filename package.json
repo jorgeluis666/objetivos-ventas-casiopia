@@ -1,0 +1,15 @@
+{
+  "name": "objetivo-canales-ventas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dashboard de ventas por canal con pipeline automatizado desde Google Sheets",
+  "scripts": {
+    "fetch": "node scripts/fetch-data.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "googleapis": "^144.0.0"
+  }
+}
