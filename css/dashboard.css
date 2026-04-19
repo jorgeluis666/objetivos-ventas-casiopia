@@ -1,0 +1,372 @@
+/* ============================================================
+   Dashboard-specific styles — usa tokens de ds.css
+   ============================================================ */
+
+.topbar-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.topbar-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ── Vista ── */
+.view { display: none; }
+.view.visible { display: block; }
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+.section-sub {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-bottom: 18px;
+}
+
+/* ── Chart wrappers ── */
+.chart-wrap { position: relative; width: 100%; }
+.chart-wrap.h-200 { height: 200px; }
+.chart-wrap.h-220 { height: 220px; }
+.chart-wrap.h-240 { height: 240px; }
+.chart-wrap.h-260 { height: 260px; }
+.chart-wrap.h-300 { height: 300px; }
+
+/* ── Leyenda de charts ── */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.chart-legend .legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-2);
+}
+.chart-legend .ld {
+  display: inline-block;
+  width: 14px;
+  height: 2.5px;
+  border-radius: 2px;
+}
+.chart-legend .lsq {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+/* ── Month tabs (dentro de Objetivos) ── */
+.month-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.month-tab {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 7px 16px;
+  border-radius: var(--r-xs);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.month-tab:hover { background: #F1F5F9; color: var(--text); }
+.month-tab.active {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
+.month-tab.active-current {
+  background: var(--amber);
+  color: #fff;
+  border-color: var(--amber);
+}
+.mpanel { display: none; }
+.mpanel.visible { display: block; }
+
+/* ── Channel pip (tabla) ── */
+.ch-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+.ch-pip {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Delta colors ── */
+.delta-pos { color: var(--green-text); font-weight: 500; }
+.delta-neg { color: var(--red-text); font-weight: 500; }
+.delta-zero { color: var(--muted); }
+.sub-val { font-size: 11px; color: var(--muted); font-weight: 400; display:block; margin-top: 2px;}
+
+/* ── April note ── */
+.period-note {
+  background: var(--amber-soft);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 var(--r-xs) var(--r-xs) 0;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--amber-text);
+  margin-bottom: 16px;
+}
+
+/* ── Pace cards ── */
+.pace-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.pace-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  box-shadow: var(--sh);
+  position: relative;
+  overflow: hidden;
+}
+.pace-card.dark {
+  background: var(--sidebar-bg);
+  border-color: var(--sidebar-bg);
+  color: #fff;
+}
+.pace-card.dark .pace-label { color: rgba(255,255,255,0.55); }
+.pace-card.dark .pace-sub { color: rgba(255,255,255,0.5); }
+.pace-card.green  { border-left: 3px solid var(--green); }
+.pace-card.amber  { border-left: 3px solid var(--amber); }
+.pace-card.red    { border-left: 3px solid var(--red); }
+.pace-card.brand  { border-left: 3px solid var(--brand); }
+.pace-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.pace-value {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  color: var(--text);
+}
+.pace-card.dark .pace-value { color: #fff; }
+.pace-card .pace-value.red    { color: var(--red-text); }
+.pace-card .pace-value.green  { color: var(--green-text); }
+.pace-card .pace-value.amber  { color: var(--amber-text); }
+.pace-card .pace-value.brand  { color: var(--brand-text); }
+.pace-sub {
+  font-size: 11px;
+  color: var(--text-2);
+  margin-top: 2px;
+}
+
+.pace-footnote {
+  margin-top: 10px;
+  background: #F8FAFC;
+  border-radius: var(--r-xs);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+}
+
+/* ── Bundle idea cards (productos view) ── */
+.bundle-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--sh);
+}
+.bundle-head {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+}
+.bundle-icon { font-size: 24px; line-height: 1; }
+.bundle-tag {
+  font-size: 10px;
+  color: rgba(255,255,255,0.8);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.bundle-title {
+  font-size: 15px;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+.bundle-body { padding: 14px 18px; }
+.bundle-products { margin-bottom: 10px; }
+.bundle-product {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 3px;
+  font-size: 12px;
+  color: var(--text);
+}
+.bundle-product .arrow { margin-top: 2px; flex-shrink: 0; }
+.bundle-mechanic {
+  background: #F8FAFC;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+.bundle-mechanic-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.bundle-mechanic-text { font-size: 12px; color: var(--text); }
+.bundle-ticket-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.bundle-ticket-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.bundle-ticket-value { font-size: 14px; font-weight: 700; }
+.bundle-why {
+  font-size: 11px;
+  color: var(--text-2);
+  line-height: 1.5;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+/* ── Copurchase cards ── */
+.copurchase-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px 18px;
+  box-shadow: var(--sh);
+}
+.copurchase-icon { font-size: 22px; margin-bottom: 8px; }
+.copurchase-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.copurchase-desc {
+  font-size: 11px;
+  color: var(--brand-text);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.copurchase-detail {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+/* ── Next sale cards ── */
+.next-sale-card {
+  background: #F8FAFC;
+  border-left: 3px solid var(--brand);
+  border-radius: 0 var(--r-xs) var(--r-xs) 0;
+  padding: 12px 14px;
+}
+.next-sale-trigger {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand-text);
+  margin-bottom: 4px;
+}
+.next-sale-suggest {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.next-sale-why { font-size: 11px; color: var(--text-2); }
+
+/* ── Multi-bars (productos) ── */
+.multi-bar-row {
+  display: grid;
+  grid-template-columns: 220px 1fr 90px 110px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.multi-bar-row:last-child { border-bottom: none; }
+.multi-bar-name { font-size: 13px; color: var(--text); font-weight: 500; }
+.multi-bar-track {
+  position: relative;
+  height: 8px;
+  background: #E2E8F0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.multi-bar-fill {
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  border-radius: 4px;
+  transition: width .4s;
+}
+.multi-bar-why {
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ── Footer ── */
+.site-footer {
+  padding: 18px 32px;
+  font-size: 11px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+}

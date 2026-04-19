@@ -4,12 +4,17 @@
   "private": true,
   "description": "Dashboard de ventas por canal con pipeline automatizado desde Google Sheets",
   "scripts": {
-    "fetch": "node scripts/fetch-data.js"
+    "dev": "live-server --port=3000 --open=index.html --no-browser",
+    "fetch": "node scripts/fetch-data.js",
+    "build": "node scripts/build.js"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
     "googleapis": "^144.0.0"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
   }
 }

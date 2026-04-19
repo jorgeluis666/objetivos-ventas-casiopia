@@ -1,0 +1,317 @@
+/* ============================================================
+   charts.js — todas las instancias de Chart.js del dashboard.
+   Usa window.DataStatic y recibe datos 2026 vivos en runtime.
+   Expone window.Charts con builders que pueden re-ejecutarse.
+   ============================================================ */
+
+(function (global) {
+  const ds = global.DataStatic;
+  const { channels, palette, typeColors, d2025, months, prodTopUnits, prodTopRev, prodTopTicket, prodTypes } = ds;
+
+  // Defaults visuales comunes
+  const axisColor = '#94A3B8';
+  const gridColor = 'rgba(15,23,42,0.06)';
+  const fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif';
+
+  const instances = new Map();
+  function destroy(id) {
+    if (instances.has(id)) {
+      instances.get(id).destroy();
+      instances.delete(id);
+    }
+  }
+  function mount(id, config) {
+    destroy(id);
+    const el = document.getElementById(id);
+    if (!el) return null;
+    const chart = new Chart(el, config);
+    instances.set(id, chart);
+    return chart;
+  }
+
+  // ── Helpers ──
+  const tot = obj => channels.reduce((s, c) => s + (obj[c] || 0), 0);
+  const fmt = n => Math.round(n).toLocaleString('es-PE');
+
+  // ── Evolución mensual ──
+  function evoChart(d2026) {
+    return mount('chart-evo', {
+      type: 'line',
+      data: {
+        labels: months,
+        datasets: [
+          {
+            label: '2025',
+            data: months.map(m => Math.round(tot(d2025[m]))),
+            borderColor: '#94A3B8',
+            backgroundColor: 'rgba(148,163,184,0.08)',
+            borderWidth: 1.5,
+            pointBackgroundColor: '#94A3B8',
+            pointRadius: 4,
+            tension: 0.35,
+            fill: true,
+            borderDash: [5, 4],
+          },
+          {
+            label: '2026',
+            data: months.map(m => tot(d2026[m]) > 0 ? Math.round(tot(d2026[m])) : null),
+            borderColor: '#2563EB',
+            backgroundColor: 'rgba(37,99,235,0.1)',
+            borderWidth: 2.5,
+            pointBackgroundColor: '#2563EB',
+            pointRadius: 5,
+            tension: 0.35,
+            fill: true,
+            spanGaps: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ctx.raw !== null
+                ? ' ' + ctx.dataset.label + ': S/. ' + ctx.raw.toLocaleString('es-PE')
+                : ' sin datos',
+            },
+          },
+        },
+        scales: {
+          x: { ticks: { color: axisColor, font: { family: fontFamily } }, grid: { display: false } },
+          y: {
+            ticks: { color: axisColor, font: { size: 11 }, callback: v => 'S/. ' + (v / 1000).toFixed(0) + 'k' },
+            grid: { color: gridColor },
+          },
+        },
+      },
+    });
+  }
+
+  // ── Distribución stacked (2025 y 2026) ──
+  function distCharts(d2026, distMonths) {
+    ['2025', '2026'].forEach(yr => {
+      const src = yr === '2025' ? d2025 : d2026;
+      const legEl = document.getElementById('leg-' + yr);
+      if (legEl) {
+        legEl.innerHTML = '';
+        channels
+          .filter(ch => distMonths.some(m => src[m][ch] > 0))
+          .forEach(ch =>
+            legEl.insertAdjacentHTML(
+              'beforeend',
+              `<span class="legend-item"><span class="lsq" style="background:${palette[ch]}"></span>${ch}</span>`
+            )
+          );
+      }
+      mount('chart-dist-' + yr, {
+        type: 'bar',
+        data: {
+          labels: distMonths,
+          datasets: channels.map(ch => ({
+            label: ch,
+            data: distMonths.map(m => {
+              const t = tot(src[m]);
+              return t > 0 ? parseFloat((src[m][ch] / t * 100).toFixed(1)) : 0;
+            }),
+            backgroundColor: palette[ch],
+            borderRadius: 3,
+          })),
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.raw + '%' } },
+          },
+          scales: {
+            x: { stacked: true, ticks: { color: axisColor }, grid: { display: false } },
+            y: { stacked: true, max: 100, ticks: { color: axisColor, font: { size: 11 }, callback: v => v + '%' }, grid: { color: gridColor } },
+          },
+        },
+      });
+    });
+  }
+
+  // ── Barras absolutas 2025 vs 2026 ──
+  function absChart(d2026, distMonths) {
+    const legAbs = document.getElementById('leg-abs');
+    if (legAbs) {
+      legAbs.innerHTML = '';
+      channels
+        .filter(ch => distMonths.some(m => d2025[m][ch] > 0 || d2026[m][ch] > 0))
+        .forEach(ch =>
+          legAbs.insertAdjacentHTML(
+            'beforeend',
+            `<span class="legend-item"><span class="lsq" style="background:${palette[ch]}55"></span><span class="lsq" style="background:${palette[ch]};margin-left:2px;"></span> ${ch}</span>`
+          )
+        );
+    }
+    mount('chart-abs', {
+      type: 'bar',
+      data: {
+        labels: distMonths,
+        datasets: channels.flatMap(ch => [
+          {
+            label: ch + ' 2025',
+            data: distMonths.map(m => Math.round(d2025[m][ch])),
+            backgroundColor: palette[ch] + '55',
+            borderRadius: 3,
+            stack: ch,
+          },
+          {
+            label: ch + ' 2026',
+            data: distMonths.map(m => Math.round(d2026[m][ch])),
+            backgroundColor: palette[ch],
+            borderRadius: 3,
+            stack: ch + 'b',
+          },
+        ]),
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': S/. ' + ctx.raw.toLocaleString('es-PE') } },
+        },
+        scales: {
+          x: { ticks: { color: axisColor }, grid: { display: false } },
+          y: {
+            ticks: { color: axisColor, font: { size: 11 }, callback: v => 'S/. ' + (v / 1000).toFixed(0) + 'k' },
+            grid: { color: gridColor },
+          },
+        },
+      },
+    });
+  }
+
+  // ── Productos web (estáticos) ──
+  function hBar(id, labels, data, colors, suffix) {
+    return mount(id, {
+      type: 'bar',
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 4 }] },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ` ${suffix} ${ctx.raw.toLocaleString('es-PE')}` } },
+        },
+        scales: {
+          x: { ticks: { color: axisColor, font: { size: 10 } }, grid: { color: gridColor } },
+          y: { ticks: { color: '#0F172A', font: { size: 11 } }, grid: { display: false } },
+        },
+      },
+    });
+  }
+
+  function productCharts() {
+    hBar(
+      'chart-top-units',
+      prodTopUnits.map(p => p.name),
+      prodTopUnits.map(p => p.uds),
+      prodTopUnits.map(() => '#2563EB'),
+      'uds'
+    );
+    hBar(
+      'chart-top-rev',
+      prodTopRev.map(p => p.name),
+      prodTopRev.map(p => p.rev),
+      prodTopRev.map(() => '#7C3AED'),
+      'S/.'
+    );
+
+    mount('chart-types', {
+      type: 'doughnut',
+      data: {
+        labels: prodTypes.map(t => t.type),
+        datasets: [{
+          data: prodTypes.map(t => t.uds),
+          backgroundColor: typeColors,
+          borderWidth: 2,
+          borderColor: '#fff',
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { font: { size: 11 }, color: '#475569', padding: 10, boxWidth: 12 } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} uds` } },
+        },
+      },
+    });
+
+    mount('chart-ticket', {
+      type: 'bar',
+      data: {
+        labels: prodTopTicket.map(p => p.name),
+        datasets: [{
+          data: prodTopTicket.map(p => p.tk),
+          backgroundColor: ['#2563EB', '#D97706', '#7C3AED', '#059669', '#DB2777'],
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ` S/. ${ctx.raw}/pedido` } },
+        },
+        scales: {
+          x: { ticks: { color: axisColor, font: { size: 10 }, callback: v => 'S/. ' + v }, grid: { color: gridColor } },
+          y: { ticks: { color: '#0F172A', font: { size: 11 } }, grid: { display: false } },
+        },
+      },
+    });
+  }
+
+  // ── Weekly por mes (dentro de Objetivos) ──
+  function weeklyChart(monthName, weekLabels, activeChs, datasets) {
+    return mount('week-chart-' + monthName, {
+      type: 'line',
+      data: { labels: weekLabels, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 28, right: 20, left: 4 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: S/. ${ctx.raw.toLocaleString('es-PE')}`,
+            },
+          },
+          datalabels: {
+            align: 'top', anchor: 'end', offset: 3,
+            color: ctx => ctx.dataset.borderColor,
+            font: { size: 10, weight: '500' },
+            display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
+            formatter: v =>
+              v === 0 ? null
+              : v >= 10000 ? 'S/.' + Math.round(v / 1000) + 'k'
+              : v >= 1000  ? 'S/.' + (v / 1000).toFixed(1) + 'k'
+              : 'S/.' + Math.round(v),
+          },
+        },
+        scales: {
+          x: { ticks: { color: axisColor, font: { size: 11 } }, grid: { display: false } },
+          y: { ticks: { color: axisColor, font: { size: 10 }, callback: v => 'S/. ' + (v / 1000).toFixed(0) + 'k' }, grid: { color: gridColor } },
+        },
+      },
+    });
+  }
+
+  global.Charts = {
+    evoChart, distCharts, absChart, productCharts, weeklyChart,
+    destroy, destroyAll: () => { instances.forEach(c => c.destroy()); instances.clear(); },
+    tot, fmt,
+  };
+})(window);
