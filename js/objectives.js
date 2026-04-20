@@ -97,18 +97,11 @@
     if (status === 'future' || (status === 'current' && !isLiveMonth(m))) {
       // Aún no arranca o sin data cargada
       pb.style.width = '0%'; pv.textContent = '—'; pv.style.color = 'var(--muted)';
-      gv.textContent = status === 'future' ? 'futuro' : 'en curso';
-      gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
-    } else if (status === 'current') {
-      // En curso: avance parcial, sin brecha final
-      pb.style.width = Math.min(p, 100).toFixed(1) + '%';
-      pb.style.background = pctFill(p);
-      pv.textContent = p.toFixed(0) + '%';
-      pv.style.color = pctColor(p);
-      gv.textContent = 'en curso';
+      gv.textContent = status === 'future' ? 'futuro' : '—';
       gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
     } else {
-      // Cerrado: brecha definitiva
+      // En curso o cerrado: mostrar brecha numérica.
+      // En mes current la brecha es parcial (real hasta hoy - meta total).
       pb.style.width = Math.min(p, 100).toFixed(1) + '%';
       pb.style.background = pctFill(p);
       pv.textContent = p.toFixed(0) + '%';
@@ -137,14 +130,7 @@
 
     if (status === 'future' || (status === 'current' && !isLiveMonth(m))) {
       pb.style.width = '0%'; pv.textContent = '—'; pv.style.color = 'var(--muted)';
-      gv.textContent = status === 'future' ? 'futuro' : 'en curso';
-      gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
-    } else if (status === 'current') {
-      pb.style.width = Math.min(p, 100).toFixed(1) + '%';
-      pb.style.background = pctFill(p);
-      pv.textContent = p.toFixed(0) + '%';
-      pv.style.color = pctColor(p);
-      gv.textContent = 'en curso';
+      gv.textContent = status === 'future' ? 'futuro' : '—';
       gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
     } else {
       pb.style.width = Math.min(p, 100).toFixed(1) + '%';
