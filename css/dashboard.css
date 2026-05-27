@@ -426,6 +426,130 @@
   gap: 5px;
 }
 
+/* ── MÓDULO ACTIVO (sidebar) ── */
+.s-modulo-activo {
+  margin: 8px 12px 16px;
+  background: #1a2744;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: var(--r);
+  padding: 12px 14px;
+}
+.s-ma-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #60a5fa;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.s-ma-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+  margin-bottom: 3px;
+}
+.s-ma-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Config view — formulario agregar ── */
+.cfg-add-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 80px auto;
+  gap: 12px;
+  align-items: end;
+  padding: 0 0 4px;
+}
+.cfg-field { display: flex; flex-direction: column; gap: 5px; }
+.cfg-field-sm { max-width: 80px; }
+.cfg-field-action { min-width: 160px; }
+.cfg-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.cfg-btn-add { width: 100%; }
+
+/* ── Config view — mensaje feedback ── */
+.cfg-msg {
+  margin-top: 12px;
+  padding: 9px 14px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 500;
+}
+.cfg-msg-ok  { background: var(--green-soft);  color: var(--green-text);  border: 1px solid #6ee7b7; }
+.cfg-msg-err { background: var(--red-soft);    color: var(--red-text);    border: 1px solid #fca5a5; }
+
+/* ── Config view — user card ── */
+.cfg-user-card { overflow: hidden; }
+.cfg-user-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.cfg-user-info { min-width: 0; }
+.cfg-user-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.cfg-user-email {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-top: 2px;
+}
+.cfg-user-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* ── Pills de rol / estado ── */
+.cfg-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.cfg-pill-green  { background: var(--green-soft);  color: var(--green-text); }
+.cfg-pill-amber  { background: var(--amber-soft);  color: var(--amber-text); }
+.cfg-pill-brand  { background: var(--brand-soft);  color: var(--brand-text); }
+.cfg-pill-muted  { background: #f1f5f9;            color: var(--muted);      }
+
+/* ── Config view — edit form ── */
+.cfg-edit-form {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.cfg-edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 80px 120px;
+  gap: 12px;
+  margin-bottom: 14px;
+  align-items: end;
+}
+.cfg-edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
 /* ── Site footer ── */
 .site-footer {
   padding-top: 16px;

@@ -12,15 +12,25 @@
     'view-prod': 'Productos Web · 2026',
     'view-dist': 'Distribución por canal',
     'view-obj':  'Objetivos 2026',
+    'view-config': 'Usuarios y Claves',
+  };
+
+  // Descripción corta para el panel MÓDULO ACTIVO del sidebar
+  const VIEW_DESCRIPTIONS = {
+    'view-yoy':    'Evolución interanual · 2025 vs 2026',
+    'view-prod':   'Ranking y ventas por producto',
+    'view-dist':   'Ventas por canal de distribución',
+    'view-obj':    'Seguimiento de metas mensuales',
+    'view-config': 'Gestión de accesos y alertas',
   };
 
   // Charts que hay que re-animar al mostrar cada vista.
-  // "*" al final = match por prefijo (weekly charts: week-chart-Enero, week-chart-Febrero…)
   const VIEW_CHARTS = {
-    'view-yoy':  ['chart-evo'],
-    'view-prod': ['chart-top-units', 'chart-top-rev', 'chart-types', 'chart-ticket'],
-    'view-dist': ['chart-dist-2025', 'chart-dist-2026', 'chart-abs'],
-    'view-obj':  ['chart-weekly-combined'],
+    'view-yoy':    ['chart-evo'],
+    'view-prod':   ['chart-top-units', 'chart-top-rev', 'chart-types', 'chart-ticket'],
+    'view-dist':   ['chart-dist-2025', 'chart-dist-2026', 'chart-abs'],
+    'view-obj':    ['chart-weekly-combined'],
+    'view-config': [],
   };
 
   const state = {
@@ -30,6 +40,7 @@
     weekly2025: null,
     generated: null,
     renderedProducts: false,
+    configInited: false,
   };
 
   // ── Navegación ──
@@ -43,6 +54,18 @@
     const title = document.getElementById('topbar-title');
     if (title) title.textContent = VIEW_TITLES[id] || '';
     history.replaceState(null, '', '#' + id);
+
+    // Actualizar panel MÓDULO ACTIVO en el sidebar
+    const maName = document.getElementById('s-ma-name');
+    const maDesc = document.getElementById('s-ma-desc');
+    if (maName) maName.textContent = VIEW_TITLES[id]       || '';
+    if (maDesc) maDesc.textContent = VIEW_DESCRIPTIONS[id] || '';
+
+    // Init perezoso del módulo de configuración
+    if (id === 'view-config' && !state.configInited) {
+      state.configInited = true;
+      window.Config?.init();
+    }
 
     // Render perezoso de productos para no bloquear primera pantalla
     if (id === 'view-prod' && !state.renderedProducts) {
