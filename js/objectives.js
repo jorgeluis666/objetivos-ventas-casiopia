@@ -845,6 +845,15 @@
 
       const showReal = status === 'past' || (status === 'current' && isLiveMonth(m));
 
+      // ── Marcador del día actual sobre la barra ──
+      // Posición proporcional: día transcurrido / días del mes
+      const todayPct = status === 'current'
+        ? (daysPassed(m) / monthDays[m] * 100).toFixed(1)
+        : null;
+      const todayPin = todayPct !== null
+        ? `<div class="pb-today-pin" style="left:${todayPct}%" title="Hoy · día ${daysPassed(m)} de ${monthDays[m]}"></div>`
+        : '';
+
       let rows = '';
       channels.forEach(ch => {
         const real       = d2026Month[ch] || 0;
@@ -873,7 +882,18 @@
             <input class="obj-input" type="number" id="inp-${m}-${ch}" value="${state.targets[m][ch]}" min="0" step="${STEP}">
             <button class="step-btn" data-step="${STEP}" data-month="${m}" data-ch="${ch}">+</button>
           </div></td>
-          <td class="r" style="min-width:140px;"><div class="pb-wrap"><div class="pb-bg"><div class="pb-fill" id="pb-${m}-${ch}"></div></div><span class="pct-val" id="pv-${m}-${ch}"></span></div></td>
+          <td class="r" style="min-width:150px;">
+            <div class="pb-wrap">
+              <div class="pb-outer">
+                <div class="pb-ruler">
+                  <div class="pb-bg"><div class="pb-fill" id="pb-${m}-${ch}"></div></div>
+                  ${todayPin}
+                </div>
+                <div class="pb-day-scale"><span>1</span><span>${monthDays[m]}</span></div>
+              </div>
+              <span class="pct-val" id="pv-${m}-${ch}"></span>
+            </div>
+          </td>
           <td class="r" id="gv-${m}-${ch}"></td>
         </tr>
         <tr class="ch-weeks-row" id="${wkDetailId}" style="display:none;">
@@ -919,7 +939,18 @@
                 <td class="r mono">${showReal ? 'S/. ' + fmt(monthTotal) : '<span class="muted">—</span>'}</td>
                 <td class="r">${showReal ? '100%' : '—'}</td>
                 <td class="r mono text-2" id="mt-${m}"></td>
-                <td class="r" style="min-width:140px;"><div class="pb-wrap"><div class="pb-bg"><div class="pb-fill" id="pb-tot-${m}"></div></div><span class="pct-val" id="pv-tot-${m}"></span></div></td>
+                <td class="r" style="min-width:150px;">
+                  <div class="pb-wrap">
+                    <div class="pb-outer">
+                      <div class="pb-ruler">
+                        <div class="pb-bg"><div class="pb-fill" id="pb-tot-${m}"></div></div>
+                        ${todayPin}
+                      </div>
+                      <div class="pb-day-scale"><span>1</span><span>${monthDays[m]}</span></div>
+                    </div>
+                    <span class="pct-val" id="pv-tot-${m}"></span>
+                  </div>
+                </td>
                 <td class="r" id="gv-tot-${m}"></td>
               </tr>
             </tbody>
