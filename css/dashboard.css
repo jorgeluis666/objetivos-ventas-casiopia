@@ -148,11 +148,11 @@
 .pace-card.brand-border { border-left: 3px solid var(--brand); }
 
 .pace-lbl {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: #64748b;
   margin-bottom: 4px;
 }
 .pace-val {
