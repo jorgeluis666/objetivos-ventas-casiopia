@@ -42,6 +42,7 @@
     if (btn)  btn.classList.add('active');
     const title = document.getElementById('topbar-title');
     if (title) title.textContent = VIEW_TITLES[id] || '';
+    history.replaceState(null, '', '#' + id);
 
     // Render perezoso de productos para no bloquear primera pantalla
     if (id === 'view-prod' && !state.renderedProducts) {
@@ -336,7 +337,8 @@
     Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif';
 
     wireNav();
-    showView('view-yoy');
+    const hashView = window.location.hash.slice(1);
+    showView(Object.keys(VIEW_TITLES).includes(hashView) ? hashView : 'view-yoy');
 
     const live = await window.DataLive.load();
     if (live.source === 'fallback') {
