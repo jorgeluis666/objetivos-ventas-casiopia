@@ -851,7 +851,10 @@
         ? (daysPassed(m) / monthDays[m] * 100).toFixed(1)
         : null;
       const todayPin = todayPct !== null
-        ? `<div class="pb-today-pin" style="left:${todayPct}%" title="Hoy · día ${daysPassed(m)} de ${monthDays[m]}"></div>`
+        ? `<div class="pb-today-pin" style="left:${todayPct}%">
+             <span class="pb-today-day">${daysPassed(m)}</span>
+             <div class="pb-today-tri"></div>
+           </div>`
         : '';
 
       let rows = '';
