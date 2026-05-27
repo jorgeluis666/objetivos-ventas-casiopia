@@ -145,6 +145,15 @@
     return Math.max(0, monthDays[m] - new Date().getDate());
   }
 
+  // ── ISO week number del año (1-53) ──
+  function isoWeekNumber(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+  }
+
   // ── Avg ticket por canal (monto / qty) — tolera meses sin data 2026 ──
   function computeAvgTickets(d2026, transactions) {
     const out = {};
@@ -208,6 +217,7 @@
     renderRowUI(m, ch);
     refreshObjTotal(m);
     refreshPaceCards(m);
+    refreshWeeklyAlert(m);
     saveToStorage();
   }
 
@@ -388,6 +398,92 @@
     }
   }
 
+  // ── Semanas del mes: barras semanales vs meta prorrateada ──
+  function refreshWeeklyAlert(m) {
+    const el = document.getElementById(`weekly-alert-${m}`);
+    if (!el) return;
+
+    const status = monthStatus(m);
+    // Solo meses con datos (current o past)
+    if (status === 'future' || !isLiveMonth(m)) { el.innerHTML = ''; return; }
+
+    const weeks = state.weeklyData?.[m];
+    if (!weeks || !weeks.length) { el.innerHTML = ''; return; }
+
+    const monthTarget = channels.reduce((s, ch) => s + (state.targets[m][ch] || 0), 0);
+    if (monthTarget === 0) { el.innerHTML = ''; return; }
+
+    // Meta semanal prorrateada: target * 7 / días del mes
+    const weekTarget = monthTarget * 7 / monthDays[m];
+    const todayISOWeek = isoWeekNumber(new Date());
+
+    const rows = weeks.map((wk, i) => {
+      // weeklyData puede tener TOTAL precalculado o sumar por canal
+      const real    = (wk.TOTAL != null && wk.TOTAL > 0)
+                        ? wk.TOTAL
+                        : channels.reduce((s, ch) => s + (wk[chToUpper[ch]] || 0), 0);
+      const weekNum = wk.w;
+
+      const isCurrentWeek = (status === 'current') && (weekNum === todayISOWeek);
+      const isFuture      = (status === 'current') && (weekNum > todayISOWeek);
+      const pct           = weekTarget > 0 ? real / weekTarget * 100 : 0;
+      const gap           = real - weekTarget;
+
+      let cls, badge;
+      if (isFuture) {
+        cls = 'muted';  badge = 'próxima';
+      } else if (isCurrentWeek) {
+        cls = 'brand';  badge = '→ en curso';
+      } else if (pct >= 90) {
+        cls = 'green';  badge = '✓ en track';
+      } else if (pct >= 70) {
+        cls = 'amber';  badge = '⚠ atención';
+      } else {
+        cls = 'red';    badge = '▼ brecha';
+      }
+
+      const barColor = {
+        muted: '#e2e8f0', brand: 'var(--brand)',
+        green: 'var(--green)', amber: 'var(--amber)', red: 'var(--red)',
+      }[cls];
+      const textColor = {
+        muted: 'var(--muted)', brand: 'var(--brand-text)',
+        green: 'var(--green-text)', amber: 'var(--amber-text)', red: 'var(--red-text)',
+      }[cls];
+
+      const barW     = isFuture ? 0 : Math.min(pct, 100).toFixed(0);
+      const gapLabel = isFuture ? '' : (isCurrentWeek ? '' : ((gap >= 0 ? '+' : '') + 'S/. ' + fmt(gap)));
+
+      return `
+        <div class="wa-row${isCurrentWeek ? ' wa-row-current' : ''}">
+          <div class="wa-lbl">
+            <span class="wa-sem">Sem. ${i + 1}</span>
+            <span class="wa-wnum">W${weekNum}</span>
+          </div>
+          <div class="wa-track">
+            <div class="wa-fill" style="width:${barW}%;background:${barColor};"></div>
+          </div>
+          <div class="wa-amount">${isFuture ? '<span class="muted">—</span>' : 'S/. ' + fmt(real)}</div>
+          <div class="wa-pct" style="color:${textColor};">
+            ${isFuture ? '—' : (isCurrentWeek ? 'parcial' : pct.toFixed(0) + '%')}
+          </div>
+          <div class="wa-gap">${gapLabel ? `<span style="color:${textColor};font-size:11px;">${gapLabel}</span>` : ''}</div>
+          <span class="pace-badge ${cls}">${badge}</span>
+        </div>`;
+    }).join('');
+
+    el.innerHTML = `
+      <div class="panel wa-panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Alerta semanal &nbsp;<span style="font-weight:400;color:var(--muted);font-size:12px;">· ${m} ${YEAR}</span></div>
+            <div class="panel-sub">Meta semanal ≈ S/. ${fmt(weekTarget)} &nbsp;·&nbsp; objetivo mensual S/. ${fmt(monthTarget)} / ${monthDays[m]} días</div>
+          </div>
+        </div>
+        <div class="wa-rows">${rows}</div>
+      </div>`;
+  }
+
   // ── Render principal de la vista ──
   function render({ d2026, weeklyData, transactions, weekly2025 }) {
     state.d2026        = d2026;
@@ -501,6 +597,7 @@
       panel.innerHTML = `
         ${statusNote}
         <div id="pace-${m}" style="margin-bottom:16px;"></div>
+        <div id="weekly-alert-${m}" style="margin-bottom:16px;"></div>
         <div class="panel">
           <div class="panel-head">
             <div>
@@ -550,6 +647,7 @@
       });
       refreshObjTotal(m);
       refreshPaceCards(m);
+      refreshWeeklyAlert(m);
 
       // Month tab button
       const tab = document.createElement('button');
