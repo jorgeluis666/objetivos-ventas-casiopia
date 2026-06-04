@@ -53,6 +53,47 @@
     Diciembre:  { Tienda: 90000, Web: 18000, WhatsApp: 6000, Showroom: 4000, Instagram:  500, Facebook: 0 },
   };
 
+  const objectiveChannels = ['Web', 'RRSS', 'La Mar', 'El Polo', 'Falabella', 'Otros'];
+
+  const objectivePalette = {
+    Web:       '#7C3AED',
+    RRSS:      '#DB2777',
+    'La Mar':  '#2563EB',
+    'El Polo': '#059669',
+    Falabella: '#D97706',
+    Otros:     '#64748B',
+  };
+
+  const objectiveTargets = {
+    Enero:      { Web: 20000, RRSS: 10000, 'La Mar': 20000, 'El Polo': 30000,  Falabella: 0, Otros: 0 },
+    Febrero:    { Web: 30000, RRSS: 10000, 'La Mar': 17000, 'El Polo': 43000,  Falabella: 0, Otros: 0 },
+    Marzo:      { Web: 35000, RRSS: 10000, 'La Mar': 30000, 'El Polo': 45000,  Falabella: 0, Otros: 0 },
+    Abril:      { Web: 35000, RRSS: 10000, 'La Mar': 30000, 'El Polo': 45000,  Falabella: 0, Otros: 0 },
+    Mayo:       { Web: 40000, RRSS: 10000, 'La Mar': 25000, 'El Polo': 35000,  Falabella: 0, Otros: 0 },
+    Junio:      { Web: 40000, RRSS: 10000, 'La Mar': 25000, 'El Polo': 27000,  Falabella: 0, Otros: 0 },
+    Julio:      { Web: 0,     RRSS: 0,     'La Mar': 0,     'El Polo': 85000,  Falabella: 0, Otros: 0 },
+    Agosto:     { Web: 0,     RRSS: 0,     'La Mar': 0,     'El Polo': 96000,  Falabella: 0, Otros: 0 },
+    Septiembre: { Web: 0,     RRSS: 0,     'La Mar': 0,     'El Polo': 96000,  Falabella: 0, Otros: 0 },
+    Octubre:    { Web: 0,     RRSS: 0,     'La Mar': 0,     'El Polo': 113000, Falabella: 0, Otros: 0 },
+    Noviembre:  { Web: 0,     RRSS: 0,     'La Mar': 0,     'El Polo': 183000, Falabella: 0, Otros: 0 },
+    Diciembre:  { Web: 0,     RRSS: 0,     'La Mar': 0,     'El Polo': 255000, Falabella: 0, Otros: 0 },
+  };
+
+  const objectiveActuals2026 = {
+    Enero:      { Web: 26406, RRSS: 10161, 'La Mar': 17866, 'El Polo': 43246, Falabella:  598, Otros: 10848 },
+    Febrero:    { Web: 32935, RRSS:  4030, 'La Mar': 21116, 'El Polo': 29354, Falabella: 1053, Otros:  3159 },
+    Marzo:      { Web: 38188, RRSS:  7453, 'La Mar': 21389, 'El Polo': 42777, Falabella: 2555, Otros:  4072 },
+    Abril:      { Web: 36035, RRSS:  7083, 'La Mar': 17882, 'El Polo': 40293, Falabella: 2211, Otros:   238 },
+    Mayo:       { Web: 30741, RRSS:  7915, 'La Mar': 22060, 'El Polo': 38098, Falabella:  342, Otros:   855 },
+    Junio:      { Web:  1745, RRSS:     0, 'La Mar':  2068, 'El Polo':  1592, Falabella:    0, Otros:     0 },
+    Julio:      { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
+    Agosto:     { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
+    Septiembre: { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
+    Octubre:    { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
+    Noviembre:  { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
+    Diciembre:  { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
+  };
+
   const monthDays = {
     Enero: 31, Febrero: 28, Marzo: 31, Abril: 30,
     Mayo: 31, Junio: 30, Julio: 31, Agosto: 31,
@@ -202,12 +243,18 @@
     Showroom: 'SHOWROOM', Instagram: 'INSTAGRAM', Facebook: 'FACEBOOK',
   };
 
+  const objectiveChToUpper = {
+    Web: 'WEB', RRSS: 'RRSS', 'La Mar': 'LA_MAR',
+    'El Polo': 'EL_POLO', Falabella: 'FALABELLA', Otros: 'OTROS',
+  };
+
   global.DataStatic = {
     channels, palette, typeColors,
     d2025, defaultTargets, monthDays, months, monthsWith2026Data,
+    objectiveChannels, objectivePalette, objectiveTargets, objectiveActuals2026,
     STEP,
     prodTopUnits, prodTopRev, prodTopTicket, prodTypes,
     copurchaseData, nextSales, multiData, bundleIdeas,
-    chToUpper,
+    chToUpper, objectiveChToUpper,
   };
 })(window);

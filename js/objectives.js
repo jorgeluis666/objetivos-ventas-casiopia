@@ -7,8 +7,13 @@
 (function (global) {
   const ds = global.DataStatic;
   const {
-    channels, palette, d2025, defaultTargets, monthDays, months, STEP, chToUpper,
+    monthDays, months, STEP,
   } = ds;
+  const channels = ds.objectiveChannels || ds.channels;
+  const palette = ds.objectivePalette || ds.palette;
+  const d2025 = ds.objectiveD2025 || ds.d2025;
+  const defaultTargets = ds.objectiveTargets || ds.defaultTargets;
+  const chToUpper = ds.objectiveChToUpper || ds.chToUpper;
 
   const fmt = n => Math.round(n).toLocaleString('es-PE');
   const tot = o => channels.reduce((s, c) => s + (o[c] || 0), 0);
@@ -61,7 +66,7 @@
   };
 
   // ── localStorage — clave de almacenamiento ──
-  const LS_KEY = 'lr_objetivos_2026';
+  const LS_KEY = ds.objectiveTargets ? 'lr_objetivos_casiopia_2026' : 'lr_objetivos_2026';
 
   function loadFromStorage() {
     try {
@@ -799,11 +804,23 @@
 
   // ── Render principal de la vista ──
   function render({ d2026, weeklyData, transactions, weekly2025 }) {
+    d2026        = ds.objectiveActuals2026 || d2026 || {};
+    weeklyData   = ds.objectiveWeeklyData || weeklyData || {};
+    transactions = ds.objectiveTransactions || transactions || {};
+    weekly2025   = ds.objectiveWeekly2025 || weekly2025 || {};
+
     state.d2026        = d2026;
     state.weeklyData   = weeklyData;
     state.transactions = transactions;
-    state.weekly2025   = weekly2025 || {};
+    state.weekly2025   = weekly2025;
     state.avgTickets   = computeAvgTickets(d2026, transactions);
+
+    const channelSel = document.getElementById('chart-channel-select');
+    if (channelSel && !channelSel.dataset.objectiveChannels) {
+      channelSel.dataset.objectiveChannels = '1';
+      channelSel.innerHTML = '<option value="">Total</option>' +
+        channels.map(ch => `<option value="${ch}">${ch}</option>`).join('');
+    }
 
     // Chart combinado arriba de los month tabs (52 semanas 2025 + 2026 disponibles)
     if (global.Charts?.combinedWeeklyChart) {

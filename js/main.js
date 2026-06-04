@@ -33,6 +33,8 @@
     'view-config': [],
   };
 
+  const DISABLED_VIEWS = new Set(['view-yoy', 'view-prod', 'view-dist']);
+
   const state = {
     d2026: null,
     weeklyData: null,
@@ -45,6 +47,7 @@
 
   // ── Navegación ──
   function showView(id) {
+    if (DISABLED_VIEWS.has(id)) id = 'view-obj';
     document.querySelectorAll('.view').forEach(v => v.classList.remove('visible'));
     document.querySelectorAll('.s-item').forEach(n => n.classList.remove('active'));
     const view = document.getElementById(id);
@@ -84,7 +87,10 @@
 
   function wireNav() {
     document.querySelectorAll('.s-item[data-view]').forEach(btn => {
-      btn.addEventListener('click', () => showView(btn.dataset.view));
+      btn.addEventListener('click', () => {
+        if (btn.disabled || btn.getAttribute('aria-disabled') === 'true') return;
+        showView(btn.dataset.view);
+      });
     });
   }
 
@@ -308,15 +314,19 @@
     state.weekly2025   = liveData.weekly2025 || {};
     state.generated    = liveData.generated;
 
-    renderKpisYoY(state.d2026);
-    window.Charts.evoChart(state.d2026);
-    renderYoYTable(state.d2026);
+    if (!DISABLED_VIEWS.has('view-yoy')) {
+      renderKpisYoY(state.d2026);
+      window.Charts.evoChart(state.d2026);
+      renderYoYTable(state.d2026);
+    }
 
     // Distribución: usa meses cerrados (más representativo) o fallback a Ene-Mar.
     const closed = closedMonths2026();
-    const distMonths = closed.length >= 3 ? closed : ['Enero', 'Febrero', 'Marzo'];
-    window.Charts.distCharts(state.d2026, distMonths);
-    window.Charts.absChart(state.d2026, distMonths);
+    if (!DISABLED_VIEWS.has('view-dist')) {
+      const distMonths = closed.length >= 3 ? closed : ['Enero', 'Febrero', 'Marzo'];
+      window.Charts.distCharts(state.d2026, distMonths);
+      window.Charts.absChart(state.d2026, distMonths);
+    }
 
     // Sub-text dinámico de la panel YoY
     const yoySub = document.querySelector('#view-yoy .panel:last-of-type .panel-sub');
@@ -336,7 +346,7 @@
     });
     window.Objectives.wireObjToolbar?.();
 
-    if (state.renderedProducts) renderProducts();
+    if (!DISABLED_VIEWS.has('view-prod') && state.renderedProducts) renderProducts();
     window.Sheets.updateGenerated(state.generated);
   }
 
@@ -362,7 +372,7 @@
 
     wireNav();
     const hashView = window.location.hash.slice(1);
-    showView(Object.keys(VIEW_TITLES).includes(hashView) ? hashView : 'view-yoy');
+    showView(Object.keys(VIEW_TITLES).includes(hashView) ? hashView : 'view-obj');
 
     const live = await window.DataLive.load();
     if (live.source === 'fallback') {

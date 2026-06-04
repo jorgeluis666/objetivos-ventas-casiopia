@@ -59,10 +59,11 @@ const MONTH_DAYS = {
   Enero:31,Febrero:28,Marzo:31,Abril:30,Mayo:31,Junio:30,
   Julio:31,Agosto:31,Septiembre:30,Octubre:31,Noviembre:30,Diciembre:31,
 };
-const CHANNELS = ['Tienda','Web','WhatsApp','Showroom','Instagram','Facebook'];
+const DEFAULT_CHANNELS = ['Tienda','Web','WhatsApp','Showroom','Instagram','Facebook'];
 
 const CANAL_ICONS = {
   Tienda:'🏪', Web:'🌐', WhatsApp:'💬', Showroom:'🛍️', Instagram:'📸', Facebook:'📘',
+  RRSS:'📸', 'La Mar':'🏪', 'El Polo':'🏪', Falabella:'🛍️', Otros:'🧾',
 };
 
 // ── Cargar archivos ──────────────────────────────────────────
@@ -98,8 +99,10 @@ if (!FORCE && !DRY_RUN && enviosData.enviados[weekKey]) {
 }
 
 // ── Cálculo de métricas ──────────────────────────────────────
-const d2026   = salesData.d2026  || {};
+const d2026   = objData.actuals2026 || salesData.d2026 || {};
 const targets = objData.targets  || {};
+const targetMonth = targets[curMonth] || targets[MONTHS.find(m => targets[m])] || {};
+const CHANNELS = Object.keys(targetMonth).length ? Object.keys(targetMonth) : DEFAULT_CHANNELS;
 
 function calcMonth(m) {
   const data = d2026[m]   || {};
