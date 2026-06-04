@@ -187,6 +187,35 @@
   }
 
   // ── ISO week number del año (1-53) ──
+  function synthesizeWeeklyDataFromMonthly(d2026) {
+    const out = {};
+    months.forEach(m => {
+      const weekCount = Math.ceil(monthDays[m] / 7);
+      const rows = Array.from({ length: weekCount }, (_, i) => {
+        const row = { w: i + 1, TOTAL: 0 };
+        channels.forEach(ch => { row[chToUpper[ch]] = 0; });
+        return row;
+      });
+      const status = monthStatus(m);
+      const targetWeek = status === 'current'
+        ? Math.ceil(daysPassed(m) / 7)
+        : status === 'past'
+          ? weekCount
+          : null;
+
+      if (targetWeek) {
+        const row = rows[Math.max(0, Math.min(targetWeek, weekCount) - 1)];
+        channels.forEach(ch => {
+          const real = d2026?.[m]?.[ch] || 0;
+          row[chToUpper[ch]] = real;
+          row.TOTAL += real;
+        });
+      }
+      out[m] = rows;
+    });
+    return out;
+  }
+
   function isoWeekNumber(date) {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const dayNum = d.getUTCDay() || 7;
@@ -805,7 +834,7 @@
   // ── Render principal de la vista ──
   function render({ d2026, weeklyData, transactions, weekly2025 }) {
     d2026        = ds.objectiveActuals2026 || d2026 || {};
-    weeklyData   = ds.objectiveWeeklyData || weeklyData || {};
+    weeklyData   = ds.objectiveWeeklyData || (ds.objectiveActuals2026 ? synthesizeWeeklyDataFromMonthly(d2026) : weeklyData || {});
     transactions = ds.objectiveTransactions || transactions || {};
     weekly2025   = ds.objectiveWeekly2025 || weekly2025 || {};
 
