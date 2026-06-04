@@ -381,20 +381,22 @@
     // La referencia (2025) da la longitud del eje X (año completo)
     const ref = flatten(weeklyRef);
     const cur = flatten(weeklyCurrent);
+    const axisLabels = ref.labels.length ? ref.labels : cur.labels;
+    const refValues = ref.labels.length ? ref.values : axisLabels.map(() => null);
 
     // El año en curso se alinea al inicio de la serie (primera semana = Enero)
-    const curAligned = ref.labels.map((_, i) =>
+    const curAligned = axisLabels.map((_, i) =>
       i < cur.values.length && cur.values[i] > 0 ? cur.values[i] : null
     );
 
     return mount('chart-weekly-combined', {
       type: 'line',
       data: {
-        labels: ref.labels,
+        labels: axisLabels,
         datasets: [
           {
             label: '2025 (referencia)',
-            data: ref.values,
+            data: refValues,
             borderColor: '#94A3B8',
             backgroundColor: 'rgba(148,163,184,0.08)',
             borderWidth: 1.5,

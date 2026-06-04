@@ -204,12 +204,23 @@
           : null;
 
       if (targetWeek) {
-        const row = rows[Math.max(0, Math.min(targetWeek, weekCount) - 1)];
-        channels.forEach(ch => {
-          const real = d2026?.[m]?.[ch] || 0;
-          row[chToUpper[ch]] = real;
-          row.TOTAL += real;
-        });
+        if (status === 'past') {
+          channels.forEach(ch => {
+            const real = d2026?.[m]?.[ch] || 0;
+            const weeklyReal = real / weekCount;
+            rows.forEach(row => {
+              row[chToUpper[ch]] = weeklyReal;
+              row.TOTAL += weeklyReal;
+            });
+          });
+        } else {
+          const row = rows[Math.max(0, Math.min(targetWeek, weekCount) - 1)];
+          channels.forEach(ch => {
+            const real = d2026?.[m]?.[ch] || 0;
+            row[chToUpper[ch]] = real;
+            row.TOTAL += real;
+          });
+        }
       }
       out[m] = rows;
     });
