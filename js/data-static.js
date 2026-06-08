@@ -85,7 +85,7 @@
     Marzo:      { Web: 38188, RRSS:  7453, 'La Mar': 21389, 'El Polo': 42777, Falabella: 2555, Otros:  4072 },
     Abril:      { Web: 36035, RRSS:  7083, 'La Mar': 17882, 'El Polo': 40293, Falabella: 2211, Otros:   238 },
     Mayo:       { Web: 30741, RRSS:  7915, 'La Mar': 22060, 'El Polo': 38098, Falabella:  342, Otros:   855 },
-    Junio:      { Web:  1745, RRSS:     0, 'La Mar':  2068, 'El Polo':  1592, Falabella:    0, Otros:     0 },
+    Junio:      { Web:  2657, RRSS:    93, 'La Mar':  4207, 'El Polo':  3858, Falabella:    0, Otros:     0 },
     Julio:      { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
     Agosto:     { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
     Septiembre: { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
