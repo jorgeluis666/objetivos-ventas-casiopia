@@ -71,8 +71,8 @@
     Abril:      { Web: 35000, RRSS: 10000, 'La Mar': 30000, 'El Polo': 45000,  Falabella: 0, Otros: 0 },
     Mayo:       { Web: 40000, RRSS: 10000, 'La Mar': 25000, 'El Polo': 35000,  Falabella: 0, Otros: 0 },
     Junio:      { Web: 40000, RRSS: 10000, 'La Mar': 25000, 'El Polo': 27000,  Falabella: 0, Otros: 0 },
-    Julio:      { Web: 0,     RRSS: 0,     'La Mar': 0,     'El Polo': 85000,  Falabella: 0, Otros: 0 },
-    Agosto:     { Web: 0,     RRSS: 0,     'La Mar': 0,     'El Polo': 96000,  Falabella: 0, Otros: 0 },
+    Julio:      { Web: 40000, RRSS: 10000, 'La Mar': 20000, 'El Polo': 15000,  Falabella: 0, Otros: 0 },
+    Agosto:     { Web: 40000, RRSS: 10000, 'La Mar': 20000, 'El Polo': 26000,  Falabella: 0, Otros: 0 },
     Septiembre: { Web: 0,     RRSS: 0,     'La Mar': 0,     'El Polo': 96000,  Falabella: 0, Otros: 0 },
     Octubre:    { Web: 0,     RRSS: 0,     'La Mar': 0,     'El Polo': 113000, Falabella: 0, Otros: 0 },
     Noviembre:  { Web: 0,     RRSS: 0,     'La Mar': 0,     'El Polo': 183000, Falabella: 0, Otros: 0 },
@@ -85,9 +85,9 @@
     Marzo:      { Web: 38188, RRSS:  7453, 'La Mar': 21389, 'El Polo': 42777, Falabella: 2555, Otros:  4072 },
     Abril:      { Web: 36035, RRSS:  7083, 'La Mar': 17882, 'El Polo': 40293, Falabella: 2211, Otros:   238 },
     Mayo:       { Web: 30741, RRSS:  7915, 'La Mar': 22060, 'El Polo': 38098, Falabella:  342, Otros:   855 },
-    Junio:      { Web:  2657, RRSS:    93, 'La Mar':  4207, 'El Polo':  3858, Falabella:    0, Otros:     0 },
-    Julio:      { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
-    Agosto:     { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
+    Junio:      { Web: 20381, RRSS:  5326, 'La Mar': 19348, 'El Polo': 33597, Falabella:   38, Otros:   454 },
+    Julio:      { Web: 28718, RRSS:  8898, 'La Mar': 13455, 'El Polo': 52878, Falabella:  858, Otros:     0 },
+    Agosto:     { Web:   966, RRSS:  1076, 'La Mar':    68, 'El Polo':  4177, Falabella:   97, Otros:     0 },
     Septiembre: { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
     Octubre:    { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
     Noviembre:  { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
@@ -106,7 +106,7 @@
   ];
   // Meses de 2026 que ya tienen datos cerrados/en curso (el pipeline solo
   // lee estos del sheet). Se expanden conforme 2026 avanza.
-  const monthsWith2026Data = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'];
+  const monthsWith2026Data = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto'];
 
   const STEP = 500;
 

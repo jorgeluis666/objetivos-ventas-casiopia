@@ -845,7 +845,9 @@
   // ── Render principal de la vista ──
   function render({ d2026, weeklyData, transactions, weekly2025 }) {
     d2026        = ds.objectiveActuals2026 || d2026 || {};
-    weeklyData   = global.CasiopiaWeeklyData || ds.objectiveWeeklyData || (ds.objectiveActuals2026 ? synthesizeWeeklyDataFromMonthly(d2026) : weeklyData || {});
+    weeklyData   = ds.objectiveActuals2026
+      ? synthesizeWeeklyDataFromMonthly(d2026)
+      : (global.CasiopiaWeeklyData || ds.objectiveWeeklyData || weeklyData || {});
     transactions = ds.objectiveTransactions || transactions || {};
     weekly2025   = ds.objectiveWeekly2025 || weekly2025 || {};
 
