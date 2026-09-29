@@ -150,7 +150,7 @@ a { text-decoration: none; color: inherit; }
   display: none;
 }
 /* Activo: fondo azul suave + contorno oscuro (sin mover el layout) */
-.s-item.active { background: var(--nav-accent-soft); border-color: #111111; box-shadow: 0 0 0 1px #111111; }
+.s-item.active { background: var(--nav-accent-soft); border-color: var(--nav-accent-border); }
 .s-item.active:hover { transform: none; }
 .s-item.active .s-icon { background: #ffffff; border-color: var(--nav-accent-border); color: var(--nav-accent); }
 
