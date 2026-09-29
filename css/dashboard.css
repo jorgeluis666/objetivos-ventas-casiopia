@@ -1,6 +1,6 @@
 /* ============================================================
    dashboard.css — estilos específicos que no viven en el DS base.
-   Pace cards, bundle cards, month tabs, chart legends, sync UI.
+   Pace cards, month tabs, chart legends, sync UI.
    ============================================================ */
 
 /* ── View container ── */
@@ -89,10 +89,6 @@
 .chart-legend .ld  { display: inline-block; width: 14px; height: 2.5px; border-radius: 2px; }
 .chart-legend .lsq { display: inline-block; width: 10px; height: 10px;  border-radius: 2px; }
 
-/* ── Delta colors (tabla YoY) ── */
-.delta-pos  { color: var(--green-text); font-weight: 500; }
-.delta-neg  { color: var(--red-text);   font-weight: 500; }
-.delta-zero { color: var(--muted); }
 .sub-val    { font-size: 13px; color: var(--muted); font-weight: 400; display: block; margin-top: 2px; }
 
 /* ── Canal pip ── */
@@ -234,167 +230,6 @@
   font-size: 12px;
   color: var(--text-2);
   border: 1px solid var(--border);
-}
-
-/* ── Bundle cards ── */
-.bundle-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  overflow: hidden;
-  box-shadow: var(--sh);
-}
-.bundle-head {
-  padding: 14px 18px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #fff;
-}
-.bundle-icon { font-size: 22px; line-height: 1; }
-.bundle-tag {
-  font-size: 10px;
-  color: rgba(255,255,255,0.8);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.bundle-title {
-  font-size: 14px;
-  color: #fff;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-}
-.bundle-body { padding: 14px 18px; }
-.bundle-products { margin-bottom: 10px; }
-.bundle-product {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  margin-bottom: 3px;
-  font-size: 12px;
-  color: var(--text);
-}
-.bundle-product .arrow { margin-top: 2px; flex-shrink: 0; }
-.bundle-mechanic {
-  background: #F8FAFC;
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  padding: 8px 10px;
-  margin-bottom: 10px;
-}
-.bundle-mechanic-lbl {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  color: var(--muted);
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-.bundle-mechanic-text { font-size: 12px; color: var(--text); }
-.bundle-ticket-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-.bundle-ticket-lbl {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-.bundle-ticket-val { font-size: 14px; font-weight: 600; }
-.bundle-why {
-  font-size: 11px;
-  color: var(--text-2);
-  line-height: 1.5;
-  border-top: 1px solid var(--border);
-  padding-top: 8px;
-}
-
-/* ── Copurchase cards ── */
-.copurchase-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 16px 18px;
-  box-shadow: var(--sh);
-}
-.copurchase-icon { font-size: 22px; margin-bottom: 8px; }
-.copurchase-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 4px;
-  letter-spacing: -0.01em;
-}
-.copurchase-desc {
-  font-size: 11px;
-  color: var(--brand-text);
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-.copurchase-detail {
-  font-size: 12px;
-  color: var(--text-2);
-  line-height: 1.5;
-}
-
-/* ── Next sale cards ── */
-.next-sale-card {
-  background: #F8FAFC;
-  border-left: 3px solid var(--brand);
-  border-radius: 0 var(--r-sm) var(--r-sm) 0;
-  padding: 12px 14px;
-}
-.next-sale-trigger {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--brand-text);
-  margin-bottom: 4px;
-}
-.next-sale-suggest {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text);
-  margin-bottom: 4px;
-}
-.next-sale-why { font-size: 11px; color: var(--text-2); }
-
-/* ── Multi-bars ── */
-.multi-bar-row {
-  display: grid;
-  grid-template-columns: 220px 1fr 90px 110px;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-}
-.multi-bar-row:last-child { border-bottom: none; }
-.multi-bar-name { font-size: 13px; color: var(--text); font-weight: 500; }
-.multi-bar-track {
-  position: relative;
-  height: 8px;
-  background: #E2E8F0;
-  border-radius: 4px;
-  overflow: hidden;
-}
-.multi-bar-fill {
-  position: absolute;
-  left: 0; top: 0;
-  height: 100%;
-  border-radius: 4px;
-  transition: width .4s;
-}
-.multi-bar-why {
-  font-size: 11px;
-  color: var(--muted);
-  font-style: italic;
 }
 
 /* ── Sync indicator (usa .topbar-pill como base, agrega estados) ── */
