@@ -1,0 +1,52 @@
+name: Sincronizar datos Casiopia
+
+# Ventas (Excel del cliente) + pauta de Meta Ads y Google Ads (carpetas de Drive).
+# No usa credenciales: los archivos están compartidos como "cualquier persona
+# con el enlace" y se leen por sus enlaces públicos (scripts/fetch-casiopia.js).
+
+on:
+  schedule:
+    # Todos los días 07:00 Lima = 12:00 UTC
+    - cron: '0 12 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-casiopia
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sincronizar Ventas, Meta Ads y Google Ads
+        run: node scripts/fetch-casiopia.js
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/casiopia-ventas.json data/casiopia-meta.json data/casiopia-google.json
+          if git diff --cached --quiet; then
+            echo "Sin cambios en los datos de Casiopia"
+            exit 0
+          fi
+          TODAY=$(TZ='America/Lima' date +'%Y-%m-%d')
+          git commit -m "data: sincronización Casiopia ${TODAY}"
+          # Por si otro workflow de datos commiteó mientras tanto
+          git pull --rebase origin main
+          git push

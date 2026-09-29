@@ -163,7 +163,7 @@
   function renderVentas() {
     const v = state.data.ventas;
     renderSource('gp-ventas-source', {
-      name: v?.source?.name || 'Ventas 2026.xlsx', where: 'Excel en Google Drive',
+      name: v?.source?.name || 'Ventas 2026 Dashboard.xlsx', where: 'Excel del cliente',
       generated: v?.generated, url: v?.source?.url, linkLabel: 'Abrir Excel', ok: !!v?.months?.length,
       note: v?.source?.modifiedTime ? 'Excel editado ' + fechaHora(v.source.modifiedTime) : '',
     });
@@ -288,7 +288,7 @@
     const d = state.data.meta;
     const has = !!d?.months?.length;
     renderSource('gp-meta-source', {
-      name: 'Datos de Meta Ads', where: `Carpeta de Drive · ${d?.files?.length || 0} archivos`,
+      name: 'Meta Files - Casiopia', where: `Carpeta de pauta · ${d?.files?.length || 0} archivos`,
       generated: d?.generated, url: d?.folder?.url || 'https://drive.google.com/drive/folders/166vtDwzl4YbqLnyqNpulZI2YltKb2FMm',
       linkLabel: 'Abrir carpeta', ok: has,
     });
@@ -478,14 +478,14 @@
     const folder = d?.folder?.url || 'https://drive.google.com/drive/folders/1oN2HxlqXENM0KuAIOM_rtb17zJPCCAhO';
     const has = !!d?.months?.length;
     renderSource('gp-google-source', {
-      name: 'Google Files - Casiopia', where: `Carpeta de Drive · ${d?.files?.length || 0} archivos`,
-      generated: d?.generated, url: folder, linkLabel: 'Abrir carpeta', ok: has,
+      name: 'Google Files - Casiopia', where: `Carpeta de pauta · ${d?.files?.length || 0} archivos`,
+      generated: d?.generated, url: folder, linkLabel: 'Abrir carpeta', ok: has && !d?.avisos?.length,
     });
     const body = document.getElementById('gp-google-body');
     if (!has) {
       emptyState('gp-google-body', {
         title: d ? 'La carpeta de Google Ads todavía está vacía' : 'Google Ads aún no sincronizado',
-        text: 'Cuando se suban exportaciones de Google Ads (Google Sheets, CSV o Excel; idealmente un archivo por mes con las columnas <em>Día, Campaña, Costo, Impr., Clics, Conversiones</em> y <em>Valor de conv.</em>), se sincronizarán solas y aparecerán aquí.',
+        text: 'Cuando se suban los informes de campañas de Google Ads (un Google Sheet por mes, exportado desde Google Ads con el rango del mes), se sincronizarán solos y aparecerán aquí.',
         url: folder, linkLabel: 'Abrir carpeta en Drive',
       });
       return;
@@ -494,34 +494,63 @@
     if (!state.googleSel) state.googleSel = d.months[d.months.length - 1].key;
     const i = d.months.findIndex(m => m.key === state.googleSel);
     const m = d.months[i];
+    const prev = d.months[i - 1];
     const t = m.totals;
+    const [y, mm] = m.key.split('-').map(Number);
+    const parcial = m.hasta && +m.hasta.slice(8) < new Date(y, mm, 0).getDate();
+
+    const avisos = (d.avisos || []).map(a => `<div class="insight warn" style="margin-bottom:10px;"><b>Revisar archivo:</b> ${esc(a)}</div>`).join('');
+
     body.innerHTML = `
+      ${avisos}
       <div class="rep-toolbar">
         <div class="view-toggle" id="gp-google-months" role="group" aria-label="Mes de Google Ads"></div>
-        <span class="rep-period-meta">${esc(m.archivos.join(', '))}</span>
+        <span class="rep-period-meta">Del ${esc(fechaCorta(m.desde))} al ${esc(fechaCorta(m.hasta || m.desde))}${parcial ? ' <span class="pill amber">mes parcial</span>' : ''} · ${esc(m.archivos.join(', '))}</span>
       </div>
       <div class="rep-stack">
         <div class="grid-4">${[
-          kpi({ icon: 'amber', label: 'Inversión', value: money(t.spend), valueCls: 'amber', sub: `${num(t.clicks)} clics · ${num(t.impressions)} impresiones` }),
-          kpi({ icon: 'purple', label: 'Conversiones', value: num(t.conversions), valueCls: 'purple', sub: `Costo por conversión ${money(ratio(t.spend, t.conversions), 2)}` }),
-          kpi({ icon: 'green', label: 'Valor de conversión', value: money(t.value), valueCls: 'green', sub: 'Atribución de Google Ads' }),
-          kpi({ icon: 'slate', label: 'ROAS', value: roasFmt(ratio(t.value, t.spend)), sub: `CTR ${pct(ratio(t.clicks, t.impressions) * 100, 2)}` }),
+          kpi({ icon: 'amber', label: 'Inversión', value: money(t.spend), valueCls: 'amber',
+            sub: prev ? `${deltaPill(t.spend, prev.totals.spend, { neutral: true })} vs ${shortMonthKey(prev.key)}` : 'Costo del mes' }),
+          kpi({ icon: 'purple', label: 'Compras', value: num(t.purchases), valueCls: 'purple',
+            sub: `Costo por compra ${money(ratio(t.spend, t.purchases), 2)}${prev ? ' · ' + deltaPill(t.purchases, prev.totals.purchases, { neutral: parcial }) : ''}` }),
+          kpi({ icon: 'green', label: 'Valor de compras', value: money(t.purchaseValue), valueCls: 'green',
+            sub: `ROAS ${roasFmt(ratio(t.purchaseValue, t.spend))} · atribución de Google` }),
+          kpi({ icon: 'slate', label: 'CTR', value: pct(ratio(t.clicks, t.impressions) * 100, 2),
+            sub: `${num(t.clicks)} clics · ${num(t.impressions)} impresiones · CPC ${money(ratio(t.spend, t.clicks), 2)}` }),
         ].join('')}</div>
+        ${t.checkouts ? `<p class="gp-note">Google cuenta además <b>${num(t.checkouts)} pagos iniciados</b> como conversión (total del informe: ${num(t.conversions)} conversiones por ${money(t.value)}). Aquí el ROAS usa solo las compras.</p>` : ''}
         <div class="grid-2">
           <div class="panel">
-            <div class="panel-head"><div><div class="panel-title">Campañas</div><div class="panel-sub">Ordenadas por inversión</div></div></div>
+            <div class="panel-head"><div><div class="panel-title">Inversión por tipo de campaña</div><div class="panel-sub">Costo, clics y CTR del mes</div></div></div>
             <div class="gp-table-wrap"><table class="rep-table">
-              <thead><tr><th>Campaña</th><th class="r">Inversión</th><th class="r">Conv.</th><th class="r">ROAS</th></tr></thead>
-              <tbody>${m.campaigns.map(c => `<tr>
-                <td>${esc(c.name)}</td><td class="r mono">${money(c.spend)}</td>
-                <td class="r mono">${num(c.conversions)}</td><td class="r mono">${roasFmt(ratio(c.value, c.spend))}</td>
-              </tr>`).join('')}</tbody>
+              <thead><tr><th>Tipo</th><th class="r">Inversión</th><th class="r">Clics</th><th class="r">CTR</th></tr></thead>
+              <tbody>${m.types.map(x => {
+                const share = ratio(x.spend, t.spend) * 100;
+                return `<tr>
+                  <td><div class="rep-camp-name">${esc(x.name)}</div><div class="rep-bar"><div style="width:${share}%;background:${COLOR.google}"></div></div></td>
+                  <td class="r mono">${money(x.spend)}<span class="sub-val">${pct(share)}</span></td>
+                  <td class="r mono">${num(x.clicks)}</td>
+                  <td class="r mono">${pct(ratio(x.clicks, x.impressions) * 100, 2)}</td>
+                </tr>`;
+              }).join('')}</tbody>
             </table></div>
           </div>
           <div class="panel">
-            <div class="panel-head"><div><div class="panel-title">Inversión mensual</div><div class="panel-sub">Costo en Google Ads por mes</div></div></div>
-            <div class="chart-wrap h-220"><canvas id="chart-gp-google-spend" role="img" aria-label="Inversión mensual en Google Ads"></canvas></div>
+            <div class="panel-head"><div><div class="panel-title">Compras por campaña</div><div class="panel-sub">Google no reporta costo por campaña en este informe</div></div></div>
+            ${m.campaigns.length ? `<div class="gp-table-wrap"><table class="rep-table">
+              <thead><tr><th>Campaña</th><th class="r">Compras</th><th class="r">Valor</th><th class="r">Pagos inic.</th></tr></thead>
+              <tbody>${m.campaigns.map(c => `<tr>
+                <td>${esc(c.name)}<span class="sub-val">${esc(c.type)}</span></td>
+                <td class="r mono">${c.purchases ? c.purchases.toLocaleString('es-PE', { maximumFractionDigits: 1 }) : '—'}</td>
+                <td class="r mono">${c.purchaseValue ? money(c.purchaseValue) : '—'}</td>
+                <td class="r mono">${c.checkouts ? num(c.checkouts) : '—'}</td>
+              </tr>`).join('')}</tbody>
+            </table></div>` : '<p class="gp-note">Ninguna campaña registró conversiones en este mes.</p>'}
           </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div><div class="panel-title">Inversión mensual</div><div class="panel-sub">Costo en Google Ads por mes · el tooltip muestra compras y ROAS</div></div></div>
+          <div class="chart-wrap h-220"><canvas id="chart-gp-google-spend" role="img" aria-label="Inversión mensual en Google Ads"></canvas></div>
         </div>
       </div>`;
     monthButtons('gp-google-months', d.months.map(x => ({ key: x.key, label: shortMonthKey(x.key) })), state.googleSel,
@@ -532,7 +561,13 @@
       data: { labels: d.months.map(x => shortMonthKey(x.key)), datasets: [{ label: 'Inversión', data: d.months.map(x => x.totals.spend), backgroundColor: COLOR.google, borderRadius: { topLeft: 4, topRight: 4 }, maxBarThickness: 36 }] },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` Inversión: ${money(c.parsed.y)}` } } },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: {
+            label: c => ` Inversión: ${money(c.parsed.y)}`,
+            footer: items => { const x = d.months[items[0].dataIndex].totals; return `Compras: ${num(x.purchases)} · ROAS ${roasFmt(ratio(x.purchaseValue, x.spend))}`; },
+          } },
+        },
         scales: {
           x: { ticks: { color: axisColor, font: { size: 11 } }, grid: { display: false } },
           y: { beginAtZero: true, ticks: { color: axisColor, font: { size: 10 }, callback: moneyK }, grid: { color: gridColor } },

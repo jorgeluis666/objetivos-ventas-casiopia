@@ -2,12 +2,17 @@
 /**
  * fetch-casiopia.js — sincroniza las tres fuentes del módulo Gasto publicitario.
  *
- *   Ventas      Excel "Ventas 2026.xlsx" en Drive          → data/casiopia-ventas.json
- *   Meta Ads    carpeta "Datos de Meta Ads" (Google Sheets) → data/casiopia-meta.json
- *   Google Ads  carpeta "Google Files - Casiopia"           → data/casiopia-google.json
+ *   Ventas      Excel "Ventas 2026 Dashboard.xlsx" (cliente)   → data/casiopia-ventas.json
+ *   Meta Ads    carpeta "Meta Files - Casiopia" (pauta)         → data/casiopia-meta.json
+ *   Google Ads  carpeta "Google Files - Casiopia" (pauta)       → data/casiopia-google.json
+ *
+ * Sin credenciales: los archivos y carpetas están compartidos como
+ * "cualquier persona con el enlace", así que se leen por sus enlaces
+ * públicos de Google Drive (descarga directa, exportación CSV de Sheets y
+ * la vista embebida de la carpeta para listar su contenido).
  *
  * Modos:
- *   node scripts/fetch-casiopia.js                 → Google Drive API (service account)
+ *   node scripts/fetch-casiopia.js                 → enlaces públicos de Drive
  *   node scripts/fetch-casiopia.js --local=<dir>   → <dir>/ventas-2026.xlsx, <dir>/meta/*.csv,
  *                                                     <dir>/google/*.{csv,xlsx}
  *
@@ -21,10 +26,9 @@ const ExcelJS = require('exceljs');
 const src = require('./lib/casiopia-sources');
 
 const ROOT = path.join(__dirname, '..');
-const CREDENTIALS_PATH = path.join(ROOT, 'credentials', 'service-account.json');
 
 const SOURCES = {
-  ventas: { fileId: '1VydwmmTNpZtFi9RRy7TAXVpvgA54p5xy', out: 'data/casiopia-ventas.json' },
+  ventas: { fileId: '1u1tWfos-R5MbN7z72i1X6_BSkzh3L_nF', name: 'Ventas 2026 Dashboard.xlsx', out: 'data/casiopia-ventas.json' },
   meta:   { folderId: '166vtDwzl4YbqLnyqNpulZI2YltKb2FMm', out: 'data/casiopia-meta.json' },
   google: { folderId: '1oN2HxlqXENM0KuAIOM_rtb17zJPCCAhO', out: 'data/casiopia-google.json' },
 };
@@ -38,53 +42,47 @@ const MIME = {
 const localArg = process.argv.find(a => a.startsWith('--local='));
 const LOCAL_DIR = localArg ? path.resolve(localArg.slice('--local='.length)) : null;
 
-// ── Drive API ──
-let _drive = null;
-function drive() {
-  if (_drive) return _drive;
-  if (!fs.existsSync(CREDENTIALS_PATH)) {
-    throw new Error(`No existe ${CREDENTIALS_PATH}. Colocá la service account JSON ahí.`);
-  }
-  const { google } = require('googleapis');
-  const auth = new google.auth.GoogleAuth({
-    keyFile: CREDENTIALS_PATH,
-    scopes: ['https://www.googleapis.com/auth/drive.readonly'],
-  });
-  _drive = google.drive({ version: 'v3', auth });
-  return _drive;
+// ── Google Drive por enlaces públicos ──
+const NOT_PUBLIC = 'no es accesible con el enlace: compártelo como "Cualquier persona con el enlace · Lector"';
+
+async function get(url) {
+  const res = await fetch(url, { redirect: 'follow' });
+  if (!res.ok) throw new Error(`HTTP ${res.status} en ${url}`);
+  return res;
 }
 
-const DRIVE_OPTS = { supportsAllDrives: true };
+const decodeHtml = s => s
+  .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+  .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n))
+  .trim();
 
-async function driveMeta(fileId) {
-  const { data } = await drive().files.get({ fileId, fields: 'id,name,mimeType,modifiedTime', ...DRIVE_OPTS });
-  return data;
-}
-
+// Lista una carpeta pública con la vista embebida de Drive (sin API).
+// Cada entrada trae id, título e ícono con el MIME type.
 async function listFolder(folderId) {
+  const html = await (await get(`https://drive.google.com/embeddedfolderview?id=${folderId}`)).text();
+  if (!html.includes('flip-entries')) throw new Error(`la carpeta ${folderId} ${NOT_PUBLIC}`);
   const files = [];
-  let pageToken;
-  do {
-    const { data } = await drive().files.list({
-      q: `'${folderId}' in parents and trashed = false`,
-      fields: 'nextPageToken, files(id,name,mimeType,modifiedTime)',
-      pageSize: 100, pageToken, includeItemsFromAllDrives: true, ...DRIVE_OPTS,
-    });
-    files.push(...data.files);
-    pageToken = data.nextPageToken;
-  } while (pageToken);
+  const re = /<div class="flip-entry" id="entry-([^"]+)"[\s\S]*?\/type\/([^"]+)"[\s\S]*?<div class="flip-entry-title">([\s\S]*?)<\/div>/g;
+  let m;
+  while ((m = re.exec(html))) files.push({ id: m[1], mimeType: decodeHtml(m[2]), name: decodeHtml(m[3]) });
   return files.sort((a, b) => a.name.localeCompare(b.name));
 }
 
+// Descarga directa de un archivo subido (xlsx, csv…). confirm=t evita la
+// pantalla de "no se puede analizar en busca de virus" en archivos grandes.
 async function downloadBuffer(fileId) {
-  const res = await drive().files.get({ fileId, alt: 'media', ...DRIVE_OPTS }, { responseType: 'arraybuffer' });
-  return Buffer.from(res.data);
+  const res = await get(`https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`);
+  if (/text\/html/.test(res.headers.get('content-type') || '')) throw new Error(`el archivo ${fileId} ${NOT_PUBLIC}`);
+  const disposition = res.headers.get('content-disposition') || '';
+  const name = (disposition.match(/filename\*=UTF-8''([^;]+)/i) || [])[1];
+  return { buf: Buffer.from(await res.arrayBuffer()), name: name ? decodeURIComponent(name) : null };
 }
 
-// Google Sheets → CSV de su primera hoja (límite de exportación: 10 MB).
+// Google Sheets → CSV de su primera hoja.
 async function exportCsv(fileId) {
-  const res = await drive().files.export({ fileId, mimeType: MIME.csv }, { responseType: 'text' });
-  return String(res.data);
+  const res = await get(`https://docs.google.com/spreadsheets/d/${fileId}/export?format=csv`);
+  if (!/text\/csv/.test(res.headers.get('content-type') || '')) throw new Error(`la hoja ${fileId} ${NOT_PUBLIC}`);
+  return res.text();
 }
 
 async function workbookFromBuffer(buf) {
@@ -118,14 +116,14 @@ async function syncVentas() {
     await wb.xlsx.readFile(file);
     return {
       // En local no se conoce la fecha de edición en Drive (la del archivo es la de descarga)
-      source: { name: 'Ventas 2026.xlsx', modifiedTime: null, url: `https://drive.google.com/file/d/${SOURCES.ventas.fileId}/view` },
+      source: { name: SOURCES.ventas.name, modifiedTime: null, url: `https://drive.google.com/file/d/${SOURCES.ventas.fileId}/view` },
       ...src.ventasFromWorkbook(wb),
     };
   }
-  const meta = await driveMeta(SOURCES.ventas.fileId);
-  const wb = await workbookFromBuffer(await downloadBuffer(SOURCES.ventas.fileId));
+  const { buf, name } = await downloadBuffer(SOURCES.ventas.fileId);
+  const wb = await workbookFromBuffer(buf);
   return {
-    source: { name: meta.name, modifiedTime: meta.modifiedTime, url: driveUrl(meta) },
+    source: { name: name || SOURCES.ventas.name, modifiedTime: null, url: `https://drive.google.com/file/d/${SOURCES.ventas.fileId}/view` },
     ...src.ventasFromWorkbook(wb),
   };
 }
@@ -143,13 +141,13 @@ async function syncMeta() {
   const listed = (await listFolder(folder.id)).filter(f => f.mimeType === MIME.sheet || f.mimeType === MIME.csv);
   const files = [];
   for (const f of listed) {
-    const text = f.mimeType === MIME.sheet ? await exportCsv(f.id) : (await downloadBuffer(f.id)).toString('utf8');
+    const text = f.mimeType === MIME.sheet ? await exportCsv(f.id) : (await downloadBuffer(f.id)).buf.toString('utf8');
     files.push({ name: f.name, text });
     console.log(`[casiopia] meta: ${f.name}`);
   }
   return {
     folder,
-    files: listed.map(f => ({ name: f.name, modifiedTime: f.modifiedTime, url: driveUrl(f) })),
+    files: listed.map(f => ({ name: f.name, url: driveUrl(f) })),
     ...src.metaFromCsvFiles(files),
   };
 }
@@ -173,12 +171,12 @@ async function syncGoogle() {
     for (const f of listed) {
       let rows;
       if (f.mimeType === MIME.sheet) rows = src.parseCSV(await exportCsv(f.id));
-      else if (f.mimeType === MIME.csv) rows = src.parseCSV((await downloadBuffer(f.id)).toString('utf8'));
-      else rows = firstSheetRows(await workbookFromBuffer(await downloadBuffer(f.id)));
+      else if (f.mimeType === MIME.csv) rows = src.parseCSV((await downloadBuffer(f.id)).buf.toString('utf8'));
+      else rows = firstSheetRows(await workbookFromBuffer((await downloadBuffer(f.id)).buf));
       tables.push({ name: f.name, rows });
       console.log(`[casiopia] google: ${f.name}`);
     }
-    listed = listed.map(f => ({ name: f.name, modifiedTime: f.modifiedTime, url: driveUrl(f) }));
+    listed = listed.map(f => ({ name: f.name, url: driveUrl(f) }));
   }
   return { folder, files: listed, ...src.googleFromTables(tables) };
 }

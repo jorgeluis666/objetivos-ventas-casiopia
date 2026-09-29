@@ -63,7 +63,7 @@ function cellValue(v) {
 }
 
 // ════════════════════════════════════════════════════════════
-// VENTAS — "Ventas 2026.xlsx"
+// VENTAS — "Ventas 2026 Dashboard.xlsx"
 //   Hoja "Ventas": una fila por ítem vendido. Columnas usadas:
 //     C mes · E pedido (CASIO…) · O cantidad · S total sin IGV · V canal
 //   Hoja "EERR": objetivos mensuales y ventas netas del año anterior.
@@ -255,68 +255,131 @@ function metaFromCsvFiles(files) {
 }
 
 // ════════════════════════════════════════════════════════════
-// GOOGLE ADS — exportación de informes (CSV / hoja de cálculo)
-//   Formato no fijo: se busca la fila de encabezados y se mapean las
-//   columnas por nombre (es/en). Se agrega por mes y por campaña.
+// GOOGLE ADS — informe de campañas exportado desde Google Ads
+//   Fila 1 título · fila 2 rango ("1 de abril de 2026 - 30 de abril de 2026")
+//   · fila 3 encabezados. Números con coma decimal ("1899,26").
+//   Filas "Total: Cuenta" / "Total: <tipo>" traen costo, impresiones y clics;
+//   las filas campaña × acción de conversión traen conversiones y valor
+//   (sin costo). "Conversiones" mezcla pagos iniciados y compras, así que
+//   se separan por el nombre de la acción.
 // ════════════════════════════════════════════════════════════
-const GOOGLE_COLS = {
-  day: /^(dia|día|day|fecha|date)$/,
-  month: /^(mes|month)$/,
-  campaign: /^(campana|campaña|campaign)$/,
-  spend: /^(costo|coste|cost)$/,
-  impressions: /^(impr\.?|impresiones|impressions)$/,
-  clicks: /^(clics|clicks)$/,
-  conversions: /^(conversiones|conversions|compras|purchases)$/,
-  value: /^(valor de conv\.?|valor de conversion|valor conv\.?|conv\. value|conversion value|all conv\. value)$/,
-};
-const GOOGLE_METRICS = ['spend', 'impressions', 'clicks', 'conversions', 'value'];
-const SPANISH_MONTH = MONTHS.map(norm);
+const MONTH_NAMES_ES = [
+  ['enero'], ['febrero'], ['marzo'], ['abril'], ['mayo'], ['junio'], ['julio'],
+  ['agosto'], ['septiembre', 'setiembre'], ['octubre'], ['noviembre'], ['diciembre'],
+];
 
-function monthKeyFrom(value, fallbackYear) {
-  if (value instanceof Date) return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}`;
-  const s = String(value ?? '').trim();
-  let m = s.match(/^(\d{4})-(\d{2})/);
-  if (m) return `${m[1]}-${m[2]}`;
-  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // dd/mm/aaaa
-  if (m) return `${m[3]}-${m[2].padStart(2, '0')}`;
-  const n = norm(s);
-  const i = SPANISH_MONTH.findIndex(x => n.includes(x));
-  if (i >= 0) return `${(n.match(/\d{4}/) || [fallbackYear])[0]}-${String(i + 1).padStart(2, '0')}`;
-  return null;
+// Número de Google Ads en español: "1.899,26" / "1899,26" / "--"
+function toNumberEs(value) {
+  if (value == null || value === '') return 0;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  const s = String(value).trim();
+  if (!s || s === '--') return 0;
+  const n = parseFloat(s.replace(/[^\d,.\-]/g, '').replace(/\./g, '').replace(',', '.'));
+  return Number.isFinite(n) ? n : 0;
 }
 
-function googleFromTables(tables, { year = new Date().getFullYear() } = {}) {
+// "1 de abril de 2026" → { key: '2026-04', iso: '2026-04-01' }
+function parseEsDate(text) {
+  const m = norm(text).match(/(\d{1,2}) de ([a-z]+) de (\d{4})/);
+  if (!m) return null;
+  const mi = MONTH_NAMES_ES.findIndex(names => names.includes(m[2]));
+  if (mi < 0) return null;
+  const mm = String(mi + 1).padStart(2, '0');
+  return { key: `${m[3]}-${mm}`, iso: `${m[3]}-${mm}-${m[1].padStart(2, '0')}` };
+}
+const monthInTitle = title => {
+  const t = norm(title);
+  const mi = MONTH_NAMES_ES.findIndex(names => names.some(n => t.includes(n)));
+  return mi < 0 ? null : mi;
+};
+
+const GOOGLE_COLS = {
+  action: 'accion de conversion', campaign: 'campana', type: 'tipo de campana',
+  spend: 'costo', impressions: 'impr.', clicks: 'clics',
+  conversions: 'conversiones', value: 'valor de conv.',
+};
+
+function googleFromTables(tables) {
   const byMonth = {};
+  const avisos = [];
+
   for (const t of tables) {
-    const headerRow = t.rows.findIndex(r => r.some(c => GOOGLE_COLS.spend.test(norm(c))));
-    if (headerRow < 0) throw new Error(`"${t.name}" no tiene columna de costo reconocible`);
+    const headerRow = t.rows.findIndex(r => r.some(c => norm(c) === 'costo') && r.some(c => norm(c) === 'campana'));
+    if (headerRow < 0) throw new Error(`"${t.name}" no parece un informe de campañas de Google Ads (faltan Campaña / Costo)`);
     const header = t.rows[headerRow].map(norm);
-    const idx = Object.fromEntries(Object.entries(GOOGLE_COLS).map(([k, re]) => [k, header.findIndex(h => re.test(h))]));
-    const fileMonth = monthKeyFrom(t.name, year);
+    const idx = Object.fromEntries(Object.entries(GOOGLE_COLS).map(([k, name]) => [k, header.indexOf(name)]));
+    const cell = (r, k) => (idx[k] >= 0 ? r[idx[k]] : '');
+
+    // Rango de fechas: primera celda anterior al encabezado con "d de mes de aaaa - …"
+    const rangeText = t.rows.slice(0, headerRow).map(r => String(r[0] || '')).find(c => / - /.test(c) && parseEsDate(c));
+    const [from, to] = rangeText ? rangeText.split(' - ').map(parseEsDate) : [];
+    if (!from) { avisos.push(`"${t.name}": no se encontró el rango de fechas del informe; se omitió.`); continue; }
+
+    const titleMonth = monthInTitle(t.name);
+    if (titleMonth != null && titleMonth !== +from.key.slice(5) - 1) {
+      avisos.push(`"${t.name}" contiene datos del ${rangeText.trim()}, no del mes de su nombre.`);
+    }
+    if (byMonth[from.key]) {
+      // Dos archivos con el mismo rango: se queda el que coincide con su nombre
+      const keepNew = titleMonth === +from.key.slice(5) - 1;
+      avisos.push(`"${t.name}" y "${byMonth[from.key].archivo}" cubren el mismo periodo; se usa "${keepNew ? t.name : byMonth[from.key].archivo}".`);
+      if (!keepNew) continue;
+    }
+
+    const m = byMonth[from.key] = {
+      archivo: t.name, desde: from.iso, hasta: to?.iso || null,
+      totals: { spend: 0, impressions: 0, clicks: 0, conversions: 0, value: 0, purchases: 0, purchaseValue: 0, checkouts: 0 },
+      types: [], campaigns: {},
+    };
 
     for (const r of t.rows.slice(headerRow + 1)) {
-      const campaign = idx.campaign >= 0 ? String(r[idx.campaign] ?? '').trim() : '(total)';
-      if (/^(total|totales)/i.test(campaign)) continue; // filas de totales del informe
-      const key = (idx.day >= 0 && monthKeyFrom(r[idx.day], year))
-        || (idx.month >= 0 && monthKeyFrom(r[idx.month], year))
-        || fileMonth;
-      if (!key) continue;
-      const metrics = Object.fromEntries(GOOGLE_METRICS.map(k => [k, idx[k] >= 0 ? toNumber(r[idx[k]]) : 0]));
-      if (!GOOGLE_METRICS.some(k => metrics[k])) continue;
-      const m = byMonth[key] ||= { files: new Set(), totals: Object.fromEntries(GOOGLE_METRICS.map(k => [k, 0])), campaigns: {} };
-      m.files.add(t.name);
-      const c = m.campaigns[campaign || '(sin campaña)'] ||= Object.fromEntries(GOOGLE_METRICS.map(k => [k, 0]));
-      GOOGLE_METRICS.forEach(k => { m.totals[k] += metrics[k]; c[k] += metrics[k]; });
+      const action = String(cell(r, 'action') || '').trim();
+      const hasAction = action && action !== '--';
+      const campaign = String(cell(r, 'campaign') || '').trim();
+      const conv = toNumberEs(cell(r, 'conversions'));
+      const value = toNumberEs(cell(r, 'value'));
+      const kind = /purchase|compra/i.test(action) ? 'purchase' : /checkout|pago/i.test(action) ? 'checkout' : 'other';
+
+      // Filas de totales: "Total: Cuenta", "Total: <tipo de campaña>", "Total: Campañas filtradas".
+      // Sin acción = total real (costo, impresiones, clics); con acción = desglose por acción.
+      const label = r.map(c => String(c ?? '').trim()).find(c => /^total:/i.test(c));
+      if (label) {
+        const name = label.replace(/^total:\s*/i, '');
+        if (/filtrad/i.test(name)) continue;
+        const isAccount = norm(name) === 'cuenta';
+        if (!hasAction) {
+          const row = {
+            spend: toNumberEs(cell(r, 'spend')), impressions: toNumberEs(cell(r, 'impressions')),
+            clicks: toNumberEs(cell(r, 'clicks')), conversions: conv, value,
+          };
+          if (isAccount) Object.assign(m.totals, row);
+          else if (row.spend || row.impressions) m.types.push({ name, ...row });
+        } else if (isAccount) {
+          if (kind === 'purchase') { m.totals.purchases += conv; m.totals.purchaseValue += value; }
+          if (kind === 'checkout') m.totals.checkouts += conv;
+        }
+        continue;
+      }
+      if (!conv && !value) continue;
+      if (!campaign || campaign === '--' || !hasAction) continue;
+      const c = m.campaigns[campaign] ||= { name: campaign, type: String(cell(r, 'type') || '').trim(), purchases: 0, purchaseValue: 0, checkouts: 0, conversions: 0, value: 0 };
+      c.conversions += conv; c.value += value;
+      if (kind === 'purchase') { c.purchases += conv; c.purchaseValue += value; }
+      if (kind === 'checkout') c.checkouts += conv;
     }
   }
-  const r = m => Object.fromEntries(Object.entries(m).map(([k, v]) => [k, k === 'spend' || k === 'value' ? round2(v) : round2(v)]));
+
+  const r2 = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, typeof v === 'number' ? round2(v) : v]));
   return {
+    avisos,
     months: Object.keys(byMonth).sort().map(key => {
-      const [y, mm] = key.split('-').map(Number);
       const m = byMonth[key];
+      const [y, mm] = key.split('-').map(Number);
       return {
-        key, label: `${MONTHS[mm - 1]} ${y}`, archivos: [...m.files], totals: r(m.totals),
-        campaigns: Object.entries(m.campaigns).map(([name, v]) => ({ name, ...r(v) })).sort((a, b) => b.spend - a.spend),
+        key, label: `${MONTHS[mm - 1]} ${y}`, archivos: [m.archivo], desde: m.desde, hasta: m.hasta,
+        totals: r2(m.totals),
+        types: m.types.map(r2).sort((a, b) => b.spend - a.spend),
+        campaigns: Object.values(m.campaigns).map(r2).sort((a, b) => b.purchaseValue - a.purchaseValue || b.conversions - a.conversions),
       };
     }),
   };

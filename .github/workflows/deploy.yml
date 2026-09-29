@@ -7,7 +7,7 @@ on:
   # Por defecto, los pushes del GITHUB_TOKEN no encadenan workflows, así que
   # usamos workflow_run para disparar este deploy después de un fetch exitoso.
   workflow_run:
-    workflows: ["Actualizar datos de ventas"]
+    workflows: ["Actualizar datos de ventas", "Sincronizar datos Casiopia"]
     types: [completed]
     branches: [main]
   workflow_dispatch: {}

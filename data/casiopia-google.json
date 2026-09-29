@@ -1,9 +1,506 @@
 {
-  "generated": "2026-09-28T21:33:36-05:00",
+  "generated": "2026-09-28T23:40:10-05:00",
   "folder": {
     "id": "1oN2HxlqXENM0KuAIOM_rtb17zJPCCAhO",
     "url": "https://drive.google.com/drive/folders/1oN2HxlqXENM0KuAIOM_rtb17zJPCCAhO"
   },
-  "files": [],
-  "months": []
+  "files": [
+    {
+      "name": "Casiopia - Abril 2026",
+      "url": "https://docs.google.com/spreadsheets/d/1swsxoTlP6C-G8eQOpht4CsHSN8h9HVpdaG_fqlXiPZM/edit"
+    },
+    {
+      "name": "Casiopia - Agosto 2026",
+      "url": "https://docs.google.com/spreadsheets/d/1AQoM3Hiq6Ze8a2NLrwoscq4VaO7FEojpV3z9HaL2-p0/edit"
+    },
+    {
+      "name": "Casiopia - Enero 2026",
+      "url": "https://docs.google.com/spreadsheets/d/1Onlp-tG_Z6NpNedKtlAKPk5iA6h6mZTVafD0bHDuXN0/edit"
+    },
+    {
+      "name": "Casiopia - Febrero 2026",
+      "url": "https://docs.google.com/spreadsheets/d/1g03Ci_pZh_d0C9b_3q18BUBZzBvEQqYBbPe-VEiK5EM/edit"
+    },
+    {
+      "name": "Casiopia - Julio 2026",
+      "url": "https://docs.google.com/spreadsheets/d/1Ng40YZ-84neM-0xkieV9NWd16gISOkU-m7lEVJQDKO4/edit"
+    },
+    {
+      "name": "Casiopia - Junio 2026",
+      "url": "https://docs.google.com/spreadsheets/d/1ivil_HOrCecdZmanhEuw2UAhVfWr4UxDNPgUNygPyVs/edit"
+    },
+    {
+      "name": "Casiopia - Marzo 2026",
+      "url": "https://docs.google.com/spreadsheets/d/1WCQUM9SSqdit4_l68qaGm9XU97uXyZWO9bditLc2-F0/edit"
+    },
+    {
+      "name": "Casiopia - Mayo 2026",
+      "url": "https://docs.google.com/spreadsheets/d/1kwbYDT8F7QRlVvzAORNExy1QvKdK6xl28xpAo0IMlO8/edit"
+    },
+    {
+      "name": "Casiopia - Setiembre 2026",
+      "url": "https://docs.google.com/spreadsheets/d/1eqpZomY520CSheqYmaEiDRjXe1XbuPDPNKeUNsGuekY/edit"
+    }
+  ],
+  "avisos": [
+    "\"Casiopia - Enero 2026\" contiene datos del 1 de septiembre de 2026 - 28 de septiembre de 2026, no del mes de su nombre.",
+    "\"Casiopia - Setiembre 2026\" y \"Casiopia - Enero 2026\" cubren el mismo periodo; se usa \"Casiopia - Setiembre 2026\"."
+  ],
+  "months": [
+    {
+      "key": "2026-02",
+      "label": "Febrero 2026",
+      "archivos": [
+        "Casiopia - Febrero 2026"
+      ],
+      "desde": "2026-02-01",
+      "hasta": "2026-02-28",
+      "totals": {
+        "spend": 1560.04,
+        "impressions": 140153,
+        "clicks": 5037,
+        "conversions": 274.53,
+        "value": 23693.83,
+        "purchases": 58.52,
+        "purchaseValue": 7013.23,
+        "checkouts": 147
+      },
+      "types": [
+        {
+          "name": "Máximo rendimiento",
+          "spend": 1350.87,
+          "impressions": 100593,
+          "clicks": 2521,
+          "conversions": 205.52,
+          "value": 23693.83
+        },
+        {
+          "name": "Generación de demanda",
+          "spend": 209.17,
+          "impressions": 39560,
+          "clicks": 2516,
+          "conversions": 69,
+          "value": 0
+        }
+      ],
+      "campaigns": [
+        {
+          "name": "LR - Máximo Rendimiento | maximar conversiones",
+          "type": "Máximo rendimiento",
+          "purchases": 58.52,
+          "purchaseValue": 7013.23,
+          "checkouts": 147,
+          "conversions": 205.52,
+          "value": 23693.83
+        },
+        {
+          "name": "LR - Campaña Video | Mensajes",
+          "type": "Generación de demanda",
+          "purchases": 0,
+          "purchaseValue": 0,
+          "checkouts": 0,
+          "conversions": 69,
+          "value": 0
+        }
+      ]
+    },
+    {
+      "key": "2026-03",
+      "label": "Marzo 2026",
+      "archivos": [
+        "Casiopia - Marzo 2026"
+      ],
+      "desde": "2026-03-01",
+      "hasta": "2026-03-31",
+      "totals": {
+        "spend": 1521.2,
+        "impressions": 165401,
+        "clicks": 3451,
+        "conversions": 410.81,
+        "value": 58350.06,
+        "purchases": 101.81,
+        "purchaseValue": 15131.7,
+        "checkouts": 309
+      },
+      "types": [
+        {
+          "name": "Máximo rendimiento",
+          "spend": 1521.2,
+          "impressions": 165401,
+          "clicks": 3451,
+          "conversions": 410.81,
+          "value": 58350.06
+        }
+      ],
+      "campaigns": [
+        {
+          "name": "LR - Máximo Rendimiento | maximar conversiones",
+          "type": "Máximo rendimiento",
+          "purchases": 101.81,
+          "purchaseValue": 15131.7,
+          "checkouts": 309,
+          "conversions": 410.81,
+          "value": 58350.06
+        }
+      ]
+    },
+    {
+      "key": "2026-04",
+      "label": "Abril 2026",
+      "archivos": [
+        "Casiopia - Abril 2026"
+      ],
+      "desde": "2026-04-01",
+      "hasta": "2026-04-30",
+      "totals": {
+        "spend": 1899.26,
+        "impressions": 230934,
+        "clicks": 6225,
+        "conversions": 198.5,
+        "value": 43608.74,
+        "purchases": 41.5,
+        "purchaseValue": 11099.19,
+        "checkouts": 157
+      },
+      "types": [
+        {
+          "name": "Máximo rendimiento",
+          "spend": 1642.17,
+          "impressions": 193528,
+          "clicks": 5792,
+          "conversions": 169.5,
+          "value": 37710.16
+        },
+        {
+          "name": "Compras",
+          "spend": 230.04,
+          "impressions": 37252,
+          "clicks": 399,
+          "conversions": 29,
+          "value": 5898.58
+        },
+        {
+          "name": "Búsqueda",
+          "spend": 27.05,
+          "impressions": 154,
+          "clicks": 34,
+          "conversions": 0,
+          "value": 0
+        }
+      ],
+      "campaigns": [
+        {
+          "name": "LR - Máximo Rendimiento | maximar conversiones",
+          "type": "Máximo rendimiento",
+          "purchases": 30.35,
+          "purchaseValue": 7372.2,
+          "checkouts": 134,
+          "conversions": 164.35,
+          "value": 35712.67
+        },
+        {
+          "name": "PMAX Natura Sonso abril2026",
+          "type": "Máximo rendimiento",
+          "purchases": 5.15,
+          "purchaseValue": 1997.49,
+          "checkouts": 0,
+          "conversions": 5.15,
+          "value": 1997.49
+        },
+        {
+          "name": "LR - Shooping | Gasto total",
+          "type": "Compras",
+          "purchases": 6,
+          "purchaseValue": 1729.5,
+          "checkouts": 23,
+          "conversions": 29,
+          "value": 5898.58
+        }
+      ]
+    },
+    {
+      "key": "2026-05",
+      "label": "Mayo 2026",
+      "archivos": [
+        "Casiopia - Mayo 2026"
+      ],
+      "desde": "2026-05-01",
+      "hasta": "2026-05-31",
+      "totals": {
+        "spend": 2662,
+        "impressions": 336930,
+        "clicks": 11167,
+        "conversions": 226.63,
+        "value": 34306.92,
+        "purchases": 43.2,
+        "purchaseValue": 13551.43,
+        "checkouts": 96
+      },
+      "types": [
+        {
+          "name": "Máximo rendimiento",
+          "spend": 1908.64,
+          "impressions": 192618,
+          "clicks": 6348,
+          "conversions": 121.17,
+          "value": 30497.72
+        },
+        {
+          "name": "Compras",
+          "spend": 433.22,
+          "impressions": 66211,
+          "clicks": 684,
+          "conversions": 18.03,
+          "value": 3809.2
+        },
+        {
+          "name": "Generación de demanda",
+          "spend": 320.14,
+          "impressions": 78101,
+          "clicks": 4135,
+          "conversions": 87.43,
+          "value": 0
+        }
+      ],
+      "campaigns": [
+        {
+          "name": "LR - Máximo Rendimiento | maximar conversiones",
+          "type": "Máximo rendimiento",
+          "purchases": 22,
+          "purchaseValue": 6607.81,
+          "checkouts": 81,
+          "conversions": 103,
+          "value": 24383.49
+        },
+        {
+          "name": "PMAX Natura Sonso abril2026",
+          "type": "Máximo rendimiento",
+          "purchases": 18.17,
+          "purchaseValue": 6114.23,
+          "checkouts": 0,
+          "conversions": 18.17,
+          "value": 6114.23
+        },
+        {
+          "name": "LR - Shooping | Gasto total",
+          "type": "Compras",
+          "purchases": 3.03,
+          "purchaseValue": 829.39,
+          "checkouts": 15,
+          "conversions": 18.03,
+          "value": 3809.21
+        },
+        {
+          "name": "LR - Campaña Video | Mensajes",
+          "type": "Generación de demanda",
+          "purchases": 0,
+          "purchaseValue": 0,
+          "checkouts": 0,
+          "conversions": 87.43,
+          "value": 0
+        }
+      ]
+    },
+    {
+      "key": "2026-06",
+      "label": "Junio 2026",
+      "archivos": [
+        "Casiopia - Junio 2026"
+      ],
+      "desde": "2026-06-01",
+      "hasta": "2026-06-30",
+      "totals": {
+        "spend": 1446.48,
+        "impressions": 260191,
+        "clicks": 7141,
+        "conversions": 122.97,
+        "value": 5546.91,
+        "purchases": 20.97,
+        "purchaseValue": 5546.91,
+        "checkouts": 0
+      },
+      "types": [
+        {
+          "name": "Máximo rendimiento",
+          "spend": 1115.8,
+          "impressions": 154487,
+          "clicks": 2342,
+          "conversions": 20.97,
+          "value": 5546.91
+        },
+        {
+          "name": "Generación de demanda",
+          "spend": 320.94,
+          "impressions": 105574,
+          "clicks": 4764,
+          "conversions": 102,
+          "value": 0
+        },
+        {
+          "name": "Búsqueda",
+          "spend": 9.74,
+          "impressions": 130,
+          "clicks": 35,
+          "conversions": 0,
+          "value": 0
+        }
+      ],
+      "campaigns": [
+        {
+          "name": "LR - Máximo Rendimiento | maximar conversiones",
+          "type": "Máximo rendimiento",
+          "purchases": 20.97,
+          "purchaseValue": 5546.91,
+          "checkouts": 0,
+          "conversions": 20.97,
+          "value": 5546.91
+        },
+        {
+          "name": "LR - Campaña Video | Mensajes",
+          "type": "Generación de demanda",
+          "purchases": 0,
+          "purchaseValue": 0,
+          "checkouts": 0,
+          "conversions": 102,
+          "value": 0
+        }
+      ]
+    },
+    {
+      "key": "2026-07",
+      "label": "Julio 2026",
+      "archivos": [
+        "Casiopia - Julio 2026"
+      ],
+      "desde": "2026-07-01",
+      "hasta": "2026-07-31",
+      "totals": {
+        "spend": 1580.25,
+        "impressions": 186242,
+        "clicks": 3196,
+        "conversions": 17.89,
+        "value": 5730.81,
+        "purchases": 17.89,
+        "purchaseValue": 5730.81,
+        "checkouts": 0
+      },
+      "types": [
+        {
+          "name": "Máximo rendimiento",
+          "spend": 1146.21,
+          "impressions": 181792,
+          "clicks": 2791,
+          "conversions": 17.89,
+          "value": 5730.81
+        },
+        {
+          "name": "Búsqueda",
+          "spend": 434.04,
+          "impressions": 4450,
+          "clicks": 405,
+          "conversions": 0,
+          "value": 0
+        }
+      ],
+      "campaigns": [
+        {
+          "name": "LR - Máximo Rendimiento | maximar conversiones",
+          "type": "Máximo rendimiento",
+          "purchases": 17.89,
+          "purchaseValue": 5730.81,
+          "checkouts": 0,
+          "conversions": 17.89,
+          "value": 5730.81
+        }
+      ]
+    },
+    {
+      "key": "2026-08",
+      "label": "Agosto 2026",
+      "archivos": [
+        "Casiopia - Agosto 2026"
+      ],
+      "desde": "2026-08-01",
+      "hasta": "2026-08-31",
+      "totals": {
+        "spend": 1519.27,
+        "impressions": 179150,
+        "clicks": 4278,
+        "conversions": 18.5,
+        "value": 6352.1,
+        "purchases": 18.5,
+        "purchaseValue": 6352.1,
+        "checkouts": 0
+      },
+      "types": [
+        {
+          "name": "Máximo rendimiento",
+          "spend": 1519.27,
+          "impressions": 179150,
+          "clicks": 4278,
+          "conversions": 18.5,
+          "value": 6352.1
+        }
+      ],
+      "campaigns": [
+        {
+          "name": "LR - Máximo Rendimiento | maximar conversiones",
+          "type": "Máximo rendimiento",
+          "purchases": 18.5,
+          "purchaseValue": 6352.1,
+          "checkouts": 0,
+          "conversions": 18.5,
+          "value": 6352.1
+        }
+      ]
+    },
+    {
+      "key": "2026-09",
+      "label": "Septiembre 2026",
+      "archivos": [
+        "Casiopia - Setiembre 2026"
+      ],
+      "desde": "2026-09-01",
+      "hasta": "2026-09-28",
+      "totals": {
+        "spend": 1679.23,
+        "impressions": 125599,
+        "clicks": 2678,
+        "conversions": 22.5,
+        "value": 6991.4,
+        "purchases": 22.5,
+        "purchaseValue": 6991.4,
+        "checkouts": 0
+      },
+      "types": [
+        {
+          "name": "Máximo rendimiento",
+          "spend": 1287.92,
+          "impressions": 125317,
+          "clicks": 2625,
+          "conversions": 22.5,
+          "value": 6991.4
+        },
+        {
+          "name": "Búsqueda",
+          "spend": 391.31,
+          "impressions": 282,
+          "clicks": 53,
+          "conversions": 0,
+          "value": 0
+        }
+      ],
+      "campaigns": [
+        {
+          "name": "LR - Máximo Rendimiento | maximar conversiones",
+          "type": "Máximo rendimiento",
+          "purchases": 22.5,
+          "purchaseValue": 6991.4,
+          "checkouts": 0,
+          "conversions": 22.5,
+          "value": 6991.4
+        }
+      ]
+    }
+  ]
 }

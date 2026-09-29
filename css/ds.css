@@ -8,6 +8,11 @@
   --sidebar-bg:    #ffffff;
   --sidebar-text:  #0f172a;
   --sidebar-muted: #64748b;
+  /* Acento del menú lateral (azul, independiente del rojo de marca) */
+  --nav-accent:        #2563eb;
+  --nav-accent-text:   #1d4ed8;
+  --nav-accent-soft:   #eff6ff;
+  --nav-accent-border: #bfdbfe;
   --bg:            #f4f4f5;
   --card:          #FFFFFF;
   --border:        #e5e7eb;
@@ -94,9 +99,9 @@ a { text-decoration: none; color: inherit; }
 .s-ver {
   font-size: 10px;
   font-weight: 700;
-  color: var(--brand-text);
-  background: var(--brand-soft);
-  border: 1px solid #fecaca;
+  color: var(--nav-accent-text);
+  background: var(--nav-accent-soft);
+  border: 1px solid var(--nav-accent-border);
   border-radius: 20px;
   padding: 1px 7px;
 }
@@ -127,7 +132,7 @@ a { text-decoration: none; color: inherit; }
   text-align: left;
 }
 .s-item:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
-.s-item:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(185,28,28,0.25); }
+.s-item:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.3); }
 .s-item.disabled,
 .s-item:disabled {
   opacity: .45;
@@ -144,10 +149,10 @@ a { text-decoration: none; color: inherit; }
 .s-item:disabled .s-chevron {
   display: none;
 }
-/* Activo: fondo suave de marca + contorno oscuro (sin mover el layout) */
-.s-item.active { background: #fef2f2; border-color: #111111; box-shadow: 0 0 0 1px #111111; }
+/* Activo: fondo azul suave + contorno oscuro (sin mover el layout) */
+.s-item.active { background: var(--nav-accent-soft); border-color: #111111; box-shadow: 0 0 0 1px #111111; }
 .s-item.active:hover { transform: none; }
-.s-item.active .s-icon { background: #ffffff; border-color: #fecaca; color: var(--brand); }
+.s-item.active .s-icon { background: #ffffff; border-color: var(--nav-accent-border); color: var(--nav-accent); }
 
 .s-icon {
   width: 44px;
@@ -178,11 +183,11 @@ a { text-decoration: none; color: inherit; }
   text-overflow: ellipsis;
   line-height: 1.35;
 }
-.s-item.active .s-title-nav { color: var(--brand); }
+.s-item.active .s-title-nav { color: var(--nav-accent); }
 .s-item.active .s-desc-nav { color: #64748b; }
 .s-chevron { color: #94a3b8; flex-shrink: 0; display: flex; align-items: center; }
 .s-chevron svg { width: 16px; height: 16px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
-.s-item.active .s-chevron { color: var(--brand); }
+.s-item.active .s-chevron { color: var(--nav-accent); }
 
 /* ── TOPBAR ── */
 .topbar {

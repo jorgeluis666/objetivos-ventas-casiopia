@@ -38,12 +38,12 @@ Los datos de 2026 se sincronizan automáticamente desde un Google Sheet mediante
 
 | Pestaña | Fuente en Drive | JSON generado |
 |---|---|---|
-| Ventas | Excel `Ventas 2026.xlsx` (hojas *Ventas* y *EERR*) | `data/casiopia-ventas.json` |
-| Meta Ads | Carpeta *Datos de Meta Ads* (un Google Sheet por mes, exportación de Ads Manager) | `data/casiopia-meta.json` |
-| Google Ads | Carpeta *Google Files - Casiopia* (CSV, Excel o Google Sheet) | `data/casiopia-google.json` |
+| Ventas (cliente) | Excel `Ventas 2026 Dashboard.xlsx` (hojas *Ventas* y *EERR*) | `data/casiopia-ventas.json` |
+| Meta Ads (pauta) | Carpeta *Meta Files - Casiopia* (un Google Sheet por mes, exportación de Ads Manager) | `data/casiopia-meta.json` |
+| Google Ads (pauta) | Carpeta *Google Files - Casiopia* (CSV, Excel o Google Sheet) | `data/casiopia-google.json` |
 | Reportes de agencia | PDF transcritos en `js/data-reportes.js` | — |
 
-`npm run fetch:casiopia` los genera con la Drive API (scope `drive.readonly`). La service account debe tener acceso de lector al Excel y a las dos carpetas, y el proyecto de Google Cloud debe tener habilitada la **Drive API**. Para desarrollo sin credenciales: `node scripts/fetch-casiopia.js --local=<dir>` con `<dir>/ventas-2026.xlsx`, `<dir>/meta/*.csv` y `<dir>/google/*`. Los JSON solo contienen totales por mes y canal: nunca nombres de clientes.
+El workflow **Sincronizar datos Casiopia** (`.github/workflows/sync-casiopia.yml`) corre todos los días a las 07:00 de Lima (y a mano desde *Actions → Run workflow*): ejecuta `npm run fetch:casiopia`, commitea los JSON si cambiaron y dispara el deploy a GitHub Pages. **No usa credenciales**: el Excel y las carpetas deben estar compartidos como *Cualquier persona con el enlace · Lector*; si alguno deja de estarlo, esa fuente conserva su último JSON y el workflow avisa cuál falló. Para desarrollo offline: `node scripts/fetch-casiopia.js --local=<dir>` con `<dir>/ventas-2026.xlsx`, `<dir>/meta/*.csv` y `<dir>/google/*`. Los JSON solo contienen totales por mes y canal: nunca nombres de clientes.
 
 **Gasto publicitario** resume los reportes mensuales de pauta (Meta + Google) de la carpeta de Drive *Reportes Casiopia*. **Archivo de Reportes** lista todos los archivos de esa carpeta con filtros, previsualización, enlace a Drive y descarga. Ambos leen `js/data-reportes.js`: para sumar un mes nuevo, agregá un objeto a `monthly` (KPIs del PDF) y el archivo a `library` (`fileId`, tipo, periodo, fecha y peso en bytes).
 
