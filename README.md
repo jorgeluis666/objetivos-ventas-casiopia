@@ -32,6 +32,17 @@ Los datos de 2026 se sincronizan automáticamente desde un Google Sheet mediante
     deploy.yml            Build + deploy a GitHub Pages en cada push a main
 ```
 
+## Dominio: casiopia.limaretail.com
+
+El dashboard se publica en **https://casiopia.limaretail.com** con GitHub Pages. El dominio lo fija el archivo `CNAME` de la raíz (`build.js` también lo copia a `dist/`). No hay servidor propio: cada push a `main` (manual o de los workflows de datos) se publica solo en el mismo dominio.
+
+Configuración única (ya hecha, solo para referencia o para rehacerla):
+
+1. **DNS** (zona de `limaretail.com` en Banahosting / cPanel → *Zone Editor*): registro `CNAME` · nombre `casiopia` · destino `jorgeluis666.github.io.`
+2. **GitHub** → repo → *Settings → Pages*: *Custom domain* = `casiopia.limaretail.com` y marcar **Enforce HTTPS** cuando GitHub termine de emitir el certificado.
+
+La URL anterior (`jorgeluis666.github.io/objetivos-ventas-casiopia/`) redirige sola al dominio. Ojo: el navegador guarda por dominio lo que se configura en ⚙ (token, objetivos), así que hay que volver a ingresarlo una vez en el dominio nuevo.
+
 ## Módulos Gasto publicitario y Archivo de Reportes
 
 ### Fuentes de Gasto publicitario (una pestaña por fuente)

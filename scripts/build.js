@@ -68,6 +68,12 @@ function copyImgDir() {
   fs.cpSync(srcImg, destImg, { recursive: true });
 }
 
+function copyCname() {
+  // Dominio propio (casiopia.limaretail.com): se publica junto al sitio.
+  const src = path.join(ROOT, 'CNAME');
+  if (fs.existsSync(src)) fs.copyFileSync(src, path.join(DIST_DIR, 'CNAME'));
+}
+
 function main() {
   const rawHtml = readFile('index.html');
   let html = inlineCss(rawHtml);
@@ -77,6 +83,7 @@ function main() {
   fs.writeFileSync(DIST_HTML, html, 'utf8');
   copyDataDir();
   copyImgDir();
+  copyCname();
 
   const size = (fs.statSync(DIST_HTML).size / 1024).toFixed(1);
   console.log(`[build] escrito ${path.relative(ROOT, DIST_HTML)} (${size} KB)`);
