@@ -5,6 +5,9 @@
    biblioteca lista todos los archivos de la carpeta.
    Para agregar un mes: sumar un objeto a `monthly` y el archivo
    a `library` (kind 'pdf' | 'slides', id = fileId de Drive).
+   `library` y `extras` son la ficha curada (nombre, tipo, periodo)
+   de cada archivo; qué archivos existen lo decide la sincronización
+   con Drive (data/casiopia-reportes.json, ver js/archivo.js).
    Expone window.ReportesData.
    ============================================================ */
 
@@ -140,7 +143,7 @@
   ];
 
   // ── Biblioteca: todos los archivos de la carpeta ──
-  // cat: Mensual | Semanal | Avance | Cierre | Presupuesto | Dashboard | Ejecutivo
+  // cat: Mensual | Semanal | Avance | Cierre | Presupuesto | Dashboard | Ejecutivo | Datos
   // dup: copia o versión anterior de otro archivo. size: bytes en Drive.
   const library = [
     // Reportes Ads 2026 (PDF)
@@ -196,9 +199,18 @@
     { id: '1TTIp_3Q2nHd2WCQPZPu7T4r9nGDLvis7ll5_505lPjc', kind: 'slides', size: 2785498, cat: 'Semanal', name: 'Semanal · 18 – 31 ago', periodo: '18 – 31 ago 2025', fecha: '2025-09-03', file: 'Reporte Casiopia | Sem 18 al 31 agosto' },
   ];
 
+  // ── Archivos vinculados fuera de la carpeta ──
+  // Se sincronizan igual que la carpeta (SOURCES.reportes.extra en
+  // scripts/fetch-casiopia.js); la fecha y el peso salen de Drive.
+  const extras = [
+    { id: '1u1tWfos-R5MbN7z72i1X6_BSkzh3L_nF', kind: 'xlsx', cat: 'Datos', name: 'Ventas 2026 · Dashboard (Excel)', periodo: 'Año 2026', file: 'Ventas 2026 Dashboard.xlsx' },
+  ];
+
+  // Nativos de Google (Slides, Sheets, Docs) vs. archivos subidos
+  const DOCS = { slides: 'presentation', sheet: 'spreadsheets', doc: 'document' };
   function fileUrl(kind, id) {
-    return kind === 'slides'
-      ? `https://docs.google.com/presentation/d/${id}/edit`
+    return DOCS[kind]
+      ? `https://docs.google.com/${DOCS[kind]}/d/${id}/edit`
       : `https://drive.google.com/file/d/${id}/view`;
   }
 
@@ -207,6 +219,8 @@
     folderUrl: `https://drive.google.com/drive/folders/${FOLDER_ID}`,
     monthly,
     library,
+    extras,
+    docsPath: DOCS,
     fileUrl,
   };
 })(window);

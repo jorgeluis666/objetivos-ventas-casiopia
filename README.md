@@ -19,7 +19,7 @@ Los datos de 2026 se sincronizan automáticamente desde un Google Sheet mediante
     objectives.js         Vista de Objetivos (pace tracker, weekly charts)
     data-reportes.js      Índice de la carpeta de Drive de reportes
     gasto.js              Vista Gasto publicitario (Meta Ads + Google Ads, botón Sincronizar ahora)
-    archivo.js            Vista Archivo de Reportes (accesos directos a Drive)
+    archivo.js            Vista Archivo de Reportes (accesos directos a Drive, botón Sincronizar con Drive)
     sheets.js             Indicador de sync + trigger de workflow
     main.js               Orquestación: init, navegación, render
   data/
@@ -50,7 +50,10 @@ Gasto publicitario **solo** toma en cuenta las carpetas de pauta en Drive:
 
 **No usa credenciales de Google**: las carpetas deben estar compartidas como *Cualquier persona con el enlace · Lector*; si alguna deja de estarlo, esa fuente conserva su último JSON y el workflow avisa cuál falló. Para desarrollo offline: `node scripts/fetch-casiopia.js --local=<dir>` con `<dir>/meta/*.csv` y `<dir>/google/*`.
 
-**Archivo de Reportes** lista todos los archivos de la carpeta de Drive *Reportes Casiopia* con filtros, previsualización, enlace a Drive y descarga. Lee `js/data-reportes.js`: para sumar un archivo nuevo, agregalo a `library` (`fileId`, tipo, periodo, fecha y peso en bytes).
+**Archivo de Reportes** lista los archivos de la carpeta de Drive [*Reportes Casiopia*](https://drive.google.com/drive/folders/15Juqtuk1r8QVYiaaxySMLC0biSBcPlaJ) y el Excel vinculado [*Ventas 2026 Dashboard*](https://docs.google.com/spreadsheets/d/1u1tWfos-R5MbN7z72i1X6_BSkzh3L_nF/edit) con filtros, previsualización, enlace a Drive y descarga.
+
+- **Qué archivos aparecen** lo decide el índice `data/casiopia-reportes.json` (id, nombre, tipo, fecha y peso; no copia el contenido), que genera el mismo workflow *Sincronizar datos Casiopia*: todos los días a las 07:00 de Lima y a pedido con el botón **Sincronizar con Drive** del módulo (mismo token que *Sincronizar ahora*). Un archivo borrado de la carpeta desaparece del Archivo; uno nuevo aparece marcado como *Nuevo en Drive* con tipo y periodo deducidos del nombre.
+- **Cómo se muestra** cada archivo (nombre legible, tipo, periodo, versión anterior) sale de la ficha curada de `js/data-reportes.js` (`library` para la carpeta, `extras` para archivos sueltos). Para vincular otro archivo suelto: agregar su `fileId` a `SOURCES.reportes.extra` en `scripts/fetch-casiopia.js` y su ficha a `extras`. Tiene que ser un archivo subido (xlsx, pdf…) compartido como *Cualquier persona con el enlace · Lector*.
 
 ## Desarrollo local
 

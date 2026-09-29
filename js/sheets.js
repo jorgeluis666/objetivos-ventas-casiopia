@@ -3,8 +3,9 @@
    Muestra cuándo fue la última generación del JSON y permite
    disparar el workflow de GitHub Actions on-demand si el usuario
    guardó un Personal Access Token en localStorage.
-   También expone helpers de GitHub que reutiliza gasto.js para
-   su propio botón de sincronización (workflow sync-casiopia.yml).
+   También expone helpers de GitHub que reutilizan gasto.js y
+   archivo.js para sus botones de sincronización (workflow
+   sync-casiopia.yml).
    Expone window.Sheets.
    ============================================================ */
 
@@ -118,6 +119,18 @@
     throw new Error('La sincronización sigue corriendo en GitHub; revisá Actions en unos minutos.');
   }
 
+  // Dispara el workflow y espera a que termine bien; si falla, el error trae
+  // un enlace (HTML) al run en GitHub.
+  async function runWorkflow(workflowFile, { onStatus } = {}) {
+    const startedAt = Date.now();
+    await dispatch(workflowFile);
+    const run = await waitForRun(workflowFile, startedAt, { onStatus });
+    if (run.conclusion !== 'success') {
+      throw new Error(`el workflow terminó con estado "${run.conclusion}". <a href="${run.html_url}" target="_blank" rel="noopener">Ver detalle ↗</a>`);
+    }
+    return run;
+  }
+
   // JSON del repo recién commiteado (antes de que termine el deploy de Pages).
   async function fetchRepoJson(path) {
     const res = await gh(`/contents/${path}?ref=main&_=${Date.now()}`, {
@@ -227,6 +240,6 @@
 
   global.Sheets = {
     init, triggerWorkflow, updateGenerated, openTokenModal,
-    withPat, dispatch, waitForRun, fetchRepoJson, formatRelative,
+    withPat, dispatch, waitForRun, runWorkflow, fetchRepoJson, formatRelative,
   };
 })(window);

@@ -988,6 +988,7 @@
 .arch-ver { font-size: 11px; font-weight: 600; margin-top: 2px; }
 .arch-ver.ok  { color: var(--green-text); }
 .arch-ver.old { color: var(--muted); font-weight: 500; }
+.arch-ver.new { color: var(--brand-text); }
 .arch-actions { display: flex; gap: 6px; }
 .arch-empty { padding: 32px; text-align: center; font-size: 13px; color: var(--muted); }
 

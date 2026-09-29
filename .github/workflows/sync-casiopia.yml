@@ -1,8 +1,10 @@
 name: Sincronizar datos Casiopia
 
 # Gasto publicitario: pauta de Meta Ads y Google Ads (carpetas "Meta Files" y
-# "Google Files" en Drive). Corre todos los días y también a pedido desde el
-# botón "Sincronizar ahora" del dashboard (workflow_dispatch vía GitHub API).
+# "Google Files" en Drive). Archivo de Reportes: índice de la carpeta
+# "Reportes Casiopia" y del Excel "Ventas 2026 Dashboard".
+# Corre todos los días y también a pedido desde los botones "Sincronizar ahora"
+# y "Sincronizar con Drive" del dashboard (workflow_dispatch vía GitHub API).
 # No usa credenciales: las carpetas están compartidas como "cualquier persona
 # con el enlace" y se leen por sus enlaces públicos (scripts/fetch-casiopia.js).
 
@@ -35,14 +37,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Sincronizar Meta Ads y Google Ads
+      - name: Sincronizar Meta Ads, Google Ads y el índice de reportes
         run: node scripts/fetch-casiopia.js
 
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/casiopia-meta.json data/casiopia-google.json
+          git add data/casiopia-meta.json data/casiopia-google.json data/casiopia-reportes.json
           if git diff --cached --quiet; then
             echo "Sin cambios en los datos de Casiopia"
             exit 0

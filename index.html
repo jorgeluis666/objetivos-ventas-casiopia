@@ -281,7 +281,18 @@
         <div class="sec-lbl">03 — Archivo documental</div>
         <div class="section-title">Archivo de Reportes</div>
         <div class="section-desc">
-          Repositorio de los reportes, propuestas y materiales de Casiopia almacenados en la carpeta compartida de Google Drive. Cada documento se puede previsualizar sin salir del tablero, abrir en Drive o descargar.
+          Repositorio de los reportes, propuestas y materiales de Casiopia almacenados en la carpeta compartida de Google Drive, más el libro <a href="https://docs.google.com/spreadsheets/d/1u1tWfos-R5MbN7z72i1X6_BSkzh3L_nF/edit" target="_blank" rel="noopener"><strong>Ventas 2026 Dashboard</strong></a>. Cada documento se puede previsualizar sin salir del tablero, abrir en Drive o descargar.
+        </div>
+
+        <div class="gp-sync" aria-live="polite">
+          <div class="gp-sync-l">
+            <span class="gp-dot ok" id="arch-sync-dot"></span>
+            <span id="arch-sync-text">cargando…</span>
+          </div>
+          <button class="btn primary btn-sm" id="arch-sync-btn" title="Vuelve a leer la carpeta de reportes y el Excel vinculado en Drive">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span>Sincronizar con Drive</span>
+          </button>
         </div>
 
         <div class="grid-4 arch-kpis" id="arch-kpis"></div>

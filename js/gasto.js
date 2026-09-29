@@ -513,14 +513,9 @@
     renderSync('Lanzando la sincronización de las carpetas de Meta y Google…');
     const before = lastGenerated();
     try {
-      const startedAt = Date.now();
-      await global.Sheets.dispatch(SYNC_WORKFLOW);
-      const run = await global.Sheets.waitForRun(SYNC_WORKFLOW, startedAt, {
+      await global.Sheets.runWorkflow(SYNC_WORKFLOW, {
         onStatus: s => renderSync(s === 'queued' ? 'En cola en GitHub Actions…' : 'Leyendo las carpetas de Drive…'),
       });
-      if (run.conclusion !== 'success') {
-        throw new Error(`el workflow terminó con estado "${run.conclusion}". <a href="${esc(run.html_url)}" target="_blank" rel="noopener">Ver detalle ↗</a>`);
-      }
       // Lee los JSON recién commiteados, sin esperar el deploy de Pages
       const [meta, google] = await Promise.all([
         global.Sheets.fetchRepoJson(FILES.meta).catch(() => state.data.meta),
