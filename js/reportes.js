@@ -256,9 +256,9 @@
       data: {
         labels,
         datasets: [
-          { label: 'Inversión Meta',   data: R.monthly.map(m => m.meta.inv),   backgroundColor: COLORS.meta,   stack: 'inv', yAxisID: 'y', borderRadius: 4, order: 2 },
-          { label: 'Inversión Google', data: R.monthly.map(m => m.google.inv), backgroundColor: COLORS.google, stack: 'inv', yAxisID: 'y', borderRadius: 4, order: 2 },
-          { label: 'Compras', type: 'line', data: R.monthly.map(totalCompras), yAxisID: 'y1', borderColor: '#0f172a', backgroundColor: '#0f172a', borderWidth: 2, pointRadius: 4, tension: 0.3, order: 1 },
+          // Borde superior blanco = 2px de separación entre segmentos apilados
+          { label: 'Inversión Meta',   data: R.monthly.map(m => m.meta.inv),   backgroundColor: COLORS.meta,   stack: 'inv', borderColor: '#ffffff', borderWidth: { top: 2 } },
+          { label: 'Inversión Google', data: R.monthly.map(m => m.google.inv), backgroundColor: COLORS.google, stack: 'inv', borderRadius: { topLeft: 4, topRight: 4 } },
         ],
       },
       options: {
@@ -266,12 +266,14 @@
         interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: c => c.dataset.yAxisID === 'y1' ? ` Compras: ${c.parsed.y}` : ` ${c.dataset.label}: ${money(c.parsed.y)}` } },
+          tooltip: { callbacks: {
+            label: c => ` ${c.dataset.label}: ${money(c.parsed.y)}`,
+            footer: items => `Compras atribuidas: ${totalCompras(R.monthly[items[0].dataIndex])}`,
+          } },
         },
         scales: {
-          x:  { stacked: true, ticks: { color: axisColor, font: { size: 11 } }, grid: { display: false } },
-          y:  { stacked: true, beginAtZero: true, ticks: { color: axisColor, font: { size: 10 }, callback: money0 }, grid: { color: gridColor } },
-          y1: { position: 'right', beginAtZero: true, ticks: { color: axisColor, font: { size: 10 } }, grid: { display: false } },
+          x: { stacked: true, ticks: { color: axisColor, font: { size: 11 } }, grid: { display: false } },
+          y: { stacked: true, beginAtZero: true, ticks: { color: axisColor, font: { size: 10 }, callback: money0 }, grid: { color: gridColor } },
         },
       },
     });

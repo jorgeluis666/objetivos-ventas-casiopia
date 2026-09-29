@@ -1174,3 +1174,84 @@
   .arch-filters { grid-template-columns: 1fr; }
   .arch-preview-head { flex-direction: column; }
 }
+
+/* ── Gasto publicitario: pestañas por fuente ── */
+.gp-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0 14px;
+}
+.gp-tab {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: 12px;
+  background: #fff; cursor: pointer; text-align: left; font: inherit;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.gp-tab:hover { border-color: #cbd5e1; background: #f8fafc; }
+.gp-tab:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(185,28,28,.25); }
+.gp-tab.active { border-color: #111111; box-shadow: 0 0 0 1px #111111; background: #fff; }
+.gp-tab-ic {
+  width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .02em;
+}
+.gp-tab-name { display: block; font-size: 13px; font-weight: 700; color: var(--text); }
+.gp-tab-src { display: block; font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+.gp-source {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 10px 14px; margin-bottom: 4px;
+  background: #fff; border: 1px solid var(--border); border-radius: var(--r);
+  font-size: 12px; color: var(--text-2);
+}
+.gp-source-l, .gp-source-r { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.gp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.gp-dot.ok   { background: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.gp-dot.warn { background: var(--amber); box-shadow: 0 0 0 3px var(--amber-soft); }
+
+.gp-empty { text-align: center; padding: 40px 24px; margin-top: 14px; }
+.gp-empty-ic {
+  width: 48px; height: 48px; margin: 0 auto 12px; border-radius: 12px;
+  background: var(--amber-soft); color: var(--amber-text);
+  display: flex; align-items: center; justify-content: center;
+}
+.gp-empty-ic svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.gp-empty-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.gp-empty-text { max-width: 560px; margin: 8px auto 16px; font-size: 13px; color: var(--text-2); line-height: 1.6; }
+
+.gp-table-wrap { overflow-x: auto; }
+.gp-total-row td { background: #F8FAFC; font-weight: 600; }
+.gp-av { min-width: 130px; }
+.gp-av-wrap { display: flex; align-items: center; gap: 8px; }
+.gp-av-wrap .rep-pb { flex: 1; margin-top: 0; }
+.gp-ld-dash { background: transparent !important; border-top: 2px dashed var(--text); height: 0 !important; }
+.gp-note { font-size: 12px; color: var(--text-2); margin-top: 12px; }
+
+/* Embudo */
+.gp-funnel-row {
+  display: grid; grid-template-columns: 150px 1fr 80px 52px; gap: 10px; align-items: center;
+  padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px;
+}
+.gp-funnel-row:last-of-type { border-bottom: none; }
+.gp-funnel-name { color: var(--text-2); }
+.gp-funnel-bar { height: 10px; background: #F1F5F9; border-radius: 5px; overflow: hidden; }
+.gp-funnel-bar > div { height: 100%; background: var(--brand); border-radius: 5px; }
+.gp-funnel-val { text-align: right; font-weight: 600; color: var(--text); }
+.gp-funnel-rate { text-align: right; color: var(--muted); font-size: 11px; }
+
+/* Público */
+.gp-aud-row { display: grid; grid-template-columns: 64px 1fr 150px; gap: 10px; align-items: center; padding: 5px 0; font-size: 12px; }
+.gp-aud-name { color: var(--text-2); }
+.gp-aud-bar { height: 10px; background: #F1F5F9; border-radius: 5px; overflow: hidden; }
+.gp-aud-bar > div { height: 100%; background: var(--brand); border-radius: 5px; }
+.gp-aud-val { text-align: right; white-space: nowrap; }
+
+@media (max-width: 1100px) {
+  .gp-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .gp-funnel-row { grid-template-columns: 110px 1fr 64px 44px; }
+  .gp-aud-row { grid-template-columns: 52px 1fr 120px; }
+}

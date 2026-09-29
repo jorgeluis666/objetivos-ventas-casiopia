@@ -1,0 +1,306 @@
+{
+  "generated": "2026-09-28T21:40:17-05:00",
+  "source": {
+    "name": "Ventas 2026.xlsx",
+    "modifiedTime": null,
+    "url": "https://drive.google.com/file/d/1VydwmmTNpZtFi9RRy7TAXVpvgA54p5xy/view"
+  },
+  "channels": [
+    "Web",
+    "RRSS",
+    "La Mar",
+    "El Polo",
+    "Falabella",
+    "Otros"
+  ],
+  "months": [
+    {
+      "name": "Enero",
+      "objetivoTotal": 80000,
+      "objetivo": {
+        "Web": 20000,
+        "RRSS": 10000,
+        "La Mar": 20000,
+        "El Polo": 30000,
+        "Falabella": null,
+        "Otros": null
+      },
+      "ventas2025": 74444.11,
+      "total": 109125.2,
+      "net": {
+        "Web": 26406.3,
+        "RRSS": 10161.02,
+        "La Mar": 17865.51,
+        "El Polo": 43245.59,
+        "Falabella": 598.31,
+        "Otros": 10848.47
+      },
+      "orders": 412,
+      "ordersByChannel": {
+        "Web": 125,
+        "RRSS": 36,
+        "La Mar": 72,
+        "El Polo": 163,
+        "Falabella": 7,
+        "Otros": 9
+      },
+      "units": 1268
+    },
+    {
+      "name": "Febrero",
+      "objetivoTotal": 100000,
+      "objetivo": {
+        "Web": 30000,
+        "RRSS": 10000,
+        "La Mar": 17000,
+        "El Polo": 40000,
+        "Falabella": null,
+        "Otros": null
+      },
+      "ventas2025": 66722.29,
+      "total": 91647.37,
+      "net": {
+        "Web": 32934.66,
+        "RRSS": 4030.42,
+        "La Mar": 21116.19,
+        "El Polo": 29354.15,
+        "Falabella": 1053.39,
+        "Otros": 3158.56
+      },
+      "orders": 543,
+      "ordersByChannel": {
+        "Web": 231,
+        "RRSS": 31,
+        "La Mar": 107,
+        "El Polo": 144,
+        "Falabella": 15,
+        "Otros": 15
+      },
+      "units": 1229
+    },
+    {
+      "name": "Marzo",
+      "objetivoTotal": 120000,
+      "objetivo": {
+        "Web": 35000,
+        "RRSS": 10000,
+        "La Mar": 30000,
+        "El Polo": 50000,
+        "Falabella": null,
+        "Otros": null
+      },
+      "ventas2025": 101033.56,
+      "total": 116433.59,
+      "net": {
+        "Web": 38187.92,
+        "RRSS": 7452.54,
+        "La Mar": 21388.9,
+        "El Polo": 42776.95,
+        "Falabella": 2555.08,
+        "Otros": 4072.2
+      },
+      "orders": 721,
+      "ordersByChannel": {
+        "Web": 285,
+        "RRSS": 39,
+        "La Mar": 106,
+        "El Polo": 248,
+        "Falabella": 29,
+        "Otros": 14
+      },
+      "units": 1575
+    },
+    {
+      "name": "Abril",
+      "objetivoTotal": 120000,
+      "objetivo": {
+        "Web": 35000,
+        "RRSS": 10000,
+        "La Mar": 30000,
+        "El Polo": 45000,
+        "Falabella": null,
+        "Otros": null
+      },
+      "ventas2025": 102514.49,
+      "total": 103741.62,
+      "net": {
+        "Web": 36035.09,
+        "RRSS": 7083.01,
+        "La Mar": 17881.91,
+        "El Polo": 40292.88,
+        "Falabella": 2211.1,
+        "Otros": 237.63
+      },
+      "orders": 396,
+      "ordersByChannel": {
+        "Web": 144,
+        "RRSS": 25,
+        "La Mar": 78,
+        "El Polo": 130,
+        "Falabella": 17,
+        "Otros": 2
+      },
+      "units": 1132
+    },
+    {
+      "name": "Mayo",
+      "objetivoTotal": 110000,
+      "objetivo": {
+        "Web": 40000,
+        "RRSS": 10000,
+        "La Mar": 25000,
+        "El Polo": 40000,
+        "Falabella": null,
+        "Otros": null
+      },
+      "ventas2025": 88729.75,
+      "total": 100011.26,
+      "net": {
+        "Web": 30740.87,
+        "RRSS": 7914.92,
+        "La Mar": 22060,
+        "El Polo": 38097.93,
+        "Falabella": 342.37,
+        "Otros": 855.17
+      },
+      "orders": 393,
+      "ordersByChannel": {
+        "Web": 111,
+        "RRSS": 25,
+        "La Mar": 93,
+        "El Polo": 156,
+        "Falabella": 6,
+        "Otros": 2
+      },
+      "units": 979
+    },
+    {
+      "name": "Junio",
+      "objetivoTotal": 102000,
+      "objetivo": {
+        "Web": 40000,
+        "RRSS": 10000,
+        "La Mar": 25000,
+        "El Polo": 40000,
+        "Falabella": null,
+        "Otros": null
+      },
+      "ventas2025": 85068.64,
+      "total": 79143.9,
+      "net": {
+        "Web": 20380.51,
+        "RRSS": 5325.85,
+        "La Mar": 19348.47,
+        "El Polo": 33596.61,
+        "Falabella": 38.14,
+        "Otros": 454.32
+      },
+      "orders": 283,
+      "ordersByChannel": {
+        "Web": 71,
+        "RRSS": 17,
+        "La Mar": 68,
+        "El Polo": 122,
+        "Falabella": 1,
+        "Otros": 4
+      },
+      "units": 775
+    },
+    {
+      "name": "Julio",
+      "objetivoTotal": 85000,
+      "objetivo": {
+        "Web": 40000,
+        "RRSS": 10000,
+        "La Mar": 20000,
+        "El Polo": 40000,
+        "Falabella": null,
+        "Otros": null
+      },
+      "ventas2025": 73807.97,
+      "total": 104807.38,
+      "net": {
+        "Web": 28718.39,
+        "RRSS": 8898.31,
+        "La Mar": 13454.66,
+        "El Polo": 52878.39,
+        "Falabella": 857.63,
+        "Otros": 0
+      },
+      "orders": 319,
+      "ordersByChannel": {
+        "Web": 104,
+        "RRSS": 19,
+        "La Mar": 55,
+        "El Polo": 136,
+        "Falabella": 5,
+        "Otros": 0
+      },
+      "units": 939
+    },
+    {
+      "name": "Agosto",
+      "objetivoTotal": 96000,
+      "objetivo": {
+        "Web": 40000,
+        "RRSS": 10000,
+        "La Mar": 20000,
+        "El Polo": 55000,
+        "Falabella": null,
+        "Otros": null
+      },
+      "ventas2025": 80137.2,
+      "total": 115797.66,
+      "net": {
+        "Web": 27244.78,
+        "RRSS": 15456.78,
+        "La Mar": 26192.71,
+        "El Polo": 45738.98,
+        "Falabella": 1164.41,
+        "Otros": 0
+      },
+      "orders": 351,
+      "ordersByChannel": {
+        "Web": 88,
+        "RRSS": 29,
+        "La Mar": 75,
+        "El Polo": 151,
+        "Falabella": 8,
+        "Otros": 0
+      },
+      "units": 1027
+    },
+    {
+      "name": "Septiembre",
+      "objetivoTotal": 96000,
+      "objetivo": {
+        "Web": null,
+        "RRSS": null,
+        "La Mar": 25000,
+        "El Polo": 40000,
+        "Falabella": null,
+        "Otros": null
+      },
+      "ventas2025": 79401.02,
+      "total": 66170.84,
+      "net": {
+        "Web": 16482.62,
+        "RRSS": 6290.68,
+        "La Mar": 17539.15,
+        "El Polo": 23805.85,
+        "Falabella": 2052.54,
+        "Otros": 0
+      },
+      "orders": 223,
+      "ordersByChannel": {
+        "Web": 63,
+        "RRSS": 19,
+        "La Mar": 50,
+        "El Polo": 81,
+        "Falabella": 10,
+        "Otros": 0
+      },
+      "units": 625
+    }
+  ]
+}

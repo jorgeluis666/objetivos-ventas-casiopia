@@ -23,7 +23,7 @@
     'view-prod':   'Ranking y ventas por producto',
     'view-dist':   'Ventas por canal de distribución',
     'view-obj':    'Seguimiento de metas mensuales',
-    'view-rep':    'Meta Ads y Google Ads',
+    'view-rep':    'Ventas, Meta Ads y Google Ads',
     'view-arch':   'Documentos en Drive',
     'view-config': 'Gestión de accesos y alertas',
   };
@@ -34,7 +34,7 @@
     'view-prod':   ['chart-top-units', 'chart-top-rev', 'chart-types', 'chart-ticket'],
     'view-dist':   ['chart-dist-2025', 'chart-dist-2026', 'chart-abs'],
     'view-obj':    ['chart-weekly-combined'],
-    'view-rep':    ['chart-rep-inv', 'chart-rep-roas'],
+    'view-rep':    [],  // Gasto.init() re-anima los charts de la pestaña activa
     'view-arch':   [],
     'view-config': [],
   };
@@ -77,7 +77,7 @@
     }
 
     // Init perezoso del módulo de reportes (sus charts se crean ya visibles)
-    if (id === 'view-rep') window.Reportes?.init();
+    if (id === 'view-rep') window.Gasto?.init();
     if (id === 'view-arch') window.Archivo?.init();
 
     // Render perezoso de productos para no bloquear primera pantalla

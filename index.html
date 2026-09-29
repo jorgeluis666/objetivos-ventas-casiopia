@@ -45,7 +45,7 @@
       </div>
       <div class="s-text">
         <div class="s-title-nav">Gasto publicitario</div>
-        <div class="s-desc-nav">Meta Ads y Google Ads</div>
+        <div class="s-desc-nav">Ventas, Meta Ads y Google Ads</div>
       </div>
       <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </button>
@@ -328,11 +328,135 @@
       <!-- ══ VIEW: Gasto publicitario ══════════════════ -->
       <section class="view" id="view-rep">
         <div class="sec-lbl">05 — Gasto publicitario</div>
-        <div class="section-title">Gasto publicitario · Meta Ads + Google Ads</div>
+        <div class="section-title">Gasto publicitario · Ventas, Meta Ads y Google Ads</div>
         <div class="section-desc">
-          Resultados mensuales de pauta tomados de los reportes de Lima Retail en Drive. El <strong>ROAS web real</strong> divide la facturación de la tienda entre la inversión total; el <strong>ROAS de plataforma</strong> es la atribución que reporta cada canal (ambos reclaman ventas compartidas).
+          Cada fuente se muestra por separado. <strong>Ventas</strong> se sincroniza desde el Excel de ventas de Casiopia; <strong>Meta Ads</strong> y <strong>Google Ads</strong> desde sus carpetas de Drive. Los valores de conversión de Meta y Google son atribución de cada plataforma y no se suman a las ventas reales.
         </div>
 
+        <div class="gp-tabs" role="tablist" aria-label="Fuente de datos">
+          <button class="gp-tab active" role="tab" aria-selected="true" data-pane="ventas">
+            <span class="gp-tab-ic" style="background:#7C3AED">S/</span>
+            <span><span class="gp-tab-name">Ventas</span><span class="gp-tab-src">Excel sincronizado</span></span>
+          </button>
+          <button class="gp-tab" role="tab" aria-selected="false" data-pane="meta">
+            <span class="gp-tab-ic" style="background:#b91c1c">M</span>
+            <span><span class="gp-tab-name">Meta Ads</span><span class="gp-tab-src">Carpeta de Drive</span></span>
+          </button>
+          <button class="gp-tab" role="tab" aria-selected="false" data-pane="google">
+            <span class="gp-tab-ic" style="background:#D97706">G</span>
+            <span><span class="gp-tab-name">Google Ads</span><span class="gp-tab-src">Carpeta de Drive</span></span>
+          </button>
+          <button class="gp-tab" role="tab" aria-selected="false" data-pane="reportes">
+            <span class="gp-tab-ic" style="background:#475569">PDF</span>
+            <span><span class="gp-tab-name">Reportes de agencia</span><span class="gp-tab-src">Resumen de los PDF</span></span>
+          </button>
+        </div>
+
+        <!-- ── Pane: Ventas (Excel) ── -->
+        <div class="gp-pane" id="gp-pane-ventas" role="tabpanel">
+          <div class="gp-source" id="gp-ventas-source"></div>
+          <div class="gp-body" id="gp-ventas-body">
+            <div class="rep-toolbar">
+              <div class="view-toggle" id="gp-ventas-months" role="group" aria-label="Mes de ventas"></div>
+            </div>
+            <div class="rep-stack">
+              <div class="grid-4" id="gp-ventas-kpis"></div>
+              <div class="panel">
+                <div class="panel-head"><div>
+                  <div class="panel-title">Ventas netas por mes y canal</div>
+                  <div class="panel-sub">Sin IGV · la línea marca el objetivo mensual del EERR</div>
+                </div></div>
+                <div class="chart-legend" id="gp-ventas-legend"></div>
+                <div class="chart-wrap h-300"><canvas id="chart-gp-ventas" role="img" aria-label="Ventas netas por mes y canal con objetivo"></canvas></div>
+              </div>
+              <div class="panel">
+                <div class="panel-head"><div>
+                  <div class="panel-title" id="gp-ventas-table-title">Detalle por canal</div>
+                  <div class="panel-sub">Ventas netas, objetivo del canal, pedidos y ticket promedio</div>
+                </div></div>
+                <div id="gp-ventas-table"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Pane: Meta Ads (carpeta) ── -->
+        <div class="gp-pane" id="gp-pane-meta" role="tabpanel" hidden>
+          <div class="gp-source" id="gp-meta-source"></div>
+          <div class="gp-body" id="gp-meta-body">
+            <div class="rep-toolbar">
+              <div class="view-toggle" id="gp-meta-months" role="group" aria-label="Mes de Meta Ads"></div>
+              <span class="rep-period-meta" id="gp-meta-range"></span>
+            </div>
+            <div class="rep-stack">
+              <div class="grid-4" id="gp-meta-kpis"></div>
+              <div class="grid-2">
+                <div class="panel">
+                  <div class="panel-head"><div>
+                    <div class="panel-title">Embudo de conversión</div>
+                    <div class="panel-sub">De la impresión a la compra · % respecto al paso anterior</div>
+                  </div></div>
+                  <div id="gp-meta-funnel"></div>
+                </div>
+                <div class="panel">
+                  <div class="panel-head"><div>
+                    <div class="panel-title">Inversión diaria</div>
+                    <div class="panel-sub">Importe gastado por día · el tooltip muestra las compras</div>
+                  </div></div>
+                  <div class="chart-wrap h-260"><canvas id="chart-gp-meta-daily" role="img" aria-label="Inversión diaria en Meta Ads"></canvas></div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-head"><div>
+                  <div class="panel-title">Campañas</div>
+                  <div class="panel-sub">Ordenadas por inversión del mes</div>
+                </div></div>
+                <div id="gp-meta-campaigns"></div>
+              </div>
+              <div class="grid-2">
+                <div class="panel">
+                  <div class="panel-head"><div>
+                    <div class="panel-title">Top anuncios por compras</div>
+                    <div class="panel-sub">Enlace a la vista previa del anuncio en Meta</div>
+                  </div></div>
+                  <div id="gp-meta-ads"></div>
+                </div>
+                <div class="panel">
+                  <div class="panel-head"><div>
+                    <div class="panel-title">Público</div>
+                    <div class="panel-sub">Compras e inversión por edad y sexo</div>
+                  </div></div>
+                  <div id="gp-meta-audience"></div>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="panel">
+                  <div class="panel-head"><div>
+                    <div class="panel-title">Inversión mensual</div>
+                    <div class="panel-sub">Importe gastado en Meta Ads por mes</div>
+                  </div></div>
+                  <div class="chart-wrap h-220"><canvas id="chart-gp-meta-spend" role="img" aria-label="Inversión mensual en Meta Ads"></canvas></div>
+                </div>
+                <div class="panel">
+                  <div class="panel-head"><div>
+                    <div class="panel-title">ROAS mensual</div>
+                    <div class="panel-sub">Valor de conversión ÷ inversión (atribución de Meta)</div>
+                  </div></div>
+                  <div class="chart-wrap h-220"><canvas id="chart-gp-meta-roas" role="img" aria-label="ROAS mensual de Meta Ads"></canvas></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Pane: Google Ads (carpeta) ── -->
+        <div class="gp-pane" id="gp-pane-google" role="tabpanel" hidden>
+          <div class="gp-source" id="gp-google-source"></div>
+          <div class="gp-body" id="gp-google-body"></div>
+        </div>
+
+        <!-- ── Pane: Reportes de agencia (PDF) ── -->
+        <div class="gp-pane" id="gp-pane-reportes" role="tabpanel" hidden>
         <div class="rep-toolbar">
           <div class="view-toggle" id="rep-period" role="group" aria-label="Mes del reporte"></div>
           <span class="rep-period-meta" id="rep-period-meta"></span>
@@ -385,13 +509,12 @@
         <div class="grid-2">
           <div class="panel">
             <div class="panel-head"><div>
-              <div class="panel-title">Inversión y compras</div>
-              <div class="panel-sub">Inversión apilada por canal · compras atribuidas (eje derecho)</div>
+              <div class="panel-title">Inversión por canal</div>
+              <div class="panel-sub">Inversión apilada Meta + Google · el tooltip muestra las compras atribuidas</div>
             </div></div>
             <div class="chart-legend">
               <span class="legend-item"><span class="lsq" style="background:#b91c1c"></span>Meta</span>
               <span class="legend-item"><span class="lsq" style="background:#D97706"></span>Google</span>
-              <span class="legend-item"><span class="ld" style="background:#0f172a"></span>Compras</span>
             </div>
             <div class="chart-wrap h-260"><canvas id="chart-rep-inv" role="img" aria-label="Inversión y compras por mes"></canvas></div>
           </div>
@@ -409,7 +532,7 @@
           </div>
         </div>
         <p class="rep-foot-note">* Septiembre llega hasta el día 27 y aún no incluye la facturación de la tienda.</p>
-
+        </div>
       </section>
 
       <!-- ══ VIEW: Archivo de Reportes ═════════════════ -->
@@ -569,6 +692,7 @@
 <script src="js/charts.js"></script>
 <script src="js/objectives.js"></script>
 <script src="js/data-reportes.js"></script>
+<script src="js/gasto.js"></script>
 <script src="js/reportes.js"></script>
 <script src="js/archivo.js"></script>
 <script src="js/config.js"></script>
