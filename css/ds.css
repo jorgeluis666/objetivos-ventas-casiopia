@@ -5,9 +5,9 @@
 
 /* ── TOKENS ── */
 :root {
-  --sidebar-bg:    #111111;
-  --sidebar-text:  #ffffff;
-  --sidebar-muted: #475569;
+  --sidebar-bg:    #ffffff;
+  --sidebar-text:  #0f172a;
+  --sidebar-muted: #64748b;
   --bg:            #f4f4f5;
   --card:          #FFFFFF;
   --border:        #e5e7eb;
@@ -49,9 +49,10 @@ a { text-decoration: none; color: inherit; }
   min-width: 264px;
   background: var(--sidebar-bg);
   color: var(--sidebar-text);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
   position: sticky;
   top: 0;
   max-height: 100vh;
@@ -66,76 +67,95 @@ a { text-decoration: none; color: inherit; }
 
 /* ── SIDEBAR ── */
 .s-brand {
-  padding: 20px 20px 18px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 24px 20px 18px;
   flex-shrink: 0;
 }
+.s-brand-text { min-width: 0; }
 .s-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #fff;
-  letter-spacing: -0.01em;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 .s-sub {
-  font-size: 11px;
-  color: #64748B;
-  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-2);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  white-space: normal;
+}
+.s-ver {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--brand-text);
+  background: var(--brand-soft);
+  border: 1px solid #fecaca;
+  border-radius: 20px;
+  padding: 1px 7px;
 }
 .s-group-lbl {
   font-size: 10px;
   text-transform: uppercase;
   color: var(--sidebar-muted);
-  letter-spacing: 0.08em;
-  padding: 10px 20px 5px;
-  font-weight: 600;
+  letter-spacing: 0.12em;
+  padding: 4px 22px 0;
+  font-weight: 700;
 }
 .s-item {
   display: grid;
   grid-template-columns: 44px 1fr 16px;
   gap: 12px;
   align-items: center;
-  padding: 12px 10px 12px 8px;
-  min-height: 76px;
-  margin: 0 8px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.07);
-  background: transparent;
+  padding: 10px 12px 10px 10px;
+  min-height: 66px;
+  margin: 0 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
   color: var(--sidebar-text);
   cursor: pointer;
-  transition: background .16s ease, border-color .16s ease, transform .16s ease;
+  transition: background .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease;
   user-select: none;
-  width: calc(100% - 16px);
+  width: calc(100% - 28px);
   text-align: left;
 }
-.s-item:hover { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,0.13); transform: translateY(-1px); }
-.s-item:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(185,28,28,0.35); }
+.s-item:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
+.s-item:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(185,28,28,0.25); }
 .s-item.disabled,
 .s-item:disabled {
-  opacity: .42;
+  opacity: .45;
   cursor: not-allowed;
-  filter: grayscale(.35);
+  filter: grayscale(.4);
 }
 .s-item.disabled:hover,
 .s-item:disabled:hover {
-  background: transparent;
-  border-color: rgba(255,255,255,0.07);
+  background: #ffffff;
+  border-color: #e2e8f0;
   transform: none;
 }
 .s-item.disabled .s-chevron,
 .s-item:disabled .s-chevron {
   display: none;
 }
-.s-item.active { background: #b91c1c; border-color: #b91c1c; color: #ffffff; }
-.s-item.active .s-icon { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.25); color: #ffffff; }
+/* Activo: fondo suave de marca + contorno oscuro (sin mover el layout) */
+.s-item.active { background: #fef2f2; border-color: #111111; box-shadow: 0 0 0 1px #111111; }
+.s-item.active:hover { transform: none; }
+.s-item.active .s-icon { background: #ffffff; border-color: #fecaca; color: var(--brand); }
 
 .s-icon {
   width: 44px;
   height: 44px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.06);
-  color: #94a3b8;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -144,25 +164,25 @@ a { text-decoration: none; color: inherit; }
 .s-icon svg { width: 20px; height: 20px; stroke-width: 1.75; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
 .s-text { min-width: 0; }
 .s-title-nav {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.2;
-  color: #ffffff;
+  color: var(--text);
 }
 .s-desc-nav {
   margin-top: 3px;
-  font-size: 11px;
+  font-size: 12px;
   color: #64748b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.35;
 }
-.s-item.active .s-title-nav { color: #ffffff; }
-.s-item.active .s-desc-nav { color: rgba(255,255,255,0.65); }
-.s-chevron { color: #475569; flex-shrink: 0; display: flex; align-items: center; }
+.s-item.active .s-title-nav { color: var(--brand); }
+.s-item.active .s-desc-nav { color: #64748b; }
+.s-chevron { color: #94a3b8; flex-shrink: 0; display: flex; align-items: center; }
 .s-chevron svg { width: 16px; height: 16px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
-.s-item.active .s-chevron { color: rgba(255,255,255,0.7); }
+.s-item.active .s-chevron { color: var(--brand); }
 
 /* ── TOPBAR ── */
 .topbar {
@@ -196,6 +216,95 @@ a { text-decoration: none; color: inherit; }
   font-weight: 500;
 }
 .topbar-meta { display: flex; align-items: center; gap: 10px; }
+.topbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.topbar-left .topbar-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── Sidebar minimizable ──
+   Estado: .shell.sidebar-collapsed (lo pone wireSidebarToggle() en main.js).
+   Desktop: tira de 88px solo con íconos. ≤900px: el panel se oculta. */
+.sidebar-toggle {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #ffffff;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.sidebar-toggle:hover { background: #fafafa; border-color: #fecaca; color: var(--brand); }
+.sidebar-toggle:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(185,28,28,.25); }
+.sidebar-toggle svg {
+  width: 18px; height: 18px;
+  fill: none; stroke: currentColor; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.sidebar-toggle .st-arrow {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform .2s ease;
+}
+.shell.sidebar-collapsed .sidebar-toggle .st-arrow { transform: scaleX(-1); }
+
+.sidebar { overflow-x: hidden; white-space: nowrap; transition: width .2s ease, min-width .2s ease, padding .2s ease; }
+.shell.no-anim .sidebar,
+.shell.no-anim .sidebar-toggle .st-arrow { transition: none; }
+
+/* Logo Casiopia: imagen cuadrada (img/casiopia-logo.jpg, 1020×1020)
+   completa dentro de un recuadro de esquinas redondeadas. Minimizado,
+   el mismo recuadro queda como único elemento de la marca. */
+.s-logo {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: #011f07 url("../img/casiopia-logo.jpg") no-repeat center / cover;
+  box-shadow: 0 1px 2px rgba(15,23,42,.08), 0 4px 12px rgba(15,23,42,.10);
+}
+.s-group-bottom { margin-top: auto; }
+
+.shell.sidebar-collapsed .sidebar { width: 88px; min-width: 88px; padding-bottom: 16px; }
+.shell.sidebar-collapsed .s-brand { padding: 20px 0 14px; justify-content: center; }
+.shell.sidebar-collapsed .s-logo { width: 52px; height: 52px; border-radius: 12px; }
+.shell.sidebar-collapsed .s-brand-text,
+.shell.sidebar-collapsed .s-text,
+.shell.sidebar-collapsed .s-chevron,
+.shell.sidebar-collapsed .s-modulo-activo { display: none; }
+/* Las etiquetas de grupo se aplanan (no display:none) para que
+   "Sistema" siga empujando "Usuarios y Claves" al fondo con margin-top:auto. */
+.shell.sidebar-collapsed .s-group-lbl {
+  height: 0; padding: 0; overflow: hidden; visibility: hidden;
+}
+.shell.sidebar-collapsed .s-item {
+  grid-template-columns: 44px;
+  justify-content: center;
+  padding: 10px 0;
+  min-height: 60px;
+  margin: 0 14px;
+  width: calc(100% - 28px);
+}
+
+/* Tooltip con el nombre del módulo en la tira minimizada */
+.s-tip {
+  position: fixed;
+  z-index: 50;
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  background: #111111;
+  color: #fff;
+  font-size: 12px; font-weight: 600;
+  white-space: nowrap;
+  box-shadow: var(--sh2);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-4px, -50%);
+  transition: opacity .12s ease, transform .12s ease;
+}
+.s-tip.show { opacity: 1; transform: translate(0, -50%); }
 
 /* ── CONTENT ── */
 .content {
@@ -561,5 +670,6 @@ td.red   { color: var(--red);   font-weight: 600; }
   .sidebar { width: 100%; min-width: 0; position: relative; max-height: none; }
   .content { padding: 20px 18px; gap: 24px; }
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-  .topbar { padding: 12px 18px; }
+  .topbar { padding: 12px 18px; flex-wrap: wrap; row-gap: 10px; }
+  .shell.sidebar-collapsed .sidebar { display: none; }
 }

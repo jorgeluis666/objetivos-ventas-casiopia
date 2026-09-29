@@ -19,13 +19,16 @@
 <div class="shell">
 
   <!-- ══ SIDEBAR ══════════════════════════════════════ -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="s-brand">
-      <div class="s-title">Dashboard Ventas</div>
-      <div class="s-sub">Lima Retail · 2026</div>
+      <div class="s-logo" role="img" aria-label="Casiopia Home"></div>
+      <div class="s-brand-text">
+        <div class="s-title">Casiopia</div>
+        <div class="s-sub">BI Agencia Lima Retail <span class="s-ver">v1.0.0</span></div>
+      </div>
     </div>
 
-    <div class="s-group-lbl">Reportes</div>
+    <div class="s-group-lbl">Módulos activos</div>
     <button class="s-item active" data-view="view-obj">
       <div class="s-icon">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
@@ -33,6 +36,26 @@
       <div class="s-text">
         <div class="s-title-nav">Objetivos 2026</div>
         <div class="s-desc-nav">Seguimiento de metas mensuales</div>
+      </div>
+      <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </button>
+    <button class="s-item" data-view="view-rep">
+      <div class="s-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+      </div>
+      <div class="s-text">
+        <div class="s-title-nav">Gasto publicitario</div>
+        <div class="s-desc-nav">Meta Ads y Google Ads</div>
+      </div>
+      <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </button>
+    <button class="s-item" data-view="view-arch">
+      <div class="s-icon">
+        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+      </div>
+      <div class="s-text">
+        <div class="s-title-nav">Archivo de Reportes</div>
+        <div class="s-desc-nav">Documentos en Drive</div>
       </div>
       <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </button>
@@ -67,7 +90,7 @@
       <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </button>
 
-    <div class="s-group-lbl" style="margin-top:auto;">Sistema</div>
+    <div class="s-group-lbl s-group-bottom">Sistema</div>
     <button class="s-item" data-view="view-config">
       <div class="s-icon">
         <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -91,7 +114,18 @@
   <main class="main">
 
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title">Objetivos 2026</div>
+      <div class="topbar-left">
+        <button type="button" class="sidebar-toggle" id="sidebar-toggle"
+                aria-controls="sidebar" aria-expanded="true"
+                aria-label="Minimizar panel" title="Minimizar panel">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="16" rx="2.5"/>
+            <line x1="9" y1="4" x2="9" y2="20"/>
+            <polyline class="st-arrow" points="16 9 13 12 16 15"/>
+          </svg>
+        </button>
+        <div class="topbar-title" id="topbar-title">Objetivos 2026</div>
+      </div>
       <div class="topbar-meta">
         <span class="topbar-pill sync" id="sync-indicator">
           <span class="sync-dot"></span><span>cargando…</span>
@@ -291,9 +325,134 @@
         <div id="month-panels"></div>
       </section>
 
+      <!-- ══ VIEW: Gasto publicitario ══════════════════ -->
+      <section class="view" id="view-rep">
+        <div class="sec-lbl">05 — Gasto publicitario</div>
+        <div class="section-title">Gasto publicitario · Meta Ads + Google Ads</div>
+        <div class="section-desc">
+          Resultados mensuales de pauta tomados de los reportes de Lima Retail en Drive. El <strong>ROAS web real</strong> divide la facturación de la tienda entre la inversión total; el <strong>ROAS de plataforma</strong> es la atribución que reporta cada canal (ambos reclaman ventas compartidas).
+        </div>
+
+        <div class="rep-toolbar">
+          <div class="view-toggle" id="rep-period" role="group" aria-label="Mes del reporte"></div>
+          <span class="rep-period-meta" id="rep-period-meta"></span>
+          <a class="btn ghost btn-sm rep-open" id="rep-open-pdf" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Abrir reporte PDF
+          </a>
+        </div>
+
+        <div class="rep-stack">
+          <div class="grid-4" id="rep-kpis"></div>
+          <div class="grid-2" id="rep-channels"></div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="panel-head"><div>
+                <div class="panel-title">Campañas Meta</div>
+                <div class="panel-sub">Gasto, compras y ROAS por campaña</div>
+              </div></div>
+              <div id="rep-campaigns"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><div>
+                <div class="panel-title">Top anuncios por compras</div>
+                <div class="panel-sub">★ mejor pieza del mes</div>
+              </div></div>
+              <div id="rep-ads"></div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="panel-head"><div>
+                <div class="panel-title">Público y segmentación</div>
+                <div class="panel-sub">Quién compra y dónde está la eficiencia</div>
+              </div></div>
+              <div id="rep-audience"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><div>
+                <div class="panel-title">Lectura del mes</div>
+                <div class="panel-sub">Qué funcionó y próximos pasos</div>
+              </div></div>
+              <div id="rep-insights"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec-lbl rep-sec">Tendencia mensual</div>
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head"><div>
+              <div class="panel-title">Inversión y compras</div>
+              <div class="panel-sub">Inversión apilada por canal · compras atribuidas (eje derecho)</div>
+            </div></div>
+            <div class="chart-legend">
+              <span class="legend-item"><span class="lsq" style="background:#b91c1c"></span>Meta</span>
+              <span class="legend-item"><span class="lsq" style="background:#D97706"></span>Google</span>
+              <span class="legend-item"><span class="ld" style="background:#0f172a"></span>Compras</span>
+            </div>
+            <div class="chart-wrap h-260"><canvas id="chart-rep-inv" role="img" aria-label="Inversión y compras por mes"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div>
+              <div class="panel-title">ROAS por canal</div>
+              <div class="panel-sub">Plataforma (Meta, Google) vs. web real</div>
+            </div></div>
+            <div class="chart-legend">
+              <span class="legend-item"><span class="lsq" style="background:#b91c1c"></span>Meta</span>
+              <span class="legend-item"><span class="lsq" style="background:#D97706"></span>Google</span>
+              <span class="legend-item"><span class="lsq" style="background:#059669"></span>Web real</span>
+            </div>
+            <div class="chart-wrap h-260"><canvas id="chart-rep-roas" role="img" aria-label="ROAS por canal y mes"></canvas></div>
+          </div>
+        </div>
+        <p class="rep-foot-note">* Septiembre llega hasta el día 27 y aún no incluye la facturación de la tienda.</p>
+
+      </section>
+
+      <!-- ══ VIEW: Archivo de Reportes ═════════════════ -->
+      <section class="view" id="view-arch">
+        <div class="sec-lbl">06 — Archivo documental</div>
+        <div class="section-title">Archivo de Reportes</div>
+        <div class="section-desc">
+          Repositorio de los reportes, propuestas y materiales de Casiopia almacenados en la carpeta compartida de Google Drive. Cada documento se puede previsualizar sin salir del tablero, abrir en Drive o descargar.
+        </div>
+
+        <div class="grid-4 arch-kpis" id="arch-kpis"></div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Documentos de la carpeta</div>
+              <div class="panel-sub" id="arch-sub"></div>
+            </div>
+            <a class="btn primary" id="arch-folder-link" href="#" target="_blank" rel="noopener">Abrir carpeta en Drive</a>
+          </div>
+
+          <div class="arch-filters">
+            <input class="inp arch-search" type="search" id="arch-search" placeholder="Buscar por nombre, tipo o periodo" aria-label="Buscar documento">
+            <select class="ch-select arch-select" id="arch-type" aria-label="Tipo de documento"></select>
+            <select class="ch-select arch-select" id="arch-period" aria-label="Periodo"></select>
+            <select class="ch-select arch-select" id="arch-sort" aria-label="Orden">
+              <option value="recent">Más recientes</option>
+              <option value="oldest">Más antiguos</option>
+              <option value="name">Nombre A–Z</option>
+              <option value="size">Mayor peso</option>
+            </select>
+            <label class="arch-check">
+              <input type="checkbox" id="arch-current"> Solo versiones vigentes
+            </label>
+          </div>
+
+          <div class="arch-table-wrap" id="arch-list"></div>
+        </div>
+      </section>
+
       <!-- ══ VIEW: Usuarios y Claves ═══════════════════ -->
       <section class="view" id="view-config">
-        <div class="sec-lbl">05 — Sistema</div>
+        <div class="sec-lbl">07 — Sistema</div>
         <div class="section-title">Usuarios y Claves</div>
         <div class="section-desc">
           Gestión de destinatarios del reporte semanal de ventas y configuración del sistema de alertas.
@@ -365,6 +524,24 @@
   </main>
 </div>
 
+<!-- Modal: previsualización de documentos del Archivo -->
+<div class="modal-overlay" id="modal-arch-preview" aria-hidden="true">
+  <div class="modal arch-preview" role="dialog" aria-modal="true" aria-labelledby="arch-preview-title">
+    <div class="arch-preview-head">
+      <div>
+        <h3 id="arch-preview-title"></h3>
+        <div class="arch-preview-file" id="arch-preview-file"></div>
+      </div>
+      <div class="arch-preview-actions">
+        <a class="btn" id="arch-preview-drive" href="#" target="_blank" rel="noopener">Drive</a>
+        <a class="btn" id="arch-preview-dl" href="#" target="_blank" rel="noopener">Descargar</a>
+        <button class="btn ghost" data-action="close" aria-label="Cerrar">✕</button>
+      </div>
+    </div>
+    <iframe id="arch-preview-frame" title="Vista previa del documento" allow="autoplay"></iframe>
+  </div>
+</div>
+
 <!-- Modal: PAT de GitHub para forzar sync -->
 <div class="modal-overlay" id="modal-pat">
   <div class="modal">
@@ -391,6 +568,9 @@
 <script src="js/data-live.js"></script>
 <script src="js/charts.js"></script>
 <script src="js/objectives.js"></script>
+<script src="js/data-reportes.js"></script>
+<script src="js/reportes.js"></script>
+<script src="js/archivo.js"></script>
 <script src="js/config.js"></script>
 <script src="js/sheets.js"></script>
 <script src="js/main.js"></script>

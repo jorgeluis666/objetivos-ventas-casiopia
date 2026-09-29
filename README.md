@@ -17,6 +17,9 @@ Los datos de 2026 se sincronizan automáticamente desde un Google Sheet mediante
     data-live.js          Fetcher de data/ventas-2026.json
     charts.js             Instancias de Chart.js
     objectives.js         Vista de Objetivos (pace tracker, weekly charts)
+    data-reportes.js      KPIs de los reportes de Ads + índice de la carpeta de Drive
+    reportes.js           Vista Gasto publicitario (KPIs, campañas, tendencia)
+    archivo.js            Vista Archivo de Reportes (accesos directos a Drive)
     sheets.js             Indicador de sync + trigger de workflow
     main.js               Orquestación: init, navegación, render
   data/
@@ -28,6 +31,10 @@ Los datos de 2026 se sincronizan automáticamente desde un Google Sheet mediante
     update-data.yml       Sync horario del sheet + workflow_dispatch
     deploy.yml            Build + deploy a GitHub Pages en cada push a main
 ```
+
+## Módulos Gasto publicitario y Archivo de Reportes
+
+**Gasto publicitario** resume los reportes mensuales de pauta (Meta + Google) de la carpeta de Drive *Reportes Casiopia*. **Archivo de Reportes** lista todos los archivos de esa carpeta con filtros, previsualización, enlace a Drive y descarga. Ambos leen `js/data-reportes.js`: para sumar un mes nuevo, agregá un objeto a `monthly` (KPIs del PDF) y el archivo a `library` (`fileId`, tipo, periodo, fecha y peso en bytes).
 
 ## Desarrollo local
 

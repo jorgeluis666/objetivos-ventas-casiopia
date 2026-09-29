@@ -12,6 +12,8 @@
     'view-prod': 'Productos Web · 2026',
     'view-dist': 'Distribución por canal',
     'view-obj':  'Objetivos 2026',
+    'view-rep':  'Gasto publicitario',
+    'view-arch': 'Archivo de Reportes',
     'view-config': 'Usuarios y Claves',
   };
 
@@ -21,6 +23,8 @@
     'view-prod':   'Ranking y ventas por producto',
     'view-dist':   'Ventas por canal de distribución',
     'view-obj':    'Seguimiento de metas mensuales',
+    'view-rep':    'Meta Ads y Google Ads',
+    'view-arch':   'Documentos en Drive',
     'view-config': 'Gestión de accesos y alertas',
   };
 
@@ -30,6 +34,8 @@
     'view-prod':   ['chart-top-units', 'chart-top-rev', 'chart-types', 'chart-ticket'],
     'view-dist':   ['chart-dist-2025', 'chart-dist-2026', 'chart-abs'],
     'view-obj':    ['chart-weekly-combined'],
+    'view-rep':    ['chart-rep-inv', 'chart-rep-roas'],
+    'view-arch':   [],
     'view-config': [],
   };
 
@@ -70,6 +76,10 @@
       window.Config?.init();
     }
 
+    // Init perezoso del módulo de reportes (sus charts se crean ya visibles)
+    if (id === 'view-rep') window.Reportes?.init();
+    if (id === 'view-arch') window.Archivo?.init();
+
     // Render perezoso de productos para no bloquear primera pantalla
     if (id === 'view-prod' && !state.renderedProducts) {
       renderProducts();
@@ -92,6 +102,73 @@
         showView(btn.dataset.view);
       });
     });
+  }
+
+  // ── Sidebar minimizable ──
+  // Estado recordado en localStorage ('1' minimizado, '0' abierto). Si el
+  // navegador bloquea el storage, el panel arranca expandido sin errores.
+  const SIDEBAR_KEY = 'rb-sidebar-collapsed';
+
+  function wireSidebarToggle() {
+    const shell   = document.querySelector('.shell');
+    const sidebar = document.getElementById('sidebar');
+    const toggle  = document.getElementById('sidebar-toggle');
+    if (!shell || !sidebar || !toggle) return;
+
+    const items = [...sidebar.querySelectorAll('.s-item')];
+    const tip = document.createElement('div');
+    tip.className = 's-tip';
+    tip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tip);
+
+    function apply(collapsed) {
+      shell.classList.toggle('sidebar-collapsed', collapsed);
+      const label = collapsed ? 'Expandir panel' : 'Minimizar panel';
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+      toggle.setAttribute('aria-label', label);
+      toggle.title = label;
+      // Con el texto oculto, el nombre accesible sale del título del módulo
+      items.forEach(it => {
+        const name = it.querySelector('.s-title-nav')?.textContent.trim();
+        if (collapsed && name) it.setAttribute('aria-label', name);
+        else it.removeAttribute('aria-label');
+      });
+      if (!collapsed) tip.classList.remove('show');
+    }
+
+    let saved = null;
+    try { saved = localStorage.getItem(SIDEBAR_KEY); } catch (e) { /* storage bloqueado */ }
+    // Restaurar sin animación para que no "salte" al cargar
+    shell.classList.add('no-anim');
+    apply(saved === '1');
+    requestAnimationFrame(() => requestAnimationFrame(() => shell.classList.remove('no-anim')));
+
+    toggle.addEventListener('click', () => {
+      const collapsed = !shell.classList.contains('sidebar-collapsed');
+      apply(collapsed);
+      try { localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0'); } catch (e) { /* ignore */ }
+    });
+
+    function showTip(item) {
+      if (!shell.classList.contains('sidebar-collapsed')) return;
+      const name = item.querySelector('.s-title-nav')?.textContent.trim();
+      if (!name) return;
+      tip.textContent = name;
+      const r = item.getBoundingClientRect();
+      tip.style.left = (sidebar.getBoundingClientRect().right + 10) + 'px';
+      tip.style.top  = (r.top + r.height / 2) + 'px';
+      tip.classList.add('show');
+    }
+    const hideTip = () => tip.classList.remove('show');
+
+    items.forEach(it => {
+      it.addEventListener('mouseenter', () => showTip(it));
+      it.addEventListener('mouseleave', hideTip);
+      it.addEventListener('focus', () => showTip(it));
+      it.addEventListener('blur', hideTip);
+      it.addEventListener('click', hideTip);
+    });
+    sidebar.addEventListener('scroll', hideTip, { passive: true });
   }
 
   // ── YoY ──
@@ -371,6 +448,7 @@
     Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif';
 
     wireNav();
+    wireSidebarToggle();
     const hashView = window.location.hash.slice(1);
     showView(Object.keys(VIEW_TITLES).includes(hashView) ? hashView : 'view-obj');
 

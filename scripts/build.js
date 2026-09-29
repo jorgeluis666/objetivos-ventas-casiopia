@@ -24,7 +24,8 @@ function inlineCss(html) {
     /<link\s+rel="stylesheet"\s+href="([^"]+)"\s*>/g,
     (match, href) => {
       if (/^https?:\/\//.test(href)) return match;
-      const css = readFile(href);
+      // Las rutas url(../x) son relativas a css/; ya inline, lo son al HTML.
+      const css = readFile(href).replace(/url\((['"]?)\.\.\//g, 'url($1');
       return `<style>\n/* ${href} */\n${css}\n</style>`;
     }
   );
@@ -60,6 +61,13 @@ function copyDataDir() {
   }
 }
 
+function copyImgDir() {
+  const srcImg  = path.join(ROOT, 'img');
+  const destImg = path.join(DIST_DIR, 'img');
+  if (!fs.existsSync(srcImg)) return;
+  fs.cpSync(srcImg, destImg, { recursive: true });
+}
+
 function main() {
   const rawHtml = readFile('index.html');
   let html = inlineCss(rawHtml);
@@ -68,10 +76,11 @@ function main() {
   ensureDir(DIST_DIR);
   fs.writeFileSync(DIST_HTML, html, 'utf8');
   copyDataDir();
+  copyImgDir();
 
   const size = (fs.statSync(DIST_HTML).size / 1024).toFixed(1);
   console.log(`[build] escrito ${path.relative(ROOT, DIST_HTML)} (${size} KB)`);
-  console.log(`[build] data copiada a dist/data/`);
+  console.log(`[build] data copiada a dist/data/ e img/ a dist/img/`);
 }
 
 try {
