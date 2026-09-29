@@ -45,7 +45,7 @@
       </div>
       <div class="s-text">
         <div class="s-title-nav">Gasto publicitario</div>
-        <div class="s-desc-nav">Ventas, Meta Ads y Google Ads</div>
+        <div class="s-desc-nav">Meta Ads y Google Ads</div>
       </div>
       <div class="s-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </button>
@@ -173,60 +173,35 @@
       <!-- ══ VIEW: Gasto publicitario ══════════════════ -->
       <section class="view" id="view-rep">
         <div class="sec-lbl">02 — Gasto publicitario</div>
-        <div class="section-title">Gasto publicitario · Ventas, Meta Ads y Google Ads</div>
+        <div class="section-title">Gasto publicitario · Meta Ads y Google Ads</div>
         <div class="section-desc">
-          Cada fuente se muestra por separado. <strong>Ventas</strong> se sincroniza desde el Excel de ventas de Casiopia; <strong>Meta Ads</strong> y <strong>Google Ads</strong> desde sus carpetas de Drive. Los valores de conversión de Meta y Google son atribución de cada plataforma y no se suman a las ventas reales.
+          Solo se toma en cuenta la información de las carpetas de pauta en Drive: <a href="https://drive.google.com/drive/folders/166vtDwzl4YbqLnyqNpulZI2YltKb2FMm" target="_blank" rel="noopener"><strong>Meta Files</strong></a> y <a href="https://drive.google.com/drive/folders/1oN2HxlqXENM0KuAIOM_rtb17zJPCCAhO" target="_blank" rel="noopener"><strong>Google Files</strong></a>. Los valores de conversión son atribución de cada plataforma.
+        </div>
+
+        <div class="gp-sync" aria-live="polite">
+          <div class="gp-sync-l">
+            <span class="gp-dot ok" id="gp-sync-dot"></span>
+            <span id="gp-sync-text">cargando…</span>
+          </div>
+          <button class="btn primary btn-sm" id="gp-sync-btn" title="Vuelve a leer las carpetas de Meta y Google en Drive">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span>Sincronizar ahora</span>
+          </button>
         </div>
 
         <div class="gp-tabs" role="tablist" aria-label="Fuente de datos">
-          <button class="gp-tab active" role="tab" aria-selected="true" data-pane="ventas">
-            <span class="gp-tab-ic" style="background:#7C3AED">S/</span>
-            <span><span class="gp-tab-name">Ventas</span><span class="gp-tab-src">Excel sincronizado</span></span>
-          </button>
-          <button class="gp-tab" role="tab" aria-selected="false" data-pane="meta">
+          <button class="gp-tab active" role="tab" aria-selected="true" data-pane="meta">
             <span class="gp-tab-ic" style="background:#b91c1c">M</span>
-            <span><span class="gp-tab-name">Meta Ads</span><span class="gp-tab-src">Carpeta de Drive</span></span>
+            <span><span class="gp-tab-name">Meta Ads</span><span class="gp-tab-src">Carpeta Meta Files · Drive</span></span>
           </button>
           <button class="gp-tab" role="tab" aria-selected="false" data-pane="google">
             <span class="gp-tab-ic" style="background:#D97706">G</span>
-            <span><span class="gp-tab-name">Google Ads</span><span class="gp-tab-src">Carpeta de Drive</span></span>
+            <span><span class="gp-tab-name">Google Ads</span><span class="gp-tab-src">Carpeta Google Files · Drive</span></span>
           </button>
-          <button class="gp-tab" role="tab" aria-selected="false" data-pane="reportes">
-            <span class="gp-tab-ic" style="background:#475569">PDF</span>
-            <span><span class="gp-tab-name">Reportes de agencia</span><span class="gp-tab-src">Resumen de los PDF</span></span>
-          </button>
-        </div>
-
-        <!-- ── Pane: Ventas (Excel) ── -->
-        <div class="gp-pane" id="gp-pane-ventas" role="tabpanel">
-          <div class="gp-source" id="gp-ventas-source"></div>
-          <div class="gp-body" id="gp-ventas-body">
-            <div class="rep-toolbar">
-              <div class="view-toggle" id="gp-ventas-months" role="group" aria-label="Mes de ventas"></div>
-            </div>
-            <div class="rep-stack">
-              <div class="grid-4" id="gp-ventas-kpis"></div>
-              <div class="panel">
-                <div class="panel-head"><div>
-                  <div class="panel-title">Ventas netas por mes y canal</div>
-                  <div class="panel-sub">Sin IGV · la línea marca el objetivo mensual del EERR</div>
-                </div></div>
-                <div class="chart-legend" id="gp-ventas-legend"></div>
-                <div class="chart-wrap h-300"><canvas id="chart-gp-ventas" role="img" aria-label="Ventas netas por mes y canal con objetivo"></canvas></div>
-              </div>
-              <div class="panel">
-                <div class="panel-head"><div>
-                  <div class="panel-title" id="gp-ventas-table-title">Detalle por canal</div>
-                  <div class="panel-sub">Ventas netas, objetivo del canal, pedidos y ticket promedio</div>
-                </div></div>
-                <div id="gp-ventas-table"></div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- ── Pane: Meta Ads (carpeta) ── -->
-        <div class="gp-pane" id="gp-pane-meta" role="tabpanel" hidden>
+        <div class="gp-pane" id="gp-pane-meta" role="tabpanel">
           <div class="gp-source" id="gp-meta-source"></div>
           <div class="gp-body" id="gp-meta-body">
             <div class="rep-toolbar">
@@ -298,85 +273,6 @@
         <div class="gp-pane" id="gp-pane-google" role="tabpanel" hidden>
           <div class="gp-source" id="gp-google-source"></div>
           <div class="gp-body" id="gp-google-body"></div>
-        </div>
-
-        <!-- ── Pane: Reportes de agencia (PDF) ── -->
-        <div class="gp-pane" id="gp-pane-reportes" role="tabpanel" hidden>
-        <div class="rep-toolbar">
-          <div class="view-toggle" id="rep-period" role="group" aria-label="Mes del reporte"></div>
-          <span class="rep-period-meta" id="rep-period-meta"></span>
-          <a class="btn ghost btn-sm rep-open" id="rep-open-pdf" href="#" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            Abrir reporte PDF
-          </a>
-        </div>
-
-        <div class="rep-stack">
-          <div class="grid-4" id="rep-kpis"></div>
-          <div class="grid-2" id="rep-channels"></div>
-
-          <div class="grid-2">
-            <div class="panel">
-              <div class="panel-head"><div>
-                <div class="panel-title">Campañas Meta</div>
-                <div class="panel-sub">Gasto, compras y ROAS por campaña</div>
-              </div></div>
-              <div id="rep-campaigns"></div>
-            </div>
-            <div class="panel">
-              <div class="panel-head"><div>
-                <div class="panel-title">Top anuncios por compras</div>
-                <div class="panel-sub">★ mejor pieza del mes</div>
-              </div></div>
-              <div id="rep-ads"></div>
-            </div>
-          </div>
-
-          <div class="grid-2">
-            <div class="panel">
-              <div class="panel-head"><div>
-                <div class="panel-title">Público y segmentación</div>
-                <div class="panel-sub">Quién compra y dónde está la eficiencia</div>
-              </div></div>
-              <div id="rep-audience"></div>
-            </div>
-            <div class="panel">
-              <div class="panel-head"><div>
-                <div class="panel-title">Lectura del mes</div>
-                <div class="panel-sub">Qué funcionó y próximos pasos</div>
-              </div></div>
-              <div id="rep-insights"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="sec-lbl rep-sec">Tendencia mensual</div>
-        <div class="grid-2">
-          <div class="panel">
-            <div class="panel-head"><div>
-              <div class="panel-title">Inversión por canal</div>
-              <div class="panel-sub">Inversión apilada Meta + Google · el tooltip muestra las compras atribuidas</div>
-            </div></div>
-            <div class="chart-legend">
-              <span class="legend-item"><span class="lsq" style="background:#b91c1c"></span>Meta</span>
-              <span class="legend-item"><span class="lsq" style="background:#D97706"></span>Google</span>
-            </div>
-            <div class="chart-wrap h-260"><canvas id="chart-rep-inv" role="img" aria-label="Inversión y compras por mes"></canvas></div>
-          </div>
-          <div class="panel">
-            <div class="panel-head"><div>
-              <div class="panel-title">ROAS por canal</div>
-              <div class="panel-sub">Plataforma (Meta, Google) vs. web real</div>
-            </div></div>
-            <div class="chart-legend">
-              <span class="legend-item"><span class="lsq" style="background:#b91c1c"></span>Meta</span>
-              <span class="legend-item"><span class="lsq" style="background:#D97706"></span>Google</span>
-              <span class="legend-item"><span class="lsq" style="background:#059669"></span>Web real</span>
-            </div>
-            <div class="chart-wrap h-260"><canvas id="chart-rep-roas" role="img" aria-label="ROAS por canal y mes"></canvas></div>
-          </div>
-        </div>
-        <p class="rep-foot-note">* Septiembre llega hasta el día 27 y aún no incluye la facturación de la tienda.</p>
         </div>
       </section>
 
@@ -515,13 +411,15 @@
   <div class="modal">
     <h3>Configurar sincronización</h3>
     <p>
-      Para disparar el workflow de sincronización desde el dashboard, pegá un
-      <strong>Personal Access Token</strong> de GitHub con permiso <code>workflow</code>.
+      Para disparar la sincronización desde el dashboard, pegá un
+      <strong>Personal Access Token</strong> de GitHub del repo <code>objetivos-ventas-casiopia</code>
+      con permisos <code>Actions: read and write</code> y <code>Contents: read</code>
+      (o un token clásico con scope <code>workflow</code>).
       El token se guarda solo en tu navegador (<code>localStorage</code>).
     </p>
     <input class="inp" type="password" placeholder="ghp_..." autocomplete="off">
     <p style="margin-top:10px;font-size:11px;color:var(--muted);">
-      Si no tenés token, la data sigue actualizándose cada lunes vía el cron del workflow.
+      Sin token, los datos igual se actualizan solos: Gasto publicitario todos los días a las 07:00 (Lima) vía el cron del workflow.
     </p>
     <div class="modal-actions">
       <button class="btn danger" data-action="clear">Borrar</button>
@@ -538,7 +436,6 @@
 <script src="js/objectives.js"></script>
 <script src="js/data-reportes.js"></script>
 <script src="js/gasto.js"></script>
-<script src="js/reportes.js"></script>
 <script src="js/archivo.js"></script>
 <script src="js/config.js"></script>
 <script src="js/sheets.js"></script>

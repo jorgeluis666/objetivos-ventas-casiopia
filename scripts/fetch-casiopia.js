@@ -1,20 +1,19 @@
 #!/usr/bin/env node
 /**
- * fetch-casiopia.js — sincroniza las tres fuentes del módulo Gasto publicitario.
+ * fetch-casiopia.js — sincroniza las fuentes del módulo Gasto publicitario.
+ * Solo se leen las carpetas de pauta en Drive:
  *
- *   Ventas      Excel "Ventas 2026 Dashboard.xlsx" (cliente)   → data/casiopia-ventas.json
  *   Meta Ads    carpeta "Meta Files - Casiopia" (pauta)         → data/casiopia-meta.json
  *   Google Ads  carpeta "Google Files - Casiopia" (pauta)       → data/casiopia-google.json
  *
- * Sin credenciales: los archivos y carpetas están compartidos como
+ * Sin credenciales: las carpetas están compartidas como
  * "cualquier persona con el enlace", así que se leen por sus enlaces
  * públicos de Google Drive (descarga directa, exportación CSV de Sheets y
  * la vista embebida de la carpeta para listar su contenido).
  *
  * Modos:
  *   node scripts/fetch-casiopia.js                 → enlaces públicos de Drive
- *   node scripts/fetch-casiopia.js --local=<dir>   → <dir>/ventas-2026.xlsx, <dir>/meta/*.csv,
- *                                                     <dir>/google/*.{csv,xlsx}
+ *   node scripts/fetch-casiopia.js --local=<dir>   → <dir>/meta/*.csv, <dir>/google/*.{csv,xlsx}
  *
  * Cada fuente es independiente: si una falla, se conserva su JSON anterior,
  * se avisa en consola y el resto se actualiza igual.
@@ -28,7 +27,6 @@ const src = require('./lib/casiopia-sources');
 const ROOT = path.join(__dirname, '..');
 
 const SOURCES = {
-  ventas: { fileId: '1u1tWfos-R5MbN7z72i1X6_BSkzh3L_nF', name: 'Ventas 2026 Dashboard.xlsx', out: 'data/casiopia-ventas.json' },
   meta:   { folderId: '166vtDwzl4YbqLnyqNpulZI2YltKb2FMm', out: 'data/casiopia-meta.json' },
   google: { folderId: '1oN2HxlqXENM0KuAIOM_rtb17zJPCCAhO', out: 'data/casiopia-google.json' },
 };
@@ -109,25 +107,6 @@ const driveUrl = f => f.mimeType === MIME.sheet
 const folderUrl = id => `https://drive.google.com/drive/folders/${id}`;
 
 // ── Fuentes ──
-async function syncVentas() {
-  if (LOCAL_DIR) {
-    const file = path.join(LOCAL_DIR, 'ventas-2026.xlsx');
-    const wb = new ExcelJS.Workbook();
-    await wb.xlsx.readFile(file);
-    return {
-      // En local no se conoce la fecha de edición en Drive (la del archivo es la de descarga)
-      source: { name: SOURCES.ventas.name, modifiedTime: null, url: `https://drive.google.com/file/d/${SOURCES.ventas.fileId}/view` },
-      ...src.ventasFromWorkbook(wb),
-    };
-  }
-  const { buf, name } = await downloadBuffer(SOURCES.ventas.fileId);
-  const wb = await workbookFromBuffer(buf);
-  return {
-    source: { name: name || SOURCES.ventas.name, modifiedTime: null, url: `https://drive.google.com/file/d/${SOURCES.ventas.fileId}/view` },
-    ...src.ventasFromWorkbook(wb),
-  };
-}
-
 async function syncMeta() {
   const folder = { id: SOURCES.meta.folderId, url: folderUrl(SOURCES.meta.folderId) };
   if (LOCAL_DIR) {
@@ -202,7 +181,7 @@ function writeJson(rel, payload) {
 }
 
 async function main() {
-  const jobs = [['ventas', syncVentas], ['meta', syncMeta], ['google', syncGoogle]];
+  const jobs = [['meta', syncMeta], ['google', syncGoogle]];
   let failed = 0;
   for (const [name, fn] of jobs) {
     try {

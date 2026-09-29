@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-28T23:06:02-05:00",
+  "generated": "2026-09-29T17:24:00-05:00",
   "folder": {
     "id": "166vtDwzl4YbqLnyqNpulZI2YltKb2FMm",
     "url": "https://drive.google.com/drive/folders/166vtDwzl4YbqLnyqNpulZI2YltKb2FMm"
@@ -22,11 +22,11 @@
       "url": "https://docs.google.com/spreadsheets/d/1qt-0rlJcaOwhci6Tm785uboc7oS3G4-GUxuFBthRirg/edit"
     },
     {
-      "name": "Casiopia - julio 2026",
+      "name": "Casiopia - Julio 2026",
       "url": "https://docs.google.com/spreadsheets/d/1JJ6WJ4b2a4i2FFszyHlkzh0HBt0o_gZOxl23btwlKLw/edit"
     },
     {
-      "name": "Casiopia - Junio  2026",
+      "name": "Casiopia - Junio 2026",
       "url": "https://docs.google.com/spreadsheets/d/1X_aF7BftMP1sRw5iKoFGtxViKJ376H5fHFUUFHhwlzs/edit"
     },
     {
@@ -4107,7 +4107,7 @@
       "desde": "2026-06-01",
       "hasta": "2026-06-30",
       "archivos": [
-        "Casiopia - Junio  2026"
+        "Casiopia - Junio 2026"
       ],
       "totals": {
         "spend": 5252.84,
@@ -4890,7 +4890,7 @@
       "desde": "2026-07-01",
       "hasta": "2026-07-31",
       "archivos": [
-        "Casiopia - julio 2026"
+        "Casiopia - Julio 2026"
       ],
       "totals": {
         "spend": 7854.18,

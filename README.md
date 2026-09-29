@@ -17,8 +17,8 @@ Los datos de 2026 se sincronizan automáticamente desde un Google Sheet mediante
     data-live.js          Fetcher de data/ventas-2026.json
     charts.js             Instancias de Chart.js
     objectives.js         Vista de Objetivos (pace tracker, weekly charts)
-    data-reportes.js      KPIs de los reportes de Ads + índice de la carpeta de Drive
-    reportes.js           Vista Gasto publicitario (KPIs, campañas, tendencia)
+    data-reportes.js      Índice de la carpeta de Drive de reportes
+    gasto.js              Vista Gasto publicitario (Meta Ads + Google Ads, botón Sincronizar ahora)
     archivo.js            Vista Archivo de Reportes (accesos directos a Drive)
     sheets.js             Indicador de sync + trigger de workflow
     main.js               Orquestación: init, navegación, render
@@ -36,16 +36,21 @@ Los datos de 2026 se sincronizan automáticamente desde un Google Sheet mediante
 
 ### Fuentes de Gasto publicitario (una pestaña por fuente)
 
+Gasto publicitario **solo** toma en cuenta las carpetas de pauta en Drive:
+
 | Pestaña | Fuente en Drive | JSON generado |
 |---|---|---|
-| Ventas (cliente) | Excel `Ventas 2026 Dashboard.xlsx` (hojas *Ventas* y *EERR*) | `data/casiopia-ventas.json` |
-| Meta Ads (pauta) | Carpeta *Meta Files - Casiopia* (un Google Sheet por mes, exportación de Ads Manager) | `data/casiopia-meta.json` |
-| Google Ads (pauta) | Carpeta *Google Files - Casiopia* (CSV, Excel o Google Sheet) | `data/casiopia-google.json` |
-| Reportes de agencia | PDF transcritos en `js/data-reportes.js` | — |
+| Meta Ads | Carpeta [*Meta Files - Casiopia*](https://drive.google.com/drive/folders/166vtDwzl4YbqLnyqNpulZI2YltKb2FMm) (un Google Sheet por mes, exportación de Ads Manager) | `data/casiopia-meta.json` |
+| Google Ads | Carpeta [*Google Files - Casiopia*](https://drive.google.com/drive/folders/1oN2HxlqXENM0KuAIOM_rtb17zJPCCAhO) (CSV, Excel o Google Sheet) | `data/casiopia-google.json` |
 
-El workflow **Sincronizar datos Casiopia** (`.github/workflows/sync-casiopia.yml`) corre todos los días a las 07:00 de Lima (y a mano desde *Actions → Run workflow*): ejecuta `npm run fetch:casiopia`, commitea los JSON si cambiaron y dispara el deploy a GitHub Pages. **No usa credenciales**: el Excel y las carpetas deben estar compartidos como *Cualquier persona con el enlace · Lector*; si alguno deja de estarlo, esa fuente conserva su último JSON y el workflow avisa cuál falló. Para desarrollo offline: `node scripts/fetch-casiopia.js --local=<dir>` con `<dir>/ventas-2026.xlsx`, `<dir>/meta/*.csv` y `<dir>/google/*`. Los JSON solo contienen totales por mes y canal: nunca nombres de clientes.
+**Sincronización.** El workflow **Sincronizar datos Casiopia** (`.github/workflows/sync-casiopia.yml`) ejecuta `npm run fetch:casiopia`, commitea los JSON si cambiaron y dispara el deploy a GitHub Pages. Corre:
 
-**Gasto publicitario** resume los reportes mensuales de pauta (Meta + Google) de la carpeta de Drive *Reportes Casiopia*. **Archivo de Reportes** lista todos los archivos de esa carpeta con filtros, previsualización, enlace a Drive y descarga. Ambos leen `js/data-reportes.js`: para sumar un mes nuevo, agregá un objeto a `monthly` (KPIs del PDF) y el archivo a `library` (`fileId`, tipo, periodo, fecha y peso en bytes).
+- **Automáticamente todos los días** a las 07:00 de Lima (cron `0 12 * * *` UTC; GitHub puede demorar los cron algunos minutos).
+- **A pedido** con el botón **Sincronizar ahora** del módulo: dispara el workflow vía la GitHub API, espera a que termine y recarga los datos sin esperar el deploy. Usa el mismo token que el botón *Actualizar* (se configura en ⚙; permisos *Actions: read and write* + *Contents: read* del repo). También se puede lanzar desde *Actions → Sincronizar datos Casiopia → Run workflow*.
+
+**No usa credenciales de Google**: las carpetas deben estar compartidas como *Cualquier persona con el enlace · Lector*; si alguna deja de estarlo, esa fuente conserva su último JSON y el workflow avisa cuál falló. Para desarrollo offline: `node scripts/fetch-casiopia.js --local=<dir>` con `<dir>/meta/*.csv` y `<dir>/google/*`.
+
+**Archivo de Reportes** lista todos los archivos de la carpeta de Drive *Reportes Casiopia* con filtros, previsualización, enlace a Drive y descarga. Lee `js/data-reportes.js`: para sumar un archivo nuevo, agregalo a `library` (`fileId`, tipo, periodo, fecha y peso en bytes).
 
 ## Desarrollo local
 

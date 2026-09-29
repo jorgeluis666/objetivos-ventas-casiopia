@@ -16,7 +16,7 @@
   // Descripción corta para el panel MÓDULO ACTIVO del sidebar
   const VIEW_DESCRIPTIONS = {
     'view-obj':    'Seguimiento de metas mensuales',
-    'view-rep':    'Ventas, Meta Ads y Google Ads',
+    'view-rep':    'Meta Ads y Google Ads',
     'view-arch':   'Documentos en Drive',
     'view-config': 'Gestión de accesos y alertas',
   };

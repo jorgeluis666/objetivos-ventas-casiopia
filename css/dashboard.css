@@ -1013,9 +1013,9 @@
 /* ── Gasto publicitario: pestañas por fuente ── */
 .gp-tabs {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  margin: 18px 0 14px;
+  margin: 0 0 14px;
 }
 .gp-tab {
   display: flex; align-items: center; gap: 10px;
@@ -1045,6 +1045,18 @@
 .gp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .gp-dot.ok   { background: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
 .gp-dot.warn { background: var(--amber); box-shadow: 0 0 0 3px var(--amber-soft); }
+.gp-dot.busy { background: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); animation: pulse 1.2s ease-in-out infinite; }
+
+/* Barra de sincronización de las carpetas de Drive */
+.gp-sync {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 10px 10px 10px 14px; margin: 18px 0 12px;
+  background: #fff; border: 1px solid var(--border); border-radius: var(--r);
+  font-size: 12px; color: var(--text-2);
+}
+.gp-sync-l { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 320px; }
+.gp-sync-l a { color: var(--brand); }
+.gp-sync .btn { flex-shrink: 0; }
 
 .gp-empty { text-align: center; padding: 40px 24px; margin-top: 14px; }
 .gp-empty-ic {
@@ -1083,9 +1095,6 @@
 .gp-aud-bar > div { height: 100%; background: var(--brand); border-radius: 5px; }
 .gp-aud-val { text-align: right; white-space: nowrap; }
 
-@media (max-width: 1100px) {
-  .gp-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
 @media (max-width: 900px) {
   .gp-funnel-row { grid-template-columns: 110px 1fr 64px 44px; }
   .gp-aud-row { grid-template-columns: 52px 1fr 120px; }

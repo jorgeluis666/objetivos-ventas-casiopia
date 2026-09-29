@@ -3,21 +3,25 @@
    Muestra cuándo fue la última generación del JSON y permite
    disparar el workflow de GitHub Actions on-demand si el usuario
    guardó un Personal Access Token en localStorage.
+   También expone helpers de GitHub que reutiliza gasto.js para
+   su propio botón de sincronización (workflow sync-casiopia.yml).
    Expone window.Sheets.
    ============================================================ */
 
 (function (global) {
   const REPO_OWNER    = 'jorgeluis666';
-  const REPO_NAME     = 'objetivo-canales-ventas';
+  const REPO_NAME     = 'objetivos-ventas-casiopia';
   const WORKFLOW_FILE = 'update-data.yml';    // ver .github/workflows/
   const PAT_STORAGE   = 'ghPatReadWrite';     // token opcional
   const POLL_INTERVAL = 8000;                 // polling del run activo
+  const API = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`;
 
   const state = {
     generated: null,
     loading: false,
     polling: null,
     lastCheck: null,
+    afterSave: null,   // acción pendiente cuando se pide el token
   };
 
   // ── Formatters ──
@@ -71,37 +75,78 @@
     renderRefreshButton();
   }
 
-  // ── GitHub API — dispara y hace polling del workflow ──
-  async function triggerWorkflow() {
-    const pat = getPat();
-    if (!pat) {
-      openTokenModal();
-      return;
+  // ── GitHub API ──
+  async function gh(path, opts = {}) {
+    const res = await fetch(API + path, {
+      ...opts,
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': `Bearer ${getPat()}`,
+        'X-GitHub-Api-Version': '2022-11-28',
+        ...opts.headers,
+      },
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`GitHub ${res.status}: ${body.slice(0, 140)}`);
     }
-    setLoading(true);
-    try {
-      const branch = 'main';
-      const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/actions/workflows/${WORKFLOW_FILE}/dispatches`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/vnd.github+json',
-          'Authorization': `Bearer ${pat}`,
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-        body: JSON.stringify({ ref: branch }),
-      });
-      if (!res.ok) {
-        const body = await res.text();
-        throw new Error(`GitHub ${res.status}: ${body.slice(0, 140)}`);
+    return res;
+  }
+
+  // Dispara un workflow (workflow_dispatch) en main.
+  async function dispatch(workflowFile) {
+    await gh(`/actions/workflows/${workflowFile}/dispatches`, {
+      method: 'POST',
+      body: JSON.stringify({ ref: 'main' }),
+    });
+  }
+
+  // Espera a que termine el run lanzado a mano después de `sinceMs`.
+  // Devuelve el run completado ({ conclusion, html_url, … }).
+  async function waitForRun(workflowFile, sinceMs, { timeoutMs = 6 * 60 * 1000, onStatus } = {}) {
+    const deadline = Date.now() + timeoutMs;
+    // El run tarda unos segundos en aparecer; 30 s de margen por relojes desfasados
+    const since = sinceMs - 30 * 1000;
+    while (Date.now() < deadline) {
+      await new Promise(r => setTimeout(r, 5000));
+      const res = await gh(`/actions/workflows/${workflowFile}/runs?event=workflow_dispatch&per_page=5`);
+      const run = (await res.json()).workflow_runs.find(r => Date.parse(r.created_at) >= since);
+      if (!run) continue;
+      onStatus?.(run.status);
+      if (run.status === 'completed') return run;
+    }
+    throw new Error('La sincronización sigue corriendo en GitHub; revisá Actions en unos minutos.');
+  }
+
+  // JSON del repo recién commiteado (antes de que termine el deploy de Pages).
+  async function fetchRepoJson(path) {
+    const res = await gh(`/contents/${path}?ref=main&_=${Date.now()}`, {
+      headers: { 'Accept': 'application/vnd.github.raw+json' },
+      cache: 'no-store',
+    });
+    return res.json();
+  }
+
+  // Ejecuta `action` si hay token; si no, abre el modal y la ejecuta al guardar.
+  function withPat(action) {
+    if (getPat()) return action();
+    openTokenModal(action);
+  }
+
+  // ── Botón "Actualizar" del topbar (datos de Objetivos) ──
+  function triggerWorkflow() {
+    withPat(async () => {
+      setLoading(true);
+      try {
+        await dispatch(WORKFLOW_FILE);
+        // Poll hasta que aparezca un run más reciente que state.generated
+        startPolling();
+      } catch (err) {
+        console.error('[sheets] dispatch failed', err);
+        alert('No se pudo lanzar la sincronización:\n' + err.message);
+        setLoading(false);
       }
-      // Poll hasta que aparezca un run más reciente que state.generated
-      startPolling();
-    } catch (err) {
-      console.error('[sheets] dispatch failed', err);
-      alert('No se pudo lanzar la sincronización:\n' + err.message);
-      setLoading(false);
-    }
+    });
   }
 
   function startPolling() {
@@ -130,9 +175,10 @@
   }
 
   // ── Modal para guardar el PAT ──
-  function openTokenModal() {
+  function openTokenModal(afterSave = null) {
     const modal = document.getElementById('modal-pat');
     if (!modal) return;
+    state.afterSave = typeof afterSave === 'function' ? afterSave : null;
     modal.querySelector('input').value = getPat();
     modal.classList.add('visible');
   }
@@ -150,7 +196,9 @@
       const val = modal.querySelector('input').value.trim();
       setPat(val);
       closeTokenModal();
-      if (val) triggerWorkflow();
+      const next = state.afterSave;
+      state.afterSave = null;
+      if (val && next) next();
     });
     modal.querySelector('[data-action="cancel"]').addEventListener('click', closeTokenModal);
     modal.querySelector('[data-action="clear"]').addEventListener('click', () => {
@@ -169,7 +217,7 @@
     const refresh = document.getElementById('btn-refresh');
     if (refresh) refresh.addEventListener('click', triggerWorkflow);
     const settings = document.getElementById('btn-settings');
-    if (settings) settings.addEventListener('click', openTokenModal);
+    if (settings) settings.addEventListener('click', () => openTokenModal());
   }
 
   function updateGenerated(iso) {
@@ -177,5 +225,8 @@
     renderIndicator();
   }
 
-  global.Sheets = { init, triggerWorkflow, updateGenerated, openTokenModal };
+  global.Sheets = {
+    init, triggerWorkflow, updateGenerated, openTokenModal,
+    withPat, dispatch, waitForRun, fetchRepoJson, formatRelative,
+  };
 })(window);

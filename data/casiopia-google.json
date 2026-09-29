@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-28T23:40:10-05:00",
+  "generated": "2026-09-29T17:27:33-05:00",
   "folder": {
     "id": "1oN2HxlqXENM0KuAIOM_rtb17zJPCCAhO",
     "url": "https://drive.google.com/drive/folders/1oN2HxlqXENM0KuAIOM_rtb17zJPCCAhO"
@@ -15,7 +15,7 @@
     },
     {
       "name": "Casiopia - Enero 2026",
-      "url": "https://docs.google.com/spreadsheets/d/1Onlp-tG_Z6NpNedKtlAKPk5iA6h6mZTVafD0bHDuXN0/edit"
+      "url": "https://docs.google.com/spreadsheets/d/1YSgLUbosHooxTHML5nBQORbGcQoPln3RHyH07t-9kW8/edit"
     },
     {
       "name": "Casiopia - Febrero 2026",
@@ -42,11 +42,65 @@
       "url": "https://docs.google.com/spreadsheets/d/1eqpZomY520CSheqYmaEiDRjXe1XbuPDPNKeUNsGuekY/edit"
     }
   ],
-  "avisos": [
-    "\"Casiopia - Enero 2026\" contiene datos del 1 de septiembre de 2026 - 28 de septiembre de 2026, no del mes de su nombre.",
-    "\"Casiopia - Setiembre 2026\" y \"Casiopia - Enero 2026\" cubren el mismo periodo; se usa \"Casiopia - Setiembre 2026\"."
-  ],
+  "avisos": [],
   "months": [
+    {
+      "key": "2026-01",
+      "label": "Enero 2026",
+      "archivos": [
+        "Casiopia - Enero 2026"
+      ],
+      "desde": "2026-01-01",
+      "hasta": "2026-01-31",
+      "totals": {
+        "spend": 5555.49,
+        "impressions": 1867569,
+        "clicks": 61151,
+        "conversions": 569.53,
+        "value": 1017,
+        "purchases": 13,
+        "purchaseValue": 0,
+        "checkouts": 3
+      },
+      "types": [
+        {
+          "name": "Generación de demanda",
+          "spend": 4518.24,
+          "impressions": 1412290,
+          "clicks": 44871,
+          "conversions": 385.06,
+          "value": 0
+        },
+        {
+          "name": "Máximo rendimiento",
+          "spend": 1037.24,
+          "impressions": 455279,
+          "clicks": 16280,
+          "conversions": 184.47,
+          "value": 1017
+        }
+      ],
+      "campaigns": [
+        {
+          "name": "LR - Campaña Video | Mensajes",
+          "type": "Generación de demanda",
+          "purchases": 0,
+          "purchaseValue": 0,
+          "checkouts": 0,
+          "conversions": 385.06,
+          "value": 0
+        },
+        {
+          "name": "LR - Máximo Rendimiento | maximar conversiones",
+          "type": "Máximo rendimiento",
+          "purchases": 13,
+          "purchaseValue": 0,
+          "checkouts": 3,
+          "conversions": 184.47,
+          "value": 1017
+        }
+      ]
+    },
     {
       "key": "2026-02",
       "label": "Febrero 2026",

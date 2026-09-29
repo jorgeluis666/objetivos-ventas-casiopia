@@ -1,19 +1,14 @@
 /**
- * casiopia-sources.js — agregación pura de las tres fuentes de Casiopia.
- * No descarga nada: recibe el workbook de ventas (ExcelJS) o las filas CSV
- * de Meta / Google y devuelve los JSON que consume el dashboard.
+ * casiopia-sources.js — agregación pura de las fuentes de Gasto publicitario.
+ * No descarga nada: recibe las filas CSV / tablas de Meta y Google y
+ * devuelve los JSON que consume el dashboard.
  *
- *   ventasFromWorkbook(wb)          → data/casiopia-ventas.json
  *   metaFromCsvFiles([{name, text}]) → data/casiopia-meta.json
  *   googleFromTables([{name, rows}]) → data/casiopia-google.json
- *
- * Privacidad: la hoja Ventas trae nombres de clientes; aquí solo salen
- * totales por mes y canal, nunca filas individuales.
  */
 
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
   'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-const CHANNELS = ['Web', 'RRSS', 'La Mar', 'El Polo', 'Falabella', 'Otros'];
 
 const round2 = n => Math.round(n * 100) / 100;
 const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
@@ -60,104 +55,6 @@ function cellValue(v) {
     return null;
   }
   return v;
-}
-
-// ════════════════════════════════════════════════════════════
-// VENTAS — "Ventas 2026 Dashboard.xlsx"
-//   Hoja "Ventas": una fila por ítem vendido. Columnas usadas:
-//     C mes · E pedido (CASIO…) · O cantidad · S total sin IGV · V canal
-//   Hoja "EERR": objetivos mensuales y ventas netas del año anterior.
-// La suma de "TOTAL SIN IGV" por mes y canal coincide con las líneas
-// "VENTAS NETAS …" del EERR, así que la hoja Ventas es la fuente única.
-// ════════════════════════════════════════════════════════════
-function mapChannel(value) {
-  const ch = norm(value);
-  if (!ch) return null;
-  if (/^(whatsapp|instagram|facebook|rrss)$/.test(ch)) return 'RRSS';
-  if (ch === 'web') return 'Web';
-  if (ch === 'la mar') return 'La Mar';
-  if (ch === 'el polo' || ch === 'polo') return 'El Polo';
-  if (ch === 'falabella') return 'Falabella';
-  return 'Otros';
-}
-
-const VENTAS_COLS = { month: 3, order: 5, qty: 15, net: 19, channel: 22 };
-
-// Filas del EERR por etiqueta (columna B) → objetivo de cada canal.
-const EERR_LINES = [
-  { key: 'objetivoTotal', re: /^objetivo ventas netas$/ },
-  { key: 'objetivo:Web', re: /^objetivo web$/ },
-  { key: 'objetivo:RRSS', re: /^objetivo rrss$/ },
-  { key: 'objetivo:La Mar', re: /^objetivo la mar$/ },
-  { key: 'objetivo:El Polo', re: /^objetivo el polo$/ },
-  { key: 'objetivo:Otros', re: /^objetivo otros$/ },
-  { key: 'ventas2025', re: /^ventas netas 2025$/ },
-];
-
-function readEERR(ws) {
-  const out = {};
-  if (!ws) return out;
-  ws.eachRow(row => {
-    const label = norm(cellValue(row.getCell(2).value));
-    const line = EERR_LINES.find(l => l.re.test(label));
-    if (!line || out[line.key]) return;
-    // Meses en columnas C..N (3..14)
-    out[line.key] = MONTHS.map((_, i) => {
-      const v = cellValue(row.getCell(3 + i).value);
-      return v == null || v === '' ? null : round2(toNumber(v));
-    });
-  });
-  return out;
-}
-
-function ventasFromWorkbook(wb) {
-  const ws = wb.getWorksheet('Ventas') || wb.worksheets.find(w => norm(w.name) === 'ventas');
-  if (!ws) throw new Error('No existe la hoja "Ventas" en el Excel');
-
-  const acc = {};
-  ws.eachRow((row, r) => {
-    if (r === 1) return;
-    const month = MONTHS.find(m => norm(m) === norm(cellValue(row.getCell(VENTAS_COLS.month).value)));
-    const net = cellValue(row.getCell(VENTAS_COLS.net).value);
-    const channel = mapChannel(cellValue(row.getCell(VENTAS_COLS.channel).value));
-    if (!month || !channel || typeof net !== 'number') return;
-
-    const m = acc[month] ||= { net: {}, orders: {}, units: 0 };
-    m.net[channel] = (m.net[channel] || 0) + net;
-    m.units += toNumber(cellValue(row.getCell(VENTAS_COLS.qty).value));
-    const order = String(cellValue(row.getCell(VENTAS_COLS.order).value) ?? '').trim();
-    if (order) (m.orders[channel] ||= new Set()).add(order);
-  });
-
-  const eerr = readEERR(wb.getWorksheet('EERR'));
-  const months = MONTHS.map((name, i) => {
-    const m = acc[name];
-    const objetivo = {};
-    CHANNELS.forEach(ch => {
-      const v = eerr['objetivo:' + ch]?.[i];
-      objetivo[ch] = v == null ? null : v;
-    });
-    const base = {
-      name,
-      objetivoTotal: eerr.objetivoTotal?.[i] ?? null,
-      objetivo,
-      ventas2025: eerr.ventas2025?.[i] ?? null,
-    };
-    if (!m) return { ...base, total: 0, net: Object.fromEntries(CHANNELS.map(c => [c, 0])), orders: 0, ordersByChannel: {}, units: 0 };
-    const net = Object.fromEntries(CHANNELS.map(c => [c, round2(m.net[c] || 0)]));
-    const ordersByChannel = Object.fromEntries(CHANNELS.map(c => [c, m.orders[c]?.size || 0]));
-    return {
-      ...base,
-      total: round2(Object.values(net).reduce((s, v) => s + v, 0)),
-      net,
-      orders: Object.values(ordersByChannel).reduce((s, v) => s + v, 0),
-      ordersByChannel,
-      units: Math.round(m.units),
-    };
-  });
-
-  const lastWithData = months.reduce((last, m, i) => (m.total > 0 ? i : last), -1);
-  return { channels: CHANNELS, months: months.slice(0, Math.max(lastWithData + 1, 0)) };
 }
 
 // ════════════════════════════════════════════════════════════
@@ -386,6 +283,6 @@ function googleFromTables(tables) {
 }
 
 module.exports = {
-  MONTHS, CHANNELS, parseCSV, cellValue, toNumber, mapChannel,
-  ventasFromWorkbook, metaFromCsvFiles, googleFromTables,
+  MONTHS, parseCSV, cellValue, toNumber,
+  metaFromCsvFiles, googleFromTables,
 };

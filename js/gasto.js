@@ -1,42 +1,35 @@
 /* ============================================================
    gasto.js — módulo "Gasto publicitario".
-   Pestañas por fuente, cada una con sus propios datos:
-     Ventas      data/casiopia-ventas.json  (Excel de ventas)
-     Meta Ads    data/casiopia-meta.json    (carpeta de Drive)
-     Google Ads  data/casiopia-google.json  (carpeta de Drive)
-     Reportes    window.Reportes (resumen de los PDF de agencia)
-   Los JSON los genera scripts/fetch-casiopia.js (GitHub Actions).
+   Solo usa las carpetas de pauta en Drive, una pestaña por fuente:
+     Meta Ads    data/casiopia-meta.json    (carpeta "Meta Files")
+     Google Ads  data/casiopia-google.json  (carpeta "Google Files")
+   Los JSON los genera scripts/fetch-casiopia.js en el workflow
+   sync-casiopia.yml: todos los días a las 07:00 (Lima) y a pedido
+   con el botón "Sincronizar ahora".
    Expone window.Gasto.init() (llamado desde main.js al abrir la vista).
    ============================================================ */
 
 (function (global) {
-  const ds = global.DataStatic;
-  const CHANNELS = ds.objectiveChannels;
-  const PALETTE = ds.objectivePalette;
-
   const FILES = {
-    ventas: 'data/casiopia-ventas.json',
     meta:   'data/casiopia-meta.json',
     google: 'data/casiopia-google.json',
   };
+  const SYNC_WORKFLOW = 'sync-casiopia.yml';
   const COLOR = { meta: '#b91c1c', google: '#D97706', ink: '#0f172a' };
   const axisColor = '#94A3B8';
   const gridColor = 'rgba(15,23,42,0.06)';
   const TAB_KEY = 'gp-tab';
   const PANE_CHARTS = {
-    ventas:   ['chart-gp-ventas'],
-    meta:     ['chart-gp-meta-daily', 'chart-gp-meta-spend', 'chart-gp-meta-roas'],
-    google:   ['chart-gp-google-spend'],
-    reportes: ['chart-rep-inv', 'chart-rep-roas'],
+    meta:   ['chart-gp-meta-daily', 'chart-gp-meta-spend', 'chart-gp-meta-roas'],
+    google: ['chart-gp-google-spend'],
   };
 
   const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   const SHORT = m => m.slice(0, 3);
-  const YEAR = 'Año';
 
   const state = {
-    data: {}, tab: 'ventas', rendered: {},
-    ventasSel: null, metaSel: null, googleSel: null,
+    data: {}, tab: 'meta', rendered: {},
+    metaSel: null, googleSel: null, syncing: false,
   };
 
   // ── Formato ──
@@ -140,148 +133,9 @@
   };
 
   // ════════════════════════════════════════════════════════════
-  // VENTAS
-  // ════════════════════════════════════════════════════════════
-  function ventasPeriod(v, sel) {
-    const list = sel === YEAR ? v.months : v.months.filter(m => m.name === sel);
-    const sum = f => list.reduce((s, m) => s + (f(m) || 0), 0);
-    const anyObj = f => list.some(m => f(m) != null);
-    const net = Object.fromEntries(CHANNELS.map(c => [c, sum(m => m.net[c])]));
-    return {
-      label: sel === YEAR ? `Enero – ${v.months[v.months.length - 1].name}` : sel,
-      total: sum(m => m.total),
-      objetivoTotal: anyObj(m => m.objetivoTotal) ? sum(m => m.objetivoTotal) : null,
-      ventas2025: anyObj(m => m.ventas2025) ? sum(m => m.ventas2025) : null,
-      net,
-      objetivo: Object.fromEntries(CHANNELS.map(c => [c, anyObj(m => m.objetivo[c]) ? sum(m => m.objetivo[c]) : null])),
-      orders: sum(m => m.orders),
-      ordersByChannel: Object.fromEntries(CHANNELS.map(c => [c, sum(m => m.ordersByChannel?.[c])])),
-      units: sum(m => m.units),
-    };
-  }
-
-  function renderVentas() {
-    const v = state.data.ventas;
-    renderSource('gp-ventas-source', {
-      name: v?.source?.name || 'Ventas 2026 Dashboard.xlsx', where: 'Excel del cliente',
-      generated: v?.generated, url: v?.source?.url, linkLabel: 'Abrir Excel', ok: !!v?.months?.length,
-      note: v?.source?.modifiedTime ? 'Excel editado ' + fechaHora(v.source.modifiedTime) : '',
-    });
-    if (!v?.months?.length) {
-      emptyState('gp-ventas-body', {
-        title: 'Ventas aún no sincronizadas',
-        text: 'No se encontró <code>data/casiopia-ventas.json</code>. Se genera con <code>npm run fetch:casiopia</code> o con el workflow de sincronización.',
-      });
-      return;
-    }
-    if (!state.ventasSel) state.ventasSel = v.months[v.months.length - 1].name;
-
-    const items = [...v.months.map(m => ({ key: m.name, label: SHORT(m.name) })), { key: YEAR, label: 'Año' }];
-    monthButtons('gp-ventas-months', items, state.ventasSel, key => { state.ventasSel = key; renderVentas(); });
-
-    const p = ventasPeriod(v, state.ventasSel);
-    const avance = ratio(p.total, p.objetivoTotal);
-    const ok = avance != null && avance >= 1;
-    const webObj = p.objetivo.Web;
-    const current = new Date();
-    const enCurso = state.ventasSel === MONTHS[current.getMonth()] && current.getFullYear() === 2026;
-
-    document.getElementById('gp-ventas-kpis').innerHTML = [
-      kpi({ icon: 'blue', label: 'Ventas netas', value: money(p.total), valueCls: 'blue',
-        sub: `${p.ventas2025 ? deltaPill(p.total, p.ventas2025, { neutral: enCurso }) + ' vs 2025' : 'Sin IGV'}${enCurso ? ' · mes en curso' : ''}` }),
-      kpi({ icon: avance == null ? 'slate' : ok ? 'green' : 'amber', label: 'Avance del objetivo',
-        value: avance == null ? 'Sin objetivo' : pct(avance * 100), valueCls: avance == null ? 'muted' : ok ? 'green' : 'amber',
-        extra: avance == null ? '' : `<div class="rep-pb"><div class="rep-pb-fill" style="width:${Math.min(avance * 100, 100)}%;background:${ok ? 'var(--green)' : 'var(--amber)'};"></div></div>`,
-        sub: avance == null ? 'El EERR no define objetivo para este periodo' : `${money(p.total)} de ${money(p.objetivoTotal)}` }),
-      kpi({ icon: 'purple', label: 'Venta Web', value: money(p.net.Web), valueCls: 'purple',
-        sub: `${pct(ratio(p.net.Web, p.total) * 100)} del total${webObj ? ` · objetivo ${money(webObj)} (${pct(ratio(p.net.Web, webObj) * 100, 0)})` : ''}` }),
-      kpi({ icon: 'slate', label: 'Pedidos', value: num(p.orders),
-        sub: `Ticket promedio ${money(ratio(p.total, p.orders))} · ${num(p.units)} unidades` }),
-    ].join('');
-
-    // Leyenda + gráfico (se crea una vez; el mes solo cambia el resaltado)
-    if (!global.Charts.getInstance('chart-gp-ventas')) ventasChart(v);
-    highlightX('chart-gp-ventas', state.ventasSel === YEAR ? -1 : v.months.findIndex(m => m.name === state.ventasSel));
-
-    // Tabla por canal
-    document.getElementById('gp-ventas-table-title').textContent = `Detalle por canal · ${p.label}`;
-    const row = (name, pip, sales, obj, orders, strong = false) => {
-      const av = ratio(sales, obj);
-      return `<tr${strong ? ' class="gp-total-row"' : ''}>
-        <td>${pip ? `<span class="ch-name"><span class="ch-pip" style="background:${pip}"></span>${esc(name)}</span>` : `<strong>${esc(name)}</strong>`}</td>
-        <td class="r mono">${money(sales)}</td>
-        <td class="r mono">${pct(ratio(sales, p.total) * 100)}</td>
-        <td class="r mono">${obj ? money(obj) : '<span class="muted">—</span>'}</td>
-        <td class="gp-av">${av == null ? '<span class="muted">—</span>' : `
-          <div class="gp-av-wrap"><div class="rep-pb"><div class="rep-pb-fill" style="width:${Math.min(av * 100, 100)}%;background:${av >= 1 ? 'var(--green)' : 'var(--amber)'};"></div></div>
-          <span class="mono">${pct(av * 100, 0)}</span></div>`}</td>
-        <td class="r mono">${orders ? num(orders) : '—'}</td>
-        <td class="r mono">${orders ? money(sales / orders) : '—'}</td>
-      </tr>`;
-    };
-    document.getElementById('gp-ventas-table').innerHTML = `
-      <div class="gp-table-wrap"><table class="rep-table">
-        <thead><tr><th>Canal</th><th class="r">Ventas netas</th><th class="r">Mix</th><th class="r">Objetivo</th><th>Avance</th><th class="r">Pedidos</th><th class="r">Ticket</th></tr></thead>
-        <tbody>
-          ${CHANNELS.filter(c => p.net[c] || p.objetivo[c]).map(c => row(c, PALETTE[c], p.net[c], p.objetivo[c], p.ordersByChannel[c])).join('')}
-          ${row('Total', null, p.total, p.objetivoTotal, p.orders, true)}
-        </tbody>
-      </table></div>`;
-  }
-
-  function ventasChart(v) {
-    const used = CHANNELS.filter(c => v.months.some(m => m.net[c]));
-    document.getElementById('gp-ventas-legend').innerHTML =
-      used.map(c => `<span class="legend-item"><span class="lsq" style="background:${PALETTE[c]}"></span>${esc(c)}</span>`).join('') +
-      '<span class="legend-item"><span class="ld gp-ld-dash"></span>Objetivo</span>';
-
-    const last = used[used.length - 1];
-    global.Charts.mount('chart-gp-ventas', {
-      type: 'bar',
-      data: {
-        labels: v.months.map(m => SHORT(m.name)),
-        datasets: [
-          ...used.map(c => ({
-            label: c, data: v.months.map(m => m.net[c]), backgroundColor: PALETTE[c], stack: 'v',
-            // 2px de superficie entre segmentos; esquinas redondeadas solo arriba
-            borderColor: '#ffffff', borderWidth: c === last ? 0 : { top: 2 },
-            borderRadius: c === last ? { topLeft: 4, topRight: 4 } : 0,
-            order: 2,
-          })),
-          {
-            label: 'Objetivo', type: 'line', data: v.months.map(m => m.objetivoTotal),
-            borderColor: COLOR.ink, backgroundColor: COLOR.ink, borderWidth: 2, borderDash: [5, 4],
-            pointRadius: 4, pointBackgroundColor: '#ffffff', pointBorderWidth: 2, tension: 0, order: 1,
-          },
-        ],
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            itemSort: (a, b) => (a.dataset.type === 'line') - (b.dataset.type === 'line'),
-            callbacks: {
-              label: c => ` ${c.dataset.label}: ${money(c.parsed.y)}`,
-              footer: items => {
-                const m = v.months[items[0].dataIndex];
-                return `Total: ${money(m.total)}${m.objetivoTotal ? ` · ${pct(m.total / m.objetivoTotal * 100, 0)} del objetivo` : ''}`;
-              },
-            },
-          },
-        },
-        scales: {
-          x: { stacked: true, ticks: { color: axisColor, font: { size: 11 } }, grid: { display: false } },
-          y: { stacked: true, beginAtZero: true, ticks: { color: axisColor, font: { size: 10 }, callback: moneyK }, grid: { color: gridColor } },
-        },
-      },
-    });
-  }
-
-  // ════════════════════════════════════════════════════════════
   // META ADS
   // ════════════════════════════════════════════════════════════
+  let metaBodyTpl = '';  // HTML original de #gp-meta-body (se guarda en init)
   const shortMonthKey = key => SHORT(MONTHS[+key.split('-')[1] - 1]);
 
   function renderMeta() {
@@ -299,6 +153,9 @@
       });
       return;
     }
+    // Si antes se mostró el estado vacío, se restaura la estructura del panel
+    const body = document.getElementById('gp-meta-body');
+    if (!body.querySelector('#gp-meta-kpis')) body.innerHTML = metaBodyTpl;
     if (!state.metaSel) state.metaSel = d.months[d.months.length - 1].key;
     monthButtons('gp-meta-months', d.months.map(m => ({ key: m.key, label: shortMonthKey(m.key) })), state.metaSel,
       key => { state.metaSel = key; renderMeta(); });
@@ -581,14 +438,12 @@
   // Pestañas
   // ════════════════════════════════════════════════════════════
   const RENDER = {
-    ventas: renderVentas,
     meta: renderMeta,
     google: renderGoogle,
-    reportes: () => global.Reportes?.init(),
   };
 
   function showTab(name) {
-    if (!RENDER[name]) name = 'ventas';
+    if (!RENDER[name]) name = 'meta';
     state.tab = name;
     document.querySelectorAll('.gp-tab').forEach(t => {
       const on = t.dataset.pane === name;
@@ -622,6 +477,67 @@
     });
   }
 
+  // Reemplaza los datos y vuelve a pintar la pestaña activa desde cero.
+  function setData(data) {
+    state.data = data;
+    Object.values(PANE_CHARTS).flat().forEach(id => global.Charts.destroy(id));
+    state.rendered = {};
+    // Se conserva el mes elegido solo si sigue existiendo
+    if (!data.meta?.months?.some(m => m.key === state.metaSel)) state.metaSel = null;
+    if (!data.google?.months?.some(m => m.key === state.googleSel)) state.googleSel = null;
+    showTab(state.tab);
+    renderSync();
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // Sincronización (workflow sync-casiopia.yml vía GitHub API)
+  // ════════════════════════════════════════════════════════════
+  const lastGenerated = () => [state.data.meta?.generated, state.data.google?.generated]
+    .filter(Boolean).sort((a, b) => Date.parse(b) - Date.parse(a))[0] || null;
+
+  function renderSync(msg = null, kind = 'ok') {
+    const btn = document.getElementById('gp-sync-btn');
+    btn.disabled = state.syncing;
+    btn.classList.toggle('loading', state.syncing);
+    btn.querySelector('span').textContent = state.syncing ? 'Sincronizando…' : 'Sincronizar ahora';
+    document.getElementById('gp-sync-dot').className = `gp-dot ${state.syncing ? 'busy' : kind}`;
+    const gen = lastGenerated();
+    document.getElementById('gp-sync-text').innerHTML = msg || (gen
+      ? `<b>Datos al ${esc(fechaHora(gen))}</b> <span class="muted">· se sincroniza sola todos los días a las 07:00 (Lima)</span>`
+      : '<b>Aún no sincronizado</b> <span class="muted">· se sincroniza sola todos los días a las 07:00 (Lima)</span>');
+  }
+
+  async function syncNow() {
+    if (state.syncing) return;
+    state.syncing = true;
+    renderSync('Lanzando la sincronización de las carpetas de Meta y Google…');
+    const before = lastGenerated();
+    try {
+      const startedAt = Date.now();
+      await global.Sheets.dispatch(SYNC_WORKFLOW);
+      const run = await global.Sheets.waitForRun(SYNC_WORKFLOW, startedAt, {
+        onStatus: s => renderSync(s === 'queued' ? 'En cola en GitHub Actions…' : 'Leyendo las carpetas de Drive…'),
+      });
+      if (run.conclusion !== 'success') {
+        throw new Error(`el workflow terminó con estado "${run.conclusion}". <a href="${esc(run.html_url)}" target="_blank" rel="noopener">Ver detalle ↗</a>`);
+      }
+      // Lee los JSON recién commiteados, sin esperar el deploy de Pages
+      const [meta, google] = await Promise.all([
+        global.Sheets.fetchRepoJson(FILES.meta).catch(() => state.data.meta),
+        global.Sheets.fetchRepoJson(FILES.google).catch(() => state.data.google),
+      ]);
+      state.syncing = false;
+      setData({ meta, google });
+      if (lastGenerated() === before) {
+        renderSync(`<b>Sin cambios en Drive</b> <span class="muted">· verificado ${esc(fechaHora(new Date().toISOString()))}; los datos siguen al ${esc(fechaHora(before))}</span>`);
+      }
+    } catch (err) {
+      console.error('[gasto] sync failed', err);
+      state.syncing = false;
+      renderSync(`<b>No se pudo sincronizar:</b> ${/<a /.test(err.message) ? err.message : esc(err.message)}`, 'warn');
+    }
+  }
+
   let started = false;
   async function init() {
     if (started) {
@@ -629,12 +545,12 @@
       return;
     }
     started = true;
+    metaBodyTpl = document.getElementById('gp-meta-body').innerHTML;
     wireTabs();
-    const [ventas, meta, google] = await Promise.all([loadJson(FILES.ventas), loadJson(FILES.meta), loadJson(FILES.google)]);
-    state.data = { ventas, meta, google };
-    let saved = null;
-    try { saved = localStorage.getItem(TAB_KEY); } catch (e) { /* storage bloqueado */ }
-    showTab(saved || 'ventas');
+    document.getElementById('gp-sync-btn').addEventListener('click', () => global.Sheets.withPat(syncNow));
+    const [meta, google] = await Promise.all([loadJson(FILES.meta), loadJson(FILES.google)]);
+    try { state.tab = localStorage.getItem(TAB_KEY) || 'meta'; } catch (e) { /* storage bloqueado */ }
+    setData({ meta, google });
   }
 
   global.Gasto = { init };
