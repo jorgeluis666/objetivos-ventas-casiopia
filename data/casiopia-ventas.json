@@ -1,0 +1,875 @@
+{
+  "generated": "2026-09-30T17:13:48-05:00",
+  "source": {
+    "name": "Ventas 2026 Dashboard.xlsx",
+    "url": "https://docs.google.com/spreadsheets/d/1u1tWfos-R5MbN7z72i1X6_BSkzh3L_nF/edit"
+  },
+  "channels": [
+    "Web",
+    "RRSS",
+    "La Mar",
+    "El Polo",
+    "Falabella",
+    "Otros"
+  ],
+  "actuals": {
+    "Enero": {
+      "Web": 26406.3,
+      "RRSS": 10161.02,
+      "La Mar": 17865.51,
+      "El Polo": 43245.59,
+      "Falabella": 598.31,
+      "Otros": 10848.47
+    },
+    "Febrero": {
+      "Web": 32934.66,
+      "RRSS": 4030.42,
+      "La Mar": 21116.19,
+      "El Polo": 29354.15,
+      "Falabella": 1053.39,
+      "Otros": 3158.56
+    },
+    "Marzo": {
+      "Web": 38187.92,
+      "RRSS": 7452.54,
+      "La Mar": 21388.9,
+      "El Polo": 42776.95,
+      "Falabella": 2555.08,
+      "Otros": 4072.2
+    },
+    "Abril": {
+      "Web": 36035.09,
+      "RRSS": 7083.01,
+      "La Mar": 17881.91,
+      "El Polo": 40292.88,
+      "Falabella": 2211.1,
+      "Otros": 237.63
+    },
+    "Mayo": {
+      "Web": 30740.87,
+      "RRSS": 7914.92,
+      "La Mar": 22060,
+      "El Polo": 38097.93,
+      "Falabella": 342.37,
+      "Otros": 855.17
+    },
+    "Junio": {
+      "Web": 20380.51,
+      "RRSS": 5325.85,
+      "La Mar": 19348.47,
+      "El Polo": 33596.61,
+      "Falabella": 38.14,
+      "Otros": 454.32
+    },
+    "Julio": {
+      "Web": 28718.39,
+      "RRSS": 8898.31,
+      "La Mar": 13454.66,
+      "El Polo": 52878.39,
+      "Falabella": 857.63,
+      "Otros": 0
+    },
+    "Agosto": {
+      "Web": 27244.78,
+      "RRSS": 15456.78,
+      "La Mar": 26192.71,
+      "El Polo": 45738.98,
+      "Falabella": 1164.41,
+      "Otros": 0
+    },
+    "Septiembre": {
+      "Web": 16482.62,
+      "RRSS": 6290.68,
+      "La Mar": 17539.15,
+      "El Polo": 23805.85,
+      "Falabella": 2052.54,
+      "Otros": 0
+    },
+    "Octubre": {
+      "Web": 0,
+      "RRSS": 0,
+      "La Mar": 0,
+      "El Polo": 0,
+      "Falabella": 0,
+      "Otros": 0
+    },
+    "Noviembre": {
+      "Web": 0,
+      "RRSS": 0,
+      "La Mar": 0,
+      "El Polo": 0,
+      "Falabella": 0,
+      "Otros": 0
+    },
+    "Diciembre": {
+      "Web": 0,
+      "RRSS": 0,
+      "La Mar": 0,
+      "El Polo": 0,
+      "Falabella": 0,
+      "Otros": 0
+    }
+  },
+  "orders": {
+    "Enero": {
+      "WEB": 125,
+      "RRSS": 36,
+      "LA_MAR": 72,
+      "EL_POLO": 162,
+      "FALABELLA": 7,
+      "OTROS": 9
+    },
+    "Febrero": {
+      "WEB": 231,
+      "RRSS": 31,
+      "LA_MAR": 107,
+      "EL_POLO": 144,
+      "FALABELLA": 15,
+      "OTROS": 15
+    },
+    "Marzo": {
+      "WEB": 285,
+      "RRSS": 39,
+      "LA_MAR": 106,
+      "EL_POLO": 248,
+      "FALABELLA": 29,
+      "OTROS": 14
+    },
+    "Abril": {
+      "WEB": 144,
+      "RRSS": 25,
+      "LA_MAR": 78,
+      "EL_POLO": 130,
+      "FALABELLA": 17,
+      "OTROS": 2
+    },
+    "Mayo": {
+      "WEB": 111,
+      "RRSS": 25,
+      "LA_MAR": 93,
+      "EL_POLO": 156,
+      "FALABELLA": 6,
+      "OTROS": 2
+    },
+    "Junio": {
+      "WEB": 71,
+      "RRSS": 17,
+      "LA_MAR": 68,
+      "EL_POLO": 122,
+      "FALABELLA": 1,
+      "OTROS": 4
+    },
+    "Julio": {
+      "WEB": 104,
+      "RRSS": 19,
+      "LA_MAR": 55,
+      "EL_POLO": 136,
+      "FALABELLA": 5,
+      "OTROS": 0
+    },
+    "Agosto": {
+      "WEB": 88,
+      "RRSS": 29,
+      "LA_MAR": 75,
+      "EL_POLO": 151,
+      "FALABELLA": 8,
+      "OTROS": 0
+    },
+    "Septiembre": {
+      "WEB": 63,
+      "RRSS": 19,
+      "LA_MAR": 50,
+      "EL_POLO": 81,
+      "FALABELLA": 10,
+      "OTROS": 0
+    },
+    "Octubre": {
+      "WEB": 0,
+      "RRSS": 0,
+      "LA_MAR": 0,
+      "EL_POLO": 0,
+      "FALABELLA": 0,
+      "OTROS": 0
+    },
+    "Noviembre": {
+      "WEB": 0,
+      "RRSS": 0,
+      "LA_MAR": 0,
+      "EL_POLO": 0,
+      "FALABELLA": 0,
+      "OTROS": 0
+    },
+    "Diciembre": {
+      "WEB": 0,
+      "RRSS": 0,
+      "LA_MAR": 0,
+      "EL_POLO": 0,
+      "FALABELLA": 0,
+      "OTROS": 0
+    }
+  },
+  "weekly": {
+    "Enero": [
+      {
+        "w": 1,
+        "TOTAL": 18197.65,
+        "WEB": 4447.23,
+        "RRSS": 2394.07,
+        "LA_MAR": 3684.32,
+        "EL_POLO": 7672.03,
+        "FALABELLA": 0,
+        "OTROS": 0
+      },
+      {
+        "w": 2,
+        "TOTAL": 20254.07,
+        "WEB": 4099.41,
+        "RRSS": 2816.1,
+        "LA_MAR": 3792.29,
+        "EL_POLO": 8648.22,
+        "FALABELLA": 114.41,
+        "OTROS": 783.64
+      },
+      {
+        "w": 3,
+        "TOTAL": 39929.83,
+        "WEB": 9691.02,
+        "RRSS": 2213.14,
+        "LA_MAR": 3306.78,
+        "EL_POLO": 14445,
+        "FALABELLA": 361.86,
+        "OTROS": 9912.03
+      },
+      {
+        "w": 4,
+        "TOTAL": 22179.66,
+        "WEB": 6263.47,
+        "RRSS": 2460.59,
+        "LA_MAR": 3991.78,
+        "EL_POLO": 9277.12,
+        "FALABELLA": 122.03,
+        "OTROS": 64.66
+      },
+      {
+        "w": 5,
+        "TOTAL": 8218.22,
+        "WEB": 1559.41,
+        "RRSS": 277.12,
+        "LA_MAR": 3090.34,
+        "EL_POLO": 3203.22,
+        "FALABELLA": 0,
+        "OTROS": 88.14
+      }
+    ],
+    "Febrero": [
+      {
+        "w": 1,
+        "TOTAL": 24021.44,
+        "WEB": 7486.95,
+        "RRSS": 354.24,
+        "LA_MAR": 6795.76,
+        "EL_POLO": 8441.95,
+        "FALABELLA": 114.41,
+        "OTROS": 828.14
+      },
+      {
+        "w": 2,
+        "TOTAL": 21193.22,
+        "WEB": 7614.32,
+        "RRSS": 1495.76,
+        "LA_MAR": 4207.63,
+        "EL_POLO": 6538.22,
+        "FALABELLA": 410.17,
+        "OTROS": 927.12
+      },
+      {
+        "w": 3,
+        "TOTAL": 19046.69,
+        "WEB": 6311.1,
+        "RRSS": 952.54,
+        "LA_MAR": 5492.46,
+        "EL_POLO": 5914.32,
+        "FALABELLA": 147.46,
+        "OTROS": 228.81
+      },
+      {
+        "w": 4,
+        "TOTAL": 27078.47,
+        "WEB": 11312.12,
+        "RRSS": 1168.64,
+        "LA_MAR": 4620.34,
+        "EL_POLO": 8421.53,
+        "FALABELLA": 381.36,
+        "OTROS": 1174.49
+      }
+    ],
+    "Marzo": [
+      {
+        "w": 1,
+        "TOTAL": 32325.86,
+        "WEB": 11120.77,
+        "RRSS": 165.25,
+        "LA_MAR": 5518.64,
+        "EL_POLO": 12591.69,
+        "FALABELLA": 648.31,
+        "OTROS": 2281.19
+      },
+      {
+        "w": 2,
+        "TOTAL": 25964.55,
+        "WEB": 6623.62,
+        "RRSS": 1880.51,
+        "LA_MAR": 5452.88,
+        "EL_POLO": 11365.17,
+        "FALABELLA": 642.37,
+        "OTROS": 0
+      },
+      {
+        "w": 3,
+        "TOTAL": 18635.41,
+        "WEB": 5770.32,
+        "RRSS": 974.58,
+        "LA_MAR": 2323.73,
+        "EL_POLO": 8542.2,
+        "FALABELLA": 889.83,
+        "OTROS": 134.75
+      },
+      {
+        "w": 4,
+        "TOTAL": 26391,
+        "WEB": 9739.39,
+        "RRSS": 4077.97,
+        "LA_MAR": 6425.42,
+        "EL_POLO": 5726.19,
+        "FALABELLA": 374.58,
+        "OTROS": 47.46
+      },
+      {
+        "w": 5,
+        "TOTAL": 12758.31,
+        "WEB": 4575.34,
+        "RRSS": 354.24,
+        "LA_MAR": 1668.22,
+        "EL_POLO": 4551.69,
+        "FALABELLA": 0,
+        "OTROS": 1608.81
+      }
+    ],
+    "Abril": [
+      {
+        "w": 1,
+        "TOTAL": 18291.36,
+        "WEB": 5640.08,
+        "RRSS": 2011.02,
+        "LA_MAR": 1254.15,
+        "EL_POLO": 8647.03,
+        "FALABELLA": 739.07,
+        "OTROS": 0
+      },
+      {
+        "w": 2,
+        "TOTAL": 22886.14,
+        "WEB": 9087.92,
+        "RRSS": 0,
+        "LA_MAR": 4390.68,
+        "EL_POLO": 9264.41,
+        "FALABELLA": 92.37,
+        "OTROS": 50.76
+      },
+      {
+        "w": 3,
+        "TOTAL": 20250.76,
+        "WEB": 6645.68,
+        "RRSS": 1376.27,
+        "LA_MAR": 3533.05,
+        "EL_POLO": 8359.32,
+        "FALABELLA": 336.44,
+        "OTROS": 0
+      },
+      {
+        "w": 4,
+        "TOTAL": 32277.59,
+        "WEB": 9157.25,
+        "RRSS": 3577.92,
+        "LA_MAR": 7881.99,
+        "EL_POLO": 10430.34,
+        "FALABELLA": 1043.22,
+        "OTROS": 186.86
+      },
+      {
+        "w": 5,
+        "TOTAL": 9210.59,
+        "WEB": 4678.98,
+        "RRSS": 117.8,
+        "LA_MAR": 822.03,
+        "EL_POLO": 3591.78,
+        "FALABELLA": 0,
+        "OTROS": 0
+      }
+    ],
+    "Mayo": [
+      {
+        "w": 1,
+        "TOTAL": 22866.44,
+        "WEB": 6569.15,
+        "RRSS": 1560.17,
+        "LA_MAR": 6493.05,
+        "EL_POLO": 8167.8,
+        "FALABELLA": 76.27,
+        "OTROS": 0
+      },
+      {
+        "w": 2,
+        "TOTAL": 36121.79,
+        "WEB": 9077.16,
+        "RRSS": 2300.42,
+        "LA_MAR": 8126.44,
+        "EL_POLO": 16427.93,
+        "FALABELLA": 189.83,
+        "OTROS": 0
+      },
+      {
+        "w": 3,
+        "TOTAL": 16269.5,
+        "WEB": 6530.86,
+        "RRSS": 1431.78,
+        "LA_MAR": 2323.31,
+        "EL_POLO": 5246.27,
+        "FALABELLA": 38.14,
+        "OTROS": 699.15
+      },
+      {
+        "w": 4,
+        "TOTAL": 16613.11,
+        "WEB": 4655.74,
+        "RRSS": 2132.46,
+        "LA_MAR": 4084.15,
+        "EL_POLO": 5546.61,
+        "FALABELLA": 38.14,
+        "OTROS": 156.02
+      },
+      {
+        "w": 5,
+        "TOTAL": 7550,
+        "WEB": 3317.54,
+        "RRSS": 490.08,
+        "LA_MAR": 1033.05,
+        "EL_POLO": 2709.32,
+        "FALABELLA": 0,
+        "OTROS": 0
+      }
+    ],
+    "Junio": [
+      {
+        "w": 1,
+        "TOTAL": 10815.51,
+        "WEB": 2657.03,
+        "RRSS": 93.22,
+        "LA_MAR": 4206.78,
+        "EL_POLO": 3858.47,
+        "FALABELLA": 0,
+        "OTROS": 0
+      },
+      {
+        "w": 2,
+        "TOTAL": 17772.63,
+        "WEB": 4309.66,
+        "RRSS": 1625.42,
+        "LA_MAR": 3699.32,
+        "EL_POLO": 8019.58,
+        "FALABELLA": 0,
+        "OTROS": 118.64
+      },
+      {
+        "w": 3,
+        "TOTAL": 25707.63,
+        "WEB": 8811.44,
+        "RRSS": 1825.85,
+        "LA_MAR": 4859.32,
+        "EL_POLO": 9837.2,
+        "FALABELLA": 38.14,
+        "OTROS": 335.68
+      },
+      {
+        "w": 4,
+        "TOTAL": 20794.92,
+        "WEB": 2856.78,
+        "RRSS": 1515.25,
+        "LA_MAR": 5982.2,
+        "EL_POLO": 10440.68,
+        "FALABELLA": 0,
+        "OTROS": 0
+      },
+      {
+        "w": 5,
+        "TOTAL": 4053.22,
+        "WEB": 1745.59,
+        "RRSS": 266.1,
+        "LA_MAR": 600.85,
+        "EL_POLO": 1440.68,
+        "FALABELLA": 0,
+        "OTROS": 0
+      }
+    ],
+    "Julio": [
+      {
+        "w": 1,
+        "TOTAL": 17424.24,
+        "WEB": 1334.41,
+        "RRSS": 1633.05,
+        "LA_MAR": 2427.97,
+        "EL_POLO": 11936.44,
+        "FALABELLA": 92.37,
+        "OTROS": 0
+      },
+      {
+        "w": 2,
+        "TOTAL": 31846.78,
+        "WEB": 16224.75,
+        "RRSS": 1105.08,
+        "LA_MAR": 2948.31,
+        "EL_POLO": 11527.97,
+        "FALABELLA": 40.68,
+        "OTROS": 0
+      },
+      {
+        "w": 3,
+        "TOTAL": 21363.31,
+        "WEB": 5281.95,
+        "RRSS": 1562.71,
+        "LA_MAR": 1900,
+        "EL_POLO": 12061.86,
+        "FALABELLA": 556.78,
+        "OTROS": 0
+      },
+      {
+        "w": 4,
+        "TOTAL": 23972.03,
+        "WEB": 3484.75,
+        "RRSS": 4038.98,
+        "LA_MAR": 4031.78,
+        "EL_POLO": 12416.53,
+        "FALABELLA": 0,
+        "OTROS": 0
+      },
+      {
+        "w": 5,
+        "TOTAL": 9718.98,
+        "WEB": 1910.51,
+        "RRSS": 558.47,
+        "LA_MAR": 2146.61,
+        "EL_POLO": 4935.59,
+        "FALABELLA": 167.8,
+        "OTROS": 0
+      }
+    ],
+    "Agosto": [
+      {
+        "w": 1,
+        "TOTAL": 38856.15,
+        "WEB": 11086.83,
+        "RRSS": 10016.95,
+        "LA_MAR": 6721.86,
+        "EL_POLO": 10933.05,
+        "FALABELLA": 97.46,
+        "OTROS": 0
+      },
+      {
+        "w": 2,
+        "TOTAL": 30570.59,
+        "WEB": 7431.95,
+        "RRSS": 2999.15,
+        "LA_MAR": 7416.61,
+        "EL_POLO": 12350,
+        "FALABELLA": 372.88,
+        "OTROS": 0
+      },
+      {
+        "w": 3,
+        "TOTAL": 21132.47,
+        "WEB": 3477.38,
+        "RRSS": 1329.66,
+        "LA_MAR": 5472.88,
+        "EL_POLO": 10814.41,
+        "FALABELLA": 38.14,
+        "OTROS": 0
+      },
+      {
+        "w": 4,
+        "TOTAL": 17791.75,
+        "WEB": 2890.91,
+        "RRSS": 916.1,
+        "LA_MAR": 6540.68,
+        "EL_POLO": 6788.14,
+        "FALABELLA": 655.93,
+        "OTROS": 0
+      },
+      {
+        "w": 5,
+        "TOTAL": 6417.03,
+        "WEB": 1328.05,
+        "RRSS": 194.92,
+        "LA_MAR": 40.68,
+        "EL_POLO": 4853.39,
+        "FALABELLA": 0,
+        "OTROS": 0
+      }
+    ],
+    "Septiembre": [
+      {
+        "w": 1,
+        "TOTAL": 15504.24,
+        "WEB": 4455.17,
+        "RRSS": 2643.22,
+        "LA_MAR": 4603.39,
+        "EL_POLO": 3676.19,
+        "FALABELLA": 126.27,
+        "OTROS": 0
+      },
+      {
+        "w": 2,
+        "TOTAL": 26702.03,
+        "WEB": 4766.44,
+        "RRSS": 2079.66,
+        "LA_MAR": 7469.49,
+        "EL_POLO": 11947.46,
+        "FALABELLA": 438.98,
+        "OTROS": 0
+      },
+      {
+        "w": 3,
+        "TOTAL": 11606.88,
+        "WEB": 2924.17,
+        "RRSS": 676.27,
+        "LA_MAR": 2997.97,
+        "EL_POLO": 4870.34,
+        "FALABELLA": 138.14,
+        "OTROS": 0
+      },
+      {
+        "w": 4,
+        "TOTAL": 11814.64,
+        "WEB": 3793.79,
+        "RRSS": 891.53,
+        "LA_MAR": 2468.31,
+        "EL_POLO": 3311.86,
+        "FALABELLA": 1349.15,
+        "OTROS": 0
+      },
+      {
+        "w": 5,
+        "TOTAL": 0,
+        "WEB": 0,
+        "RRSS": 0,
+        "LA_MAR": 0,
+        "EL_POLO": 0,
+        "FALABELLA": 0,
+        "OTROS": 0
+      }
+    ],
+    "Octubre": [],
+    "Noviembre": [],
+    "Diciembre": []
+  },
+  "undated": {
+    "Enero": 345.76,
+    "Febrero": 307.54,
+    "Marzo": 358.47,
+    "Abril": 825.17,
+    "Mayo": 590.42,
+    "Junio": 0,
+    "Julio": 482.03,
+    "Agosto": 1029.66,
+    "Septiembre": 543.05,
+    "Octubre": 0,
+    "Noviembre": 0,
+    "Diciembre": 0
+  },
+  "targets": {
+    "Enero": {
+      "Web": 20000,
+      "RRSS": 10000,
+      "La Mar": 20000,
+      "El Polo": 30000,
+      "Falabella": null,
+      "Otros": null
+    },
+    "Febrero": {
+      "Web": 30000,
+      "RRSS": 10000,
+      "La Mar": 17000,
+      "El Polo": 40000,
+      "Falabella": null,
+      "Otros": null
+    },
+    "Marzo": {
+      "Web": 35000,
+      "RRSS": 10000,
+      "La Mar": 30000,
+      "El Polo": 50000,
+      "Falabella": null,
+      "Otros": null
+    },
+    "Abril": {
+      "Web": 35000,
+      "RRSS": 10000,
+      "La Mar": 30000,
+      "El Polo": 45000,
+      "Falabella": null,
+      "Otros": null
+    },
+    "Mayo": {
+      "Web": 40000,
+      "RRSS": 10000,
+      "La Mar": 25000,
+      "El Polo": 40000,
+      "Falabella": null,
+      "Otros": null
+    },
+    "Junio": {
+      "Web": 40000,
+      "RRSS": 10000,
+      "La Mar": 25000,
+      "El Polo": 40000,
+      "Falabella": null,
+      "Otros": null
+    },
+    "Julio": {
+      "Web": 40000,
+      "RRSS": 10000,
+      "La Mar": 20000,
+      "El Polo": 40000,
+      "Falabella": null,
+      "Otros": null
+    },
+    "Agosto": {
+      "Web": 40000,
+      "RRSS": 10000,
+      "La Mar": 20000,
+      "El Polo": 55000,
+      "Falabella": null,
+      "Otros": null
+    },
+    "Septiembre": {
+      "Web": null,
+      "RRSS": null,
+      "La Mar": 25000,
+      "El Polo": 40000,
+      "Falabella": null,
+      "Otros": null
+    },
+    "Octubre": {
+      "Web": null,
+      "RRSS": null,
+      "La Mar": null,
+      "El Polo": 70000,
+      "Falabella": null,
+      "Otros": null
+    },
+    "Noviembre": {
+      "Web": null,
+      "RRSS": null,
+      "La Mar": null,
+      "El Polo": 70000,
+      "Falabella": null,
+      "Otros": null
+    },
+    "Diciembre": {
+      "Web": null,
+      "RRSS": null,
+      "La Mar": null,
+      "El Polo": 120000,
+      "Falabella": null,
+      "Otros": null
+    }
+  },
+  "targetTotal": {
+    "Enero": 80000,
+    "Febrero": 100000,
+    "Marzo": 120000,
+    "Abril": 120000,
+    "Mayo": 110000,
+    "Junio": 102000,
+    "Julio": 85000,
+    "Agosto": 96000,
+    "Septiembre": 96000,
+    "Octubre": 113000,
+    "Noviembre": 183000,
+    "Diciembre": 255000
+  },
+  "ref2025": {
+    "Enero": {
+      "TOTAL": 74444.11,
+      "Web+RRSS": 26993.64,
+      "La Mar": 17833.47,
+      "El Polo": 25105.76
+    },
+    "Febrero": {
+      "TOTAL": 66722.29,
+      "Web+RRSS": 20211.86,
+      "La Mar": 15448.73,
+      "El Polo": 25150.42
+    },
+    "Marzo": {
+      "TOTAL": 101033.56,
+      "Web+RRSS": 28037.54,
+      "La Mar": 25157.88,
+      "El Polo": 40470.34
+    },
+    "Abril": {
+      "TOTAL": 102514.49,
+      "Web+RRSS": 20101.44,
+      "La Mar": 40116.27,
+      "El Polo": 41105.25
+    },
+    "Mayo": {
+      "TOTAL": 88729.75,
+      "Web+RRSS": 23493.39,
+      "La Mar": 25075.42,
+      "El Polo": 38287.2
+    },
+    "Junio": {
+      "TOTAL": 85068.64,
+      "Web+RRSS": 24611.53,
+      "La Mar": 29670.25,
+      "El Polo": 29200.42
+    },
+    "Julio": {
+      "TOTAL": 73807.97,
+      "Web+RRSS": 22744.58,
+      "La Mar": 17410.51,
+      "El Polo": 32686.78
+    },
+    "Agosto": {
+      "TOTAL": 80137.2,
+      "Web+RRSS": 18236.61,
+      "La Mar": 17835,
+      "El Polo": 42346.1
+    },
+    "Septiembre": {
+      "TOTAL": 79401.02,
+      "Web+RRSS": 21273.73,
+      "La Mar": 25194.24,
+      "El Polo": 31250.42
+    },
+    "Octubre": {
+      "TOTAL": 93809.15,
+      "Web+RRSS": 14052.54,
+      "La Mar": 22315.68,
+      "El Polo": 55364.41
+    },
+    "Noviembre": {
+      "TOTAL": 152278.81,
+      "Web+RRSS": 67068.64,
+      "La Mar": 27392.2,
+      "El Polo": 56141.1
+    },
+    "Diciembre": {
+      "TOTAL": 210417.54,
+      "Web+RRSS": 45423.56,
+      "La Mar": 57646.44,
+      "El Polo": 101155.17
+    }
+  },
+  "ignored": {}
+}

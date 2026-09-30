@@ -161,6 +161,8 @@
   color: var(--amber-text);
   margin-bottom: 16px;
 }
+.period-note.target-note { background: #F8FAFC; border-left-color: var(--muted); color: var(--text-2); line-height: 1.5; }
+.ref-note { font-size: 10px; color: var(--muted); font-family: inherit; }
 
 /* ── Pace cards ── */
 .pace-grid {

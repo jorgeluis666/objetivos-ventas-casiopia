@@ -106,21 +106,25 @@
     const flatten = (weekMap) => {
       const labels = [];
       const values = [];
+      const titles = [];
       months.forEach(m => {
         const weeks = weekMap[m] || [];
         weeks.forEach((w, i) => {
           // Primera semana del mes muestra la abreviatura; las demás solo "S<n>"
           labels.push(i === 0 ? `${MONTH_SHORT[m]} S${w.w}` : `S${w.w}`);
           values.push(w[field] || 0);
+          const end = Math.min(w.w * 7, ds.monthDays[m]);
+          titles.push(`${m} · semana ${w.w} (${(w.w - 1) * 7 + 1}–${end} ${MONTH_SHORT[m].toLowerCase()})`);
         });
       });
-      return { labels, values };
+      return { labels, values, titles };
     };
 
     // La referencia (2025) da la longitud del eje X (año completo)
     const ref = flatten(weeklyRef);
     const cur = flatten(weeklyCurrent);
     const axisLabels = ref.labels.length ? ref.labels : cur.labels;
+    const axisTitles = ref.labels.length ? ref.titles : cur.titles;
     const refValues = ref.labels.length ? ref.values : axisLabels.map(() => null);
 
     // El año en curso se alinea al inicio de la serie (primera semana = Enero)
@@ -170,8 +174,14 @@
           legend: { display: false },
           tooltip: {
             callbacks: {
+              // Semanal: rango de días; Mensual/Acumulado cambian los labels
+              // del chart y se muestra el label tal cual.
+              title: items => {
+                const it = items[0];
+                return it && it.chart.data.labels === axisLabels ? axisTitles[it.dataIndex] : it?.label;
+              },
               label: ctx => ctx.raw !== null
-                ? ` ${ctx.dataset.label}: S/. ${ctx.raw.toLocaleString('es-PE')}`
+                ? ` ${ctx.dataset.label} · venta neta sin IGV: S/. ${Math.round(ctx.raw).toLocaleString('es-PE')}`
                 : ` ${ctx.dataset.label}: sin datos`,
             },
           },

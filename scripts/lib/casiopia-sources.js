@@ -1,8 +1,9 @@
 /**
- * casiopia-sources.js — agregación pura de las fuentes de Gasto publicitario.
- * No descarga nada: recibe las filas CSV / tablas de Meta y Google y
- * devuelve los JSON que consume el dashboard.
+ * casiopia-sources.js — agregación pura de las fuentes de Casiopia.
+ * No descarga nada: recibe el libro de ventas y las filas CSV / tablas de
+ * Meta y Google y devuelve los JSON que consume el dashboard.
  *
+ *   ventasFromWorkbook(wb)           → data/casiopia-ventas.json
  *   metaFromCsvFiles([{name, text}]) → data/casiopia-meta.json
  *   googleFromTables([{name, rows}]) → data/casiopia-google.json
  */
@@ -55,6 +56,152 @@ function cellValue(v) {
     return null;
   }
   return v;
+}
+
+// ════════════════════════════════════════════════════════════
+// VENTAS — Excel "Ventas 2026 Dashboard.xlsx" (módulo Objetivos 2026)
+//   Hoja "Ventas": una fila por ítem vendido. Columnas usadas:
+//     C mes · E pedido (CASIO…) · S total sin IGV · V canal
+//   La suma de S por mes y canal es exactamente lo que el EERR reporta
+//   como "VENTAS NETAS …" (fórmulas SUMIFS(Ventas!S:S, C, mes, V, canal)).
+//   Hoja "Base Ventas": fecha de cada pedido (B pedido · E fecha).
+//   Hoja "EERR": objetivos por canal y ventas netas 2025.
+// ════════════════════════════════════════════════════════════
+const CHANNELS = ['Web', 'RRSS', 'La Mar', 'El Polo', 'Falabella', 'Otros'];
+const CH_UPPER = { Web: 'WEB', RRSS: 'RRSS', 'La Mar': 'LA_MAR', 'El Polo': 'EL_POLO', Falabella: 'FALABELLA', Otros: 'OTROS' };
+
+// Mismos canales que suma el EERR; cualquier otro rótulo se ignora (y se avisa).
+function mapChannel(value) {
+  const ch = norm(value);
+  if (ch === 'web') return 'Web';
+  if (['whatsapp', 'instagram', 'facebook'].includes(ch)) return 'RRSS';
+  if (ch === 'la mar') return 'La Mar';
+  if (ch === 'el polo') return 'El Polo';
+  if (ch === 'falabella') return 'Falabella';
+  if (ch === 'ripley' || ch === 'otros') return 'Otros';
+  return null;
+}
+
+const VENTAS_COLS = { month: 3, order: 5, net: 19, channel: 22 };
+const BASE_COLS = { order: 2, date: 5 };
+
+// Filas del EERR (columna B) → valores de enero a diciembre (columnas C..N).
+const EERR_LINES = {
+  objetivoTotal:     /^objetivo ventas netas$/,
+  'objetivo:Web':    /^objetivo web$/,
+  'objetivo:RRSS':   /^objetivo rrss$/,
+  'objetivo:La Mar': /^objetivo la mar$/,
+  'objetivo:El Polo': /^objetivo el polo$/,
+  'objetivo:Otros':  /^objetivo otros$/,
+  'ref:TOTAL':       /^ventas netas 2025$/,
+  'ref:Web+RRSS':    /^ventas web\+rrss 2025$/,
+  'ref:La Mar':      /^v[e]?ntas netas 2025 la mar$/,
+  'ref:El Polo':     /^ventas polo 2025$/,
+};
+
+function readEERR(ws) {
+  const out = {};
+  if (!ws) throw new Error('No existe la hoja "EERR" en el Excel');
+  ws.eachRow(row => {
+    const label = norm(cellValue(row.getCell(2).value));
+    const key = Object.keys(EERR_LINES).find(k => EERR_LINES[k].test(label));
+    if (!key || out[key]) return;
+    out[key] = MONTHS.map((_, i) => {
+      const v = cellValue(row.getCell(3 + i).value);
+      return v == null || v === '' ? null : round2(toNumber(v));
+    });
+  });
+  return out;
+}
+
+// Fecha de un pedido en "Base Ventas". Llega de tres formas: texto de
+// Shopify ("2026-01-01 11:23:21 -0500"), texto dd/mm/aaaa ("14/07/2026 13:31")
+// o fecha ya convertida por Google Sheets, que interpreta dd/mm como mm/dd
+// cuando el día es ≤ 12 (4 de septiembre queda como 9 de abril).
+function parseOrderDate(v) {
+  if (v instanceof Date) return { y: v.getUTCFullYear(), m: v.getUTCMonth(), d: v.getUTCDate(), swappable: true };
+  const s = String(v ?? '').trim();
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return { y: +m[1], m: +m[2] - 1, d: +m[3] };
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) return { y: +m[3], m: +m[2] - 1, d: +m[1] };
+  return null;
+}
+
+// Día del mes en que cayó el pedido, validado contra el mes de la fila de
+// Ventas (columna C). Si no cuadra pero cuadra con día y mes invertidos, es el
+// caso dd/mm leído como mm/dd. null = sin fecha confiable.
+function dayInMonth(date, monthIdx) {
+  if (!date) return null;
+  if (date.m === monthIdx) return date.d;
+  if (date.swappable && date.d - 1 === monthIdx) return date.m + 1;
+  return null;
+}
+
+const emptyByChannel = () => Object.fromEntries(CHANNELS.map(c => [c, 0]));
+
+// Semanas del mes como las muestra el dashboard: días 1–7, 8–14, 15–21, 22–28, 29–fin.
+function weekRows(daysInMonth) {
+  return Array.from({ length: Math.ceil(daysInMonth / 7) }, (_, i) => ({
+    w: i + 1, TOTAL: 0, ...Object.fromEntries(CHANNELS.map(c => [CH_UPPER[c], 0])),
+  }));
+}
+
+function ventasFromWorkbook(wb, year = 2026) {
+  const ws = wb.getWorksheet('Ventas');
+  if (!ws) throw new Error('No existe la hoja "Ventas" en el Excel');
+  const eerr = readEERR(wb.getWorksheet('EERR'));
+
+  // Fecha por pedido (el pedido se repite en cada ítem; vale la primera con fecha)
+  const orderDates = new Map();
+  wb.getWorksheet('Base Ventas')?.eachRow(row => {
+    const id = String(cellValue(row.getCell(BASE_COLS.order).value) ?? '').trim();
+    if (!id || orderDates.has(id)) return;
+    const date = parseOrderDate(cellValue(row.getCell(BASE_COLS.date).value));
+    if (date) orderDates.set(id, date);
+  });
+
+  const acc = {};
+  const ignored = {};
+  ws.eachRow((row, r) => {
+    if (r === 1) return;
+    const month = MONTHS.find(m => norm(m) === norm(cellValue(row.getCell(VENTAS_COLS.month).value)));
+    const net = cellValue(row.getCell(VENTAS_COLS.net).value);
+    if (!month || typeof net !== 'number' || !net) return;
+    const label = cellValue(row.getCell(VENTAS_COLS.channel).value);
+    const channel = mapChannel(label);
+    if (!channel) { ignored[label ?? '(vacío)'] = round2((ignored[label ?? '(vacío)'] || 0) + net); return; }
+
+    const mi = MONTHS.indexOf(month);
+    const a = acc[month] ||= { net: emptyByChannel(), orders: {}, weeks: weekRows(new Date(year, mi + 1, 0).getDate()), undated: 0 };
+    a.net[channel] += net;
+    const order = String(cellValue(row.getCell(VENTAS_COLS.order).value) ?? '').trim();
+    if (order) (a.orders[channel] ||= new Set()).add(order);
+
+    const day = dayInMonth(orderDates.get(order), mi);
+    if (day) {
+      const wk = a.weeks[Math.ceil(day / 7) - 1];
+      wk[CH_UPPER[channel]] += net;
+      wk.TOTAL += net;
+    } else {
+      a.undated += net;
+    }
+  });
+
+  const out = { actuals: {}, orders: {}, weekly: {}, undated: {}, targets: {}, targetTotal: {}, ref2025: {} };
+  MONTHS.forEach((m, i) => {
+    const a = acc[m];
+    out.actuals[m] = Object.fromEntries(CHANNELS.map(c => [c, round2(a?.net[c] || 0)]));
+    out.orders[m] = Object.fromEntries(CHANNELS.map(c => [CH_UPPER[c], a?.orders[c]?.size || 0]));
+    out.weekly[m] = a ? a.weeks.map(w => Object.fromEntries(Object.entries(w).map(([k, v]) => [k, k === 'w' ? v : round2(v)]))) : [];
+    out.undated[m] = round2(a?.undated || 0);
+    // null = el EERR no fija objetivo para ese canal ese mes
+    out.targets[m] = Object.fromEntries(CHANNELS.map(c => [c, eerr['objetivo:' + c]?.[i] ?? null]));
+    out.targetTotal[m] = eerr.objetivoTotal?.[i] ?? null;
+    out.ref2025[m] = Object.fromEntries(['TOTAL', 'Web+RRSS', 'La Mar', 'El Polo']
+      .map(k => [k, eerr['ref:' + k]?.[i] ?? null]));
+  });
+  return { channels: CHANNELS, ...out, ignored };
 }
 
 // ════════════════════════════════════════════════════════════
@@ -284,5 +431,5 @@ function googleFromTables(tables) {
 
 module.exports = {
   MONTHS, parseCSV, cellValue, toNumber,
-  metaFromCsvFiles, googleFromTables,
+  ventasFromWorkbook, metaFromCsvFiles, googleFromTables,
 };

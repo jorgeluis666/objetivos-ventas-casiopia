@@ -116,14 +116,14 @@
         <div class="sec-lbl">01 — Planeación</div>
         <div class="section-title">Objetivos 2026 · Simulador por canal</div>
         <div class="section-desc">
-          Usa <strong>+</strong> / <strong>−</strong> para ajustar el objetivo en pasos de S/. 500, o escribe el valor directo. La columna <em>Ref. 2025</em> muestra el cierre real del año anterior.
+          Ventas, objetivos y referencia 2025 salen del Excel <a href="https://docs.google.com/spreadsheets/d/1u1tWfos-R5MbN7z72i1X6_BSkzh3L_nF/edit" target="_blank" rel="noopener"><strong>Ventas 2026 Dashboard</strong></a> (hojas Ventas, Base Ventas y EERR) y se sincronizan todos los días a las 07:00 o con <strong>Actualizar</strong>. Todos los montos son venta neta en soles sin IGV. Usa <strong>+</strong> / <strong>−</strong> para ajustar el objetivo en pasos de S/. 500, o escribe el valor directo.
         </div>
 
         <div class="panel" style="margin-bottom:20px;">
           <div class="panel-head">
             <div>
-              <div class="panel-title" id="combined-chart-title">Evolución semanal · 2025 vs 2026</div>
-              <div class="panel-sub">2025 completo como referencia · 2026 en curso</div>
+              <div class="panel-title" id="combined-chart-title">Venta neta semanal · 2026</div>
+              <div class="panel-sub" id="combined-chart-sub">Soles sin IGV</div>
             </div>
             <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
               <select id="chart-channel-select" class="ch-select">
@@ -441,7 +441,7 @@
 </div>
 
 <script src="js/data-static.js"></script>
-<script src="js/data-casiopia-weekly.js"></script>
+
 <script src="js/data-live.js"></script>
 <script src="js/charts.js"></script>
 <script src="js/objectives.js"></script>

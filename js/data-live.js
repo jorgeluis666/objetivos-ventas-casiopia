@@ -1,34 +1,28 @@
 /* ============================================================
-   Datos vivos — cargan data/ventas-2026.json generado por el
-   pipeline scripts/fetch-data.js (GitHub Actions / local).
-   Expone window.DataLive.load() → { d2026, weeklyData, transactions, generated }
+   Datos vivos de Objetivos 2026 — cargan data/casiopia-ventas.json,
+   generado por scripts/fetch-casiopia.js desde el Excel
+   "Ventas 2026 Dashboard.xlsx" (workflow sync-casiopia.yml).
+   Expone window.DataLive.load() y DataLive.fromJson(json) →
+     { generated, d2026, weeklyData, transactions, targets,
+       targetTotal, ref2025, undated, source }
    ============================================================ */
 
 (function (global) {
-  const DATA_URL = 'data/ventas-2026.json';
+  const DATA_URL = 'data/casiopia-ventas.json';
 
-  const MONTHS_12 = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-
-  // Shape de fallback usado cuando no hay JSON disponible (lighthouse / primera carga).
-  // Usa DataStatic.monthsWith2026Data para que los meses cubiertos queden sincronizados
-  // con data-static.js — solo hay que actualizar ese array cuando avance el año.
-  function emptyShape() {
-    const liveMonths = global.DataStatic?.monthsWith2026Data || MONTHS_12.slice(0, 4);
-    const zero = () => ({ Tienda: 0, Web: 0, WhatsApp: 0, Showroom: 0, Instagram: 0, Facebook: 0 });
-    const zeroTx = () => ({ TIENDA: 0, WEB: 0, WHATSAPP: 0, SHOWROOM: 0, INSTAGRAM: 0, FACEBOOK: 0 });
-    const monthsShape = (names, factory) =>
-      Object.fromEntries(names.map(n => [n, factory()]));
-    const weeksShape = names =>
-      Object.fromEntries(names.map(n => [n, []]));
-
+  // Mismo shape para la carga inicial y para el JSON recién sincronizado.
+  function fromJson(json) {
     return {
-      generated: null,
-      d2026:        monthsShape(liveMonths, zero),
-      weeklyData:   weeksShape(liveMonths),
-      transactions: monthsShape(liveMonths, zeroTx),
-      weekly2025:        weeksShape(MONTHS_12),
-      d2025_live:        monthsShape(MONTHS_12, zero),
-      transactions2025:  monthsShape(MONTHS_12, zeroTx),
+      generated:    json.generated || null,
+      d2026:        json.actuals || {},
+      weeklyData:   json.weekly || {},
+      transactions: json.orders || {},
+      targets:      json.targets || null,
+      targetTotal:  json.targetTotal || {},
+      ref2025:      json.ref2025 || {},
+      undated:      json.undated || {},
+      sourceFile:   json.source || null,
+      source: 'live',
     };
   }
 
@@ -36,23 +30,13 @@
     try {
       const res = await fetch(DATA_URL, { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      const json = await res.json();
-      return {
-        generated:         json.generated || null,
-        d2026:             json.d2026,
-        weeklyData:        json.weeklyData,
-        transactions:      json.transactions,
-        // Nuevos (2025 live completo)
-        weekly2025:        json.weekly2025       || {},
-        d2025_live:        json.d2025_live       || {},
-        transactions2025:  json.transactions2025 || {},
-        source: 'live',
-      };
+      return fromJson(await res.json());
     } catch (err) {
+      // Sin JSON: objectives.js usa los datos estáticos de data-static.js
       console.warn('[data-live] no se pudo cargar', DATA_URL, err);
-      return { ...emptyShape(), source: 'fallback', error: err.message };
+      return { generated: null, source: 'fallback', error: err.message };
     }
   }
 
-  global.DataLive = { load, DATA_URL };
+  global.DataLive = { load, fromJson, DATA_URL };
 })(window);

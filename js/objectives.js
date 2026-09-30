@@ -11,9 +11,21 @@
   } = ds;
   const channels = ds.objectiveChannels || ds.channels;
   const palette = ds.objectivePalette || ds.palette;
-  const d2025 = ds.objectiveD2025 || ds.d2025;
-  const defaultTargets = ds.objectiveTargets || ds.defaultTargets;
   const chToUpper = ds.objectiveChToUpper || ds.chToUpper;
+  // Objetivos "de fábrica": los del EERR del Excel cuando llega
+  // data/casiopia-ventas.json; si no, los estáticos de data-static.js.
+  let defaultTargets = ds.objectiveTargets || ds.defaultTargets;
+  const copyTargets = t => JSON.parse(JSON.stringify(t));
+
+  // ── Referencia 2025 (hoja EERR) ──
+  // El EERR trae 2025 para el total, La Mar, El Polo y Web+RRSS juntos;
+  // Web, RRSS, Falabella y Otros no tienen referencia propia (null).
+  const REF_BY_CH = { 'La Mar': 'La Mar', 'El Polo': 'El Polo' };
+  const ref25 = (m, ch) => {
+    const r = state.ref2025?.[m];
+    if (!r) return null;
+    return ch ? (REF_BY_CH[ch] ? r[REF_BY_CH[ch]] : null) : r.TOTAL;
+  };
 
   const fmt = n => Math.round(n).toLocaleString('es-PE');
   const tot = o => channels.reduce((s, c) => s + (o[c] || 0), 0);
@@ -58,11 +70,14 @@
 
   // Estado interno
   const state = {
-    targets: JSON.parse(JSON.stringify(defaultTargets)),
+    targets: copyTargets(defaultTargets),
     d2026: null,
     weeklyData: null,
     transactions: null,
     avgTickets: {},
+    ref2025: {},
+    targetTotal: {},
+    undated: {},
   };
 
   // ── localStorage — clave de almacenamiento ──
@@ -135,7 +150,7 @@
 
   function restablecerObjetivos() {
     if (!confirm('¿Restaurar todos los objetivos a los valores originales?\nSe perderán los cambios guardados en este navegador.')) return;
-    state.targets = JSON.parse(JSON.stringify(defaultTargets));
+    state.targets = copyTargets(defaultTargets);
     localStorage.removeItem(LS_KEY);
     // Actualizar todos los inputs y la UI
     months.forEach(m => {
@@ -152,6 +167,9 @@
 
   // Carga inicial desde localStorage (una vez al cargar el módulo)
   loadFromStorage();
+  function hasSavedTargets() {
+    try { return !!localStorage.getItem(LS_KEY); } catch (e) { return false; }
+  }
 
   // ── Calendar helpers (año en curso = 2026) ──
   const YEAR = 2026;
@@ -187,46 +205,6 @@
   }
 
   // ── ISO week number del año (1-53) ──
-  function synthesizeWeeklyDataFromMonthly(d2026) {
-    const out = {};
-    months.forEach(m => {
-      const weekCount = Math.ceil(monthDays[m] / 7);
-      const rows = Array.from({ length: weekCount }, (_, i) => {
-        const row = { w: i + 1, TOTAL: 0 };
-        channels.forEach(ch => { row[chToUpper[ch]] = 0; });
-        return row;
-      });
-      const status = monthStatus(m);
-      const targetWeek = status === 'current'
-        ? Math.ceil(daysPassed(m) / 7)
-        : status === 'past'
-          ? weekCount
-          : null;
-
-      if (targetWeek) {
-        if (status === 'past') {
-          channels.forEach(ch => {
-            const real = d2026?.[m]?.[ch] || 0;
-            const weeklyReal = real / weekCount;
-            rows.forEach(row => {
-              row[chToUpper[ch]] = weeklyReal;
-              row.TOTAL += weeklyReal;
-            });
-          });
-        } else {
-          const row = rows[Math.max(0, Math.min(targetWeek, weekCount) - 1)];
-          channels.forEach(ch => {
-            const real = d2026?.[m]?.[ch] || 0;
-            row[chToUpper[ch]] = real;
-            row.TOTAL += real;
-          });
-        }
-      }
-      out[m] = rows;
-    });
-    return out;
-  }
-
   function isoWeekNumber(date) {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const dayNum = d.getUTCDay() || 7;
@@ -279,6 +257,11 @@
     if (status === 'future' || (status === 'current' && !isLiveMonth(m))) {
       pb.style.width = '0%'; pv.textContent = '—'; pv.style.color = 'var(--muted)';
       gv.textContent = status === 'future' ? 'futuro' : '—';
+      gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
+    } else if (tgt <= 0) {
+      // Sin objetivo no hay avance ni brecha que medir
+      pb.style.width = '0%'; pv.textContent = '—'; pv.style.color = 'var(--muted)';
+      gv.textContent = 'sin objetivo';
       gv.className = 'gap-val'; gv.style.color = 'var(--muted)';
     } else {
       pb.style.width = Math.min(p, 100).toFixed(1) + '%';
@@ -383,7 +366,7 @@
               <div class="pace-lbl">Ref. ${m} 2025</div>
               <span class="pace-badge muted">referencia</span>
             </div>
-            <div class="pace-val">S/. ${fmt(tot(d2025[m] || {}))}</div>
+            <div class="pace-val">${ref25(m, '') == null ? '—' : 'S/. ' + fmt(ref25(m, ''))}</div>
             <div class="pace-sub">cierre año anterior</div>
           </div>
         </div>`;
@@ -497,7 +480,7 @@
   function buildChannelWeeklyHTML(m, ch, status) {
     const weeks = state.weeklyData?.[m];
     if (!weeks || !weeks.length) {
-      return '<div style="padding:8px 4px;font-size:12px;color:var(--muted);">Sin datos semanales para este canal.</div>';
+      return '<div style="padding:8px 4px;font-size:12px;color:var(--muted);">Sin ventas con fecha para este mes en el Excel.</div>';
     }
     const chKey       = chToUpper[ch];
     const monthChTgt  = state.targets[m][ch] || 0;
@@ -843,18 +826,30 @@
   }
 
   // ── Render principal de la vista ──
-  function render({ d2026, weeklyData, transactions, weekly2025 }) {
-    d2026        = ds.objectiveActuals2026 || d2026 || {};
-    weeklyData   = ds.objectiveActuals2026
-      ? synthesizeWeeklyDataFromMonthly(d2026)
-      : (global.CasiopiaWeeklyData || ds.objectiveWeeklyData || weeklyData || {});
-    transactions = ds.objectiveTransactions || transactions || {};
-    weekly2025   = ds.objectiveWeekly2025 || weekly2025 || {};
+  // Datos: data/casiopia-ventas.json (Excel "Ventas 2026 Dashboard") vía
+  // DataLive. Sin ese JSON se usan los montos mensuales estáticos de
+  // data-static.js y no hay detalle semanal (no se inventa un reparto).
+  function render(live = {}) {
+    const isLive = live.source === 'live';
+    const d2026        = isLive ? live.d2026 : (ds.objectiveActuals2026 || {});
+    const weeklyData   = isLive ? live.weeklyData : {};
+    const transactions = isLive ? live.transactions : {};
 
+    if (isLive && live.targets) {
+      // Canal sin objetivo en el EERR → 0 (editable en la tabla)
+      defaultTargets = Object.fromEntries(months.map(m => [m,
+        Object.fromEntries(channels.map(ch => [ch, live.targets[m]?.[ch] || 0]))]));
+      if (!hasSavedTargets()) state.targets = copyTargets(defaultTargets);
+    }
+
+    state.isLive       = isLive;
     state.d2026        = d2026;
     state.weeklyData   = weeklyData;
     state.transactions = transactions;
-    state.weekly2025   = weekly2025;
+    state.weekly2025   = {};   // el EERR solo trae 2025 mensual
+    state.ref2025      = isLive ? live.ref2025 : {};
+    state.targetTotal  = isLive ? live.targetTotal : {};
+    state.undated      = isLive ? live.undated : {};
     state.avgTickets   = computeAvgTickets(d2026, transactions);
 
     const channelSel = document.getElementById('chart-channel-select');
@@ -875,13 +870,41 @@
     // ── Toggle Semanal / Mensual ──
     const toggleEl = document.getElementById('weekly-view-toggle');
     const titleEl  = document.getElementById('combined-chart-title');
+    const subEl    = document.getElementById('combined-chart-sub');
+
+    // Título y subtítulo dicen qué se grafica y de dónde sale cada número.
+    const setChartCaption = (mode, selCh) => {
+      const chLabel = selCh || 'Total';
+      const titles = {
+        weekly:     `Venta neta semanal · ${chLabel} · 2026`,
+        monthly:    `Venta neta mensual · ${chLabel} · 2025 vs 2026`,
+        cumulative: `Venta neta acumulada · ${chLabel} · 2025 vs 2026`,
+      };
+      if (titleEl) titleEl.textContent = titles[mode];
+      if (!subEl) return;
+      if (!state.isLive) {
+        subEl.textContent = 'Soles sin IGV · montos mensuales guardados en el tablero (sin conexión con el Excel)';
+        return;
+      }
+      const src = 'Soles sin IGV · columna "TOTAL SIN IGV" de la hoja Ventas del Excel Ventas 2026 Dashboard, sumada por Canal (= "VENTAS NETAS" del EERR)';
+      if (mode === 'weekly') {
+        const undated = months.reduce((s, m) => s + (state.undated[m] || 0), 0);
+        subEl.textContent = `${src} · semanas del mes: días 1–7, 8–14, 15–21, 22–28 y 29–fin, según la fecha del pedido en Base Ventas` +
+          (undated > 0 ? ` · S/. ${fmt(undated)} en pedidos sin fecha no entran en las semanas` : '') +
+          ' · 2025 no tiene detalle semanal';
+      } else {
+        const noRef = selCh && !REF_BY_CH[selCh];
+        subEl.textContent = `${src} · 2025: hoja EERR` +
+          (noRef ? ` · el EERR no trae 2025 para ${selCh} (solo total, La Mar, El Polo y Web+RRSS juntos)` : '');
+      }
+    };
+
     if (toggleEl) {
       // Siempre resetear a Semanal cuando se cargan datos frescos
       toggleEl.querySelectorAll('.vt-btn').forEach(b => b.classList.remove('active'));
       const weeklyBtn = toggleEl.querySelector('[data-mode="weekly"]');
       if (weeklyBtn) weeklyBtn.classList.add('active');
-      const initLabel = document.getElementById('chart-channel-select')?.value || 'Total';
-      if (titleEl) titleEl.textContent = `Evolución semanal · ${initLabel} · 2025 vs 2026`;
+      setChartCaption('weekly', document.getElementById('chart-channel-select')?.value || '');
 
       if (!toggleEl.dataset.wired) {
         toggleEl.dataset.wired = '1';
@@ -892,7 +915,6 @@
 
         // Helper: etiqueta del canal seleccionado para usar en títulos
         const getSelCh   = () => document.getElementById('chart-channel-select')?.value || '';
-        const getChLabel = () => getSelCh() || 'Total';
         const getChKey   = () => { const c = getSelCh(); return c ? chToUpper[c] : 'TOTAL'; };
 
         toggleEl.querySelectorAll('.vt-btn').forEach(btn => {
@@ -905,13 +927,15 @@
             if (!chart) return;
 
             const selCh    = getSelCh();
-            const chLabel  = getChLabel();
+            setChartCaption(btn.dataset.mode, selCh);
 
             if (btn.dataset.mode === 'monthly') {
-              if (titleEl) titleEl.textContent = `Evolución mensual · ${chLabel} · 2025 vs 2026`;
               if (cumStrip) cumStrip.style.display = 'none';
 
-              const mData25 = ALL_MONTHS.map(m => Math.round(getChVal(d2025[m], selCh)));
+              const mData25 = ALL_MONTHS.map(m => {
+                const v = ref25(m, selCh);
+                return v == null ? null : Math.round(v);
+              });
               const mData26 = ALL_MONTHS.map(m => {
                 const v = getChVal(state.d2026?.[m], selCh);
                 return v > 0 ? Math.round(v) : null;
@@ -952,16 +976,15 @@
               chart.update();
 
             } else if (btn.dataset.mode === 'cumulative') {
-              if (titleEl) titleEl.textContent = `Acumulado interanual · ${chLabel} · 2025 vs 2026`;
-
               // ── Calcular running totals por canal ──
               let cum25 = 0, cum26 = 0;
               const cum25Data = [], cum26Data = [];
 
               ALL_MONTHS.forEach(m => {
-                cum25 += Math.round(getChVal(d2025[m], selCh));
+                const v25 = ref25(m, selCh);
+                cum25 += Math.round(v25 || 0);
                 const v26 = getChVal(state.d2026?.[m], selCh);
-                cum25Data.push(cum25);
+                cum25Data.push(v25 == null ? null : cum25);
                 if (v26 > 0) {
                   cum26 += Math.round(v26);
                   cum26Data.push(cum26);
@@ -1013,7 +1036,9 @@
 
               // ── KPI strip: diferencia YTD ──
               const lastIdx = cum26Data.reduce((li, v, i) => v !== null ? i : li, -1);
-              if (cumStrip && lastIdx >= 0) {
+              if (cumStrip) cumStrip.style.display = 'none';
+              // Sin referencia 2025 para el canal no hay comparación que mostrar
+              if (cumStrip && lastIdx >= 0 && cum25Data[lastIdx] != null) {
                 const periodLabel = lastIdx === 0
                   ? MONTH_SHORT[ALL_MONTHS[0]]
                   : `Ene–${MONTH_SHORT[ALL_MONTHS[lastIdx]]}`;
@@ -1050,7 +1075,6 @@
               }
 
             } else {
-              if (titleEl) titleEl.textContent = `Evolución semanal · ${chLabel} · 2025 vs 2026`;
               if (cumStrip) cumStrip.style.display = 'none';
               // Restaurar anchos de línea, datalabels y layout que pudieron modificarse
               const chart2 = global.Charts?.getInstance('chart-weekly-combined');
@@ -1102,7 +1126,8 @@
       const status     = monthStatus(m);
       const d2026Month = d2026[m] || {};
       const monthTotal = channels.reduce((s, ch) => s + (d2026Month[ch] || 0), 0);
-      const total2025  = tot(d2025[m] || {});
+      const total2025  = ref25(m, '');
+      const fmtRef     = v => v == null ? '<span class="muted">—</span>' : 'S/. ' + fmt(v);
 
       // Panel HTML
       const panel = document.createElement('div');
@@ -1126,8 +1151,14 @@
       let rows = '';
       channels.forEach(ch => {
         const real       = d2026Month[ch] || 0;
-        const ref25      = (d2025[m] || {})[ch] || 0;
-        const share      = showReal && monthTotal > 0 ? (real / monthTotal * 100).toFixed(1) : '—';
+        // Web y RRSS comparten una sola línea 2025 en el EERR
+        const webRrss25  = state.ref2025?.[m]?.['Web+RRSS'];
+        const refCell    = ch === 'Web' && webRrss25 != null
+          ? `S/. ${fmt(webRrss25)}<div class="ref-note">Web + RRSS</div>`
+          : ch === 'RRSS' && webRrss25 != null
+            ? '<span class="muted">en Web</span>'
+            : fmtRef(ref25(m, ch));
+        const share     = showReal && monthTotal > 0 ? (real / monthTotal * 100).toFixed(1) : '—';
         const wkDetailId = `ch-weeks-${m}-${ch}`;
         rows += `<tr class="ch-obj-row">
           <td>
@@ -1143,7 +1174,7 @@
               <span class="ch-name"><span class="ch-pip" style="background:${palette[ch]}"></span>${ch}</span>
             </div>
           </td>
-          <td class="r mono text-2">S/. ${fmt(ref25)}</td>
+          <td class="r mono text-2">${refCell}</td>
           <td class="r mono">${showReal ? 'S/. ' + fmt(real) : '<span class="muted">—</span>'}</td>
           <td class="r">${showReal ? share + '%' : '—'}</td>
           <td class="r"><div class="stepper">
@@ -1175,27 +1206,43 @@
       });
 
       const statusNote = status === 'current'
-        ? `<div class="period-note">${m} 2026 está en curso · ${daysPassed(m)} días transcurridos · Referencia 2025: <strong>S/. ${fmt(total2025)}</strong></div>`
+        ? `<div class="period-note">${m} 2026 está en curso · ${daysPassed(m)} días transcurridos · Referencia 2025: <strong>${fmtRef(total2025)}</strong></div>`
         : status === 'future'
-          ? `<div class="period-note" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-text);">${m} 2026 es mes futuro · Referencia 2025: <strong>S/. ${fmt(total2025)}</strong> · los objetivos se pueden planificar desde ya.</div>`
+          ? `<div class="period-note" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-text);">${m} 2026 es mes futuro · Referencia 2025: <strong>${fmtRef(total2025)}</strong> · los objetivos se pueden planificar desde ya.</div>`
           : '';
+
+      // El EERR fija un "OBJETIVO VENTAS NETAS" total aparte de los objetivos
+      // por canal; si no coinciden, se avisa (la tabla usa los de cada canal).
+      const eerrTotal  = state.targetTotal?.[m];
+      const chTargets  = channels.reduce((s, ch) => s + (defaultTargets[m]?.[ch] || 0), 0);
+      const sinMeta    = channels.filter(ch => !(defaultTargets[m]?.[ch] > 0) && (d2026Month[ch] || 0) > 0);
+      const targetNote = eerrTotal != null && Math.abs(eerrTotal - chTargets) >= 1
+        ? `<div class="period-note target-note">
+             El EERR fija un objetivo total de <strong>S/. ${fmt(eerrTotal)}</strong> para ${m.toLowerCase()},
+             pero los objetivos por canal suman <strong>S/. ${fmt(chTargets)}</strong>
+             (${eerrTotal > chTargets ? 'faltan S/. ' + fmt(eerrTotal - chTargets) + ' por asignar' : 'S/. ' + fmt(chTargets - eerrTotal) + ' más'}).
+             ${sinMeta.length ? `Sin objetivo en el EERR: ${sinMeta.join(', ')}.` : ''}
+             La tabla usa los objetivos por canal; se pueden ajustar abajo.
+           </div>`
+        : '';
 
       panel.innerHTML = `
         ${statusNote}
+        ${targetNote}
         <div id="pace-${m}" style="margin-bottom:16px;"></div>
         <div id="alert-panel-${m}"></div>
         <div class="panel">
           <div class="panel-head">
             <div>
               <div class="panel-title">Avance por canal</div>
-              <div class="panel-sub">${m} 2026 · ajustable</div>
+              <div class="panel-sub">${m} 2026 · venta neta en soles sin IGV · objetivos ajustables</div>
             </div>
           </div>
           <table>
             <thead><tr>
               <th>Canal</th>
-              <th class="r">Ref. 2025</th>
-              <th class="r">Real 2026</th>
+              <th class="r" title="Ventas netas 2025 de la hoja EERR del Excel">Ref. 2025</th>
+              <th class="r" title="Venta neta sin IGV: suma de la columna TOTAL SIN IGV de la hoja Ventas por Canal (= VENTAS NETAS del EERR)">Real 2026</th>
               <th class="r">Participación</th>
               <th class="r">Objetivo S/.</th>
               <th class="r" style="min-width:140px;">Avance</th>
@@ -1204,7 +1251,7 @@
             <tbody>${rows}
               <tr style="background:#F8FAFC;">
                 <td><strong>Total</strong></td>
-                <td class="r mono text-2">S/. ${fmt(total2025)}</td>
+                <td class="r mono text-2">${fmtRef(total2025)}</td>
                 <td class="r mono">${showReal ? 'S/. ' + fmt(monthTotal) : '<span class="muted">—</span>'}</td>
                 <td class="r">${showReal ? '100%' : '—'}</td>
                 <td class="r mono text-2" id="mt-${m}"></td>

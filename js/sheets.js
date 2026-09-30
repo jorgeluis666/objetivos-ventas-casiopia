@@ -12,23 +12,23 @@
 (function (global) {
   const REPO_OWNER    = 'jorgeluis666';
   const REPO_NAME     = 'objetivos-ventas-casiopia';
-  const WORKFLOW_FILE = 'update-data.yml';    // ver .github/workflows/
+  // Objetivos 2026 lee data/casiopia-ventas.json, que genera este workflow
+  // desde el Excel "Ventas 2026 Dashboard" (ver .github/workflows/).
+  const WORKFLOW_FILE = 'sync-casiopia.yml';
   const PAT_STORAGE   = 'ghPatReadWrite';     // token opcional
-  const POLL_INTERVAL = 8000;                 // polling del run activo
   const API = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`;
 
   const state = {
     generated: null,
     loading: false,
-    polling: null,
-    lastCheck: null,
     afterSave: null,   // acción pendiente cuando se pide el token
   };
 
   // ── Formatters ──
   function formatRelative(iso) {
     if (!iso) return 'sin datos';
-    const then = new Date(iso.endsWith('Z') ? iso : iso + '-05:00');
+    // Sin zona horaria explícita se asume hora de Lima
+    const then = new Date(/(Z|[+-]\d{2}:\d{2})$/.test(iso) ? iso : iso + '-05:00');
     if (isNaN(then.getTime())) return iso;
     const diffMin = Math.round((Date.now() - then.getTime()) / 60000);
     if (diffMin < 1)   return 'hace segundos';
@@ -147,44 +147,23 @@
   }
 
   // ── Botón "Actualizar" del topbar (datos de Objetivos) ──
+  // Corre la sincronización y vuelve a pintar con el JSON recién commiteado,
+  // sin esperar el deploy de Pages.
   function triggerWorkflow() {
     withPat(async () => {
       setLoading(true);
       try {
-        await dispatch(WORKFLOW_FILE);
-        // Poll hasta que aparezca un run más reciente que state.generated
-        startPolling();
+        await runWorkflow(WORKFLOW_FILE);
+        const json = await fetchRepoJson(global.DataLive.DATA_URL);
+        state.generated = json.generated || state.generated;
+        if (typeof state.onUpdate === 'function') state.onUpdate(global.DataLive.fromJson(json));
       } catch (err) {
-        console.error('[sheets] dispatch failed', err);
-        alert('No se pudo lanzar la sincronización:\n' + err.message);
+        console.error('[sheets] sync failed', err);
+        alert('No se pudo sincronizar:\n' + err.message.replace(/<[^>]+>/g, ''));
+      } finally {
         setLoading(false);
       }
     });
-  }
-
-  function startPolling() {
-    const startedAt = Date.now();
-    if (state.polling) clearInterval(state.polling);
-    state.polling = setInterval(async () => {
-      try {
-        const res = await fetch('data/ventas-2026.json?_=' + Date.now(), { cache: 'no-store' });
-        if (res.ok) {
-          const json = await res.json();
-          if (json.generated && json.generated !== state.generated) {
-            state.generated = json.generated;
-            clearInterval(state.polling); state.polling = null;
-            setLoading(false);
-            if (typeof state.onUpdate === 'function') state.onUpdate(json);
-            return;
-          }
-        }
-      } catch {}
-      // Timeout después de 4 minutos
-      if (Date.now() - startedAt > 4 * 60 * 1000) {
-        clearInterval(state.polling); state.polling = null;
-        setLoading(false);
-      }
-    }, POLL_INTERVAL);
   }
 
   // ── Modal para guardar el PAT ──

@@ -14,7 +14,7 @@ Los datos de 2026 se sincronizan automáticamente desde un Google Sheet mediante
     dashboard.css         Estilos específicos del dashboard
   js/
     data-static.js        Datos 2025, productos web, targets por defecto
-    data-live.js          Fetcher de data/ventas-2026.json
+    data-live.js          Fetcher de data/casiopia-ventas.json (Objetivos 2026)
     charts.js             Instancias de Chart.js
     objectives.js         Vista de Objetivos (pace tracker, weekly charts)
     data-reportes.js      Índice de la carpeta de Drive de reportes
@@ -23,7 +23,8 @@ Los datos de 2026 se sincronizan automáticamente desde un Google Sheet mediante
     sheets.js             Indicador de sync + trigger de workflow
     main.js               Orquestación: init, navegación, render
   data/
-    ventas-2026.json      Generado por el pipeline (no editar a mano)
+    casiopia-*.json       Generados por scripts/fetch-casiopia.js (no editar a mano)
+    ventas-2026.json      Pipeline anterior (Lima Retail); ya no lo usa el dashboard
   scripts/
     fetch-data.js         Lee Google Sheets → escribe data/ventas-2026.json
     build.js              Inlines css+js en dist/index.html para deploy
@@ -42,6 +43,18 @@ Configuración única (ya hecha, solo para referencia o para rehacerla):
 2. **GitHub** → repo → *Settings → Pages*: *Custom domain* = `casiopia.limaretail.com` y marcar **Enforce HTTPS** cuando GitHub termine de emitir el certificado.
 
 La URL anterior (`jorgeluis666.github.io/objetivos-ventas-casiopia/`) redirige sola al dominio. Ojo: el navegador guarda por dominio lo que se configura en ⚙ (token, objetivos), así que hay que volver a ingresarlo una vez en el dominio nuevo.
+
+## Objetivos 2026
+
+Ventas, objetivos y referencia 2025 salen del Excel [*Ventas 2026 Dashboard*](https://docs.google.com/spreadsheets/d/1u1tWfos-R5MbN7z72i1X6_BSkzh3L_nF/edit). El workflow **Sincronizar datos Casiopia** lo descarga y genera `data/casiopia-ventas.json` (todos los días a las 07:00 de Lima o con el botón **Actualizar**):
+
+| Dato | De dónde sale |
+|---|---|
+| Real 2026 por canal y mes | Hoja **Ventas**: suma de la columna S *TOTAL SIN IGV* por mes (col. C) y *Canal* (col. V). Es el mismo cálculo que las líneas *VENTAS NETAS …* del EERR. Whatsapp + Instagram + Facebook = RRSS; Ripley + Otros = Otros. |
+| Semanas | Misma venta, repartida por la fecha del pedido (col. E de Ventas → col. E de **Base Ventas**). Semanas del mes: días 1–7, 8–14, 15–21, 22–28 y 29–fin. Google Sheets lee algunas fechas dd/mm como mm/dd (4 sep → 9 abr); se corrigen comparando con el mes de la fila. Los pedidos sin fecha quedan fuera de las semanas (el subtítulo del gráfico dice cuánto). |
+| Pedidos / ticket | Pedidos distintos (col. E) por mes y canal. |
+| Objetivos | Hoja **EERR**: filas *objetivo web*, *objetivo RRSS*, *objetivo La Mar*, *Objetivo El Polo*, *Objetivo Otros*. Si el *OBJETIVO VENTAS NETAS* total no coincide con la suma por canal, el mes lo avisa. |
+| Ref. 2025 | Hoja **EERR**: *Ventas Netas 2025* (total), *Vntas Netas 2025 La Mar*, *Ventas Polo 2025* y *ventas web+rrss 2025* (Web y RRSS juntos). Falabella y Otros no tienen 2025. |
 
 ## Módulos Gasto publicitario y Archivo de Reportes
 

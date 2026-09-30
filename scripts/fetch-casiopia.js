@@ -2,6 +2,9 @@
 /**
  * fetch-casiopia.js — sincroniza las fuentes de Drive del dashboard:
  *
+ *   Ventas      Excel "Ventas 2026 Dashboard.xlsx" (Objetivos)  → data/casiopia-ventas.json
+ *               (venta neta por mes, canal y semana, pedidos, objetivos del
+ *               EERR y referencia 2025)
  *   Meta Ads    carpeta "Meta Files - Casiopia" (pauta)         → data/casiopia-meta.json
  *   Google Ads  carpeta "Google Files - Casiopia" (pauta)       → data/casiopia-google.json
  *   Reportes    carpeta "Reportes Casiopia" + archivos sueltos  → data/casiopia-reportes.json
@@ -15,8 +18,8 @@
  *
  * Modos:
  *   node scripts/fetch-casiopia.js                 → enlaces públicos de Drive
- *   node scripts/fetch-casiopia.js --local=<dir>   → <dir>/meta/*.csv, <dir>/google/*.{csv,xlsx}
- *                                                    (Reportes no tiene modo local)
+ *   node scripts/fetch-casiopia.js --local=<dir>   → <dir>/ventas-2026.xlsx, <dir>/meta/*.csv,
+ *                                                    <dir>/google/*.{csv,xlsx} (Reportes no tiene modo local)
  *
  * Cada fuente es independiente: si una falla, se conserva su JSON anterior,
  * se avisa en consola y el resto se actualiza igual.
@@ -29,7 +32,10 @@ const src = require('./lib/casiopia-sources');
 
 const ROOT = path.join(__dirname, '..');
 
+const VENTAS_FILE_ID = '1u1tWfos-R5MbN7z72i1X6_BSkzh3L_nF';   // "Ventas 2026 Dashboard.xlsx"
+
 const SOURCES = {
+  ventas: { fileId: VENTAS_FILE_ID, out: 'data/casiopia-ventas.json' },
   meta:   { folderId: '166vtDwzl4YbqLnyqNpulZI2YltKb2FMm', out: 'data/casiopia-meta.json' },
   google: { folderId: '1oN2HxlqXENM0KuAIOM_rtb17zJPCCAhO', out: 'data/casiopia-google.json' },
   reportes: {
@@ -37,7 +43,7 @@ const SOURCES = {
     out: 'data/casiopia-reportes.json',
     // Archivos subidos (xlsx, pdf…) fuera de la carpeta que también lista el
     // Archivo de Reportes: "Ventas 2026 Dashboard.xlsx".
-    extra: ['1u1tWfos-R5MbN7z72i1X6_BSkzh3L_nF'],
+    extra: [VENTAS_FILE_ID],
   },
 };
 
@@ -166,6 +172,25 @@ const driveUrl = f => f.mimeType === MIME.sheet
 const folderUrl = id => `https://drive.google.com/drive/folders/${id}`;
 
 // ── Fuentes ──
+async function syncVentas() {
+  const { fileId } = SOURCES.ventas;
+  const wb = new ExcelJS.Workbook();
+  let name = 'Ventas 2026 Dashboard.xlsx';
+  if (LOCAL_DIR) await wb.xlsx.readFile(path.join(LOCAL_DIR, 'ventas-2026.xlsx'));
+  else {
+    const file = await downloadBuffer(fileId);
+    name = file.name || name;
+    await wb.xlsx.load(file.buf);
+  }
+  const data = src.ventasFromWorkbook(wb);
+  const skipped = Object.entries(data.ignored);
+  if (skipped.length) {
+    console.log(`::warning::[casiopia] ventas: canales no reconocidos, fuera del total: ${skipped.map(([k, v]) => `${k} (S/ ${v})`).join(', ')}`);
+  }
+  console.log(`[casiopia] ventas: ${name}`);
+  return { source: { name, url: `https://docs.google.com/spreadsheets/d/${fileId}/edit` }, ...data };
+}
+
 async function syncMeta() {
   const folder = { id: SOURCES.meta.folderId, url: folderUrl(SOURCES.meta.folderId) };
   if (LOCAL_DIR) {
@@ -277,7 +302,7 @@ function writeJson(rel, payload) {
 }
 
 async function main() {
-  const jobs = [['meta', syncMeta], ['google', syncGoogle], ['reportes', syncReportes]];
+  const jobs = [['ventas', syncVentas], ['meta', syncMeta], ['google', syncGoogle], ['reportes', syncReportes]];
   let failed = 0;
   for (const [name, fn] of jobs) {
     try {
