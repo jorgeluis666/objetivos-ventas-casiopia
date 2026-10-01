@@ -30,6 +30,25 @@
   const fmt = n => Math.round(n).toLocaleString('es-PE');
   const tot = o => channels.reduce((s, c) => s + (o[c] || 0), 0);
 
+  // ── Meta del mes (hoja EERR) ──
+  // La meta del mes es el "OBJETIVO VENTAS NETAS" del EERR. Los objetivos por
+  // canal no siempre lo cubren (septiembre: 96k total, 65k por canal), así
+  // que su suma solo se usa si el EERR no trae total para el mes.
+  const channelTargetSum = m => channels.reduce((s, ch) => s + (state.targets[m][ch] || 0), 0);
+  const totalTarget = m => state.targetTotal?.[m] ?? channelTargetSum(m);
+
+  // ── Pedidos y ticket medio (hoja EERR) ──
+  // Pedidos: "Número de pedidos" del EERR; si el mes no lo trae, pedidos
+  // distintos de la hoja Ventas. Ticket medio como "tiquet medio" del EERR:
+  // venta neta × 1.18 / pedidos (con IGV).
+  const IGV = 1.18;
+  const monthOrders = m => state.ordersTotal?.[m]
+    || Object.values(state.transactions?.[m] || {}).reduce((a, b) => a + b, 0);
+  function avgTicket(m) {
+    const orders = monthOrders(m);
+    return orders > 0 ? Math.round(tot(state.d2026?.[m] || {}) * IGV / orders) : 0;
+  }
+
   // Formato compacto para etiquetas dentro del gráfico (k / M)
   const fmtShort = v => {
     if (v == null) return null;
@@ -74,67 +93,80 @@
     d2026: null,
     weeklyData: null,
     transactions: null,
-    avgTickets: {},
+    ordersTotal: {},
     ref2025: {},
     targetTotal: {},
     undated: {},
   };
 
-  // ── localStorage — clave de almacenamiento ──
+  // ── localStorage: solo los objetivos editados a mano ──
+  // Cada ajuste guarda el objetivo del EERR sobre el que se hizo (base). Si el
+  // Excel cambia ese objetivo, el ajuste deja de aplicarse y manda el Excel.
+  // El formato anterior (v1, copia completa de la tabla) se descarta porque
+  // congelaba los objetivos y el tablero dejaba de seguir al Excel.
   const LS_KEY = ds.objectiveTargets ? 'lr_objetivos_casiopia_2026' : 'lr_objetivos_2026';
+  let overrides = {};   // { mes: { canal: { value, base } } }
+  let savedOn = null;
 
   function loadFromStorage() {
     try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (!raw) return false;
-      const saved = JSON.parse(raw);
-      if (!saved || !saved.targets) return false;
-      months.forEach(m => {
-        if (saved.targets[m]) {
-          channels.forEach(ch => {
-            if (typeof saved.targets[m][ch] === 'number') {
-              state.targets[m][ch] = saved.targets[m][ch];
-            }
-          });
-        }
-      });
-      return true;
-    } catch (e) {
-      return false;
-    }
+      const saved = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+      if (saved?.version === '2' && saved.overrides) {
+        overrides = saved.overrides;
+        savedOn = saved.updated || null;
+      } else if (saved) {
+        localStorage.removeItem(LS_KEY);
+      }
+    } catch (e) { /* storage bloqueado o ilegible: sin ajustes */ }
   }
 
+  // Objetivos efectivos = EERR + ajustes cuya base sigue vigente
+  function applyOverrides() {
+    state.targets = copyTargets(defaultTargets);
+    months.forEach(m => channels.forEach(ch => {
+      const o = overrides[m]?.[ch];
+      if (o && o.base === (defaultTargets[m]?.[ch] || 0)) state.targets[m][ch] = o.value;
+    }));
+  }
+
+  const editedCount = () => months.reduce((n, m) =>
+    n + channels.filter(ch => (state.targets[m][ch] || 0) !== (defaultTargets[m]?.[ch] || 0)).length, 0);
+
   function saveToStorage() {
+    overrides = {};
+    months.forEach(m => channels.forEach(ch => {
+      const base = defaultTargets[m]?.[ch] || 0;
+      const value = state.targets[m][ch] || 0;
+      if (value !== base) (overrides[m] ||= {})[ch] = { value, base };
+    }));
+    savedOn = new Date().toLocaleDateString('sv');   // YYYY-MM-DD, hora local
     try {
-      localStorage.setItem(LS_KEY, JSON.stringify({
-        version : '1',
-        updated : new Date().toISOString().slice(0, 10),
-        targets : state.targets,
-      }));
-      _updateStorageLabel();
+      if (Object.keys(overrides).length) {
+        localStorage.setItem(LS_KEY, JSON.stringify({ version: '2', updated: savedOn, overrides }));
+      } else {
+        localStorage.removeItem(LS_KEY);
+      }
     } catch (e) { /* ignore */ }
+    _updateStorageLabel();
   }
 
   function _updateStorageLabel() {
     const el = document.getElementById('obj-guardado-label');
     if (!el) return;
-    try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (raw) {
-        const saved = JSON.parse(raw);
-        el.textContent = `Objetivos guardados en navegador · ${saved.updated || ''}`;
-      } else {
-        el.textContent = 'Objetivos por defecto (sin cambios guardados)';
-      }
-    } catch (e) { el.textContent = ''; }
+    const n = editedCount();
+    const src = state.isLive ? 'Objetivos del Excel (hoja EERR)' : 'Objetivos guardados en el tablero (sin conexión con el Excel)';
+    el.textContent = n
+      ? `${src} · ${n} ajustado${n > 1 ? 's' : ''} a mano en este navegador${savedOn ? ' · ' + savedOn : ''}`
+      : src;
   }
 
   function exportarObjetivos() {
     const payload = {
-      version  : '1',
+      version  : '2',
       anio     : YEAR,
       updated  : new Date().toISOString().slice(0, 10),
-      nota     : 'Este archivo es la fuente de verdad para el sistema de alertas. El browser lo actualiza via "Exportar objetivos" y se commitea al repo.',
+      nota     : 'Objetivos del tablero: hoja EERR del Excel "Ventas 2026 Dashboard" más los ajustes hechos en el navegador. Solo referencia: las alertas semanales leen data/casiopia-ventas.json.',
+      objetivoTotal : state.targetTotal,
       targets  : state.targets,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -149,27 +181,29 @@
   }
 
   function restablecerObjetivos() {
-    if (!confirm('¿Restaurar todos los objetivos a los valores originales?\nSe perderán los cambios guardados en este navegador.')) return;
+    if (!confirm('¿Volver a los objetivos del Excel (hoja EERR)?\nSe perderán los ajustes guardados en este navegador.')) return;
+    overrides = {};
+    savedOn = null;
     state.targets = copyTargets(defaultTargets);
-    localStorage.removeItem(LS_KEY);
+    try { localStorage.removeItem(LS_KEY); } catch (e) { /* ignore */ }
     // Actualizar todos los inputs y la UI
     months.forEach(m => {
       channels.forEach(ch => {
         const inp = document.getElementById(`inp-${m}-${ch}`);
         if (inp) inp.value = state.targets[m][ch];
         renderRowUI(m, ch);
+        rebuildChannelWeeklyDetail(m, ch);
       });
       refreshObjTotal(m);
       refreshPaceCards(m);
+      refreshAlertPanel(m);
     });
     _updateStorageLabel();
   }
 
   // Carga inicial desde localStorage (una vez al cargar el módulo)
   loadFromStorage();
-  function hasSavedTargets() {
-    try { return !!localStorage.getItem(LS_KEY); } catch (e) { return false; }
-  }
+  applyOverrides();
 
   // ── Calendar helpers (año en curso = 2026) ──
   const YEAR = 2026;
@@ -211,27 +245,6 @@
     d.setUTCDate(d.getUTCDate() + 4 - dayNum);
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
     return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
-  }
-
-  // ── Avg ticket por canal (monto / qty) — tolera meses sin data 2026 ──
-  function computeAvgTickets(d2026, transactions) {
-    const out = {};
-    months.forEach(m => {
-      const row = {}; let totalAmount = 0, totalQty = 0;
-      const d2026Month = d2026[m] || {};
-      const txMonth = transactions[m] || {};
-      channels.forEach(ch => {
-        const up = chToUpper[ch];
-        const amt = d2026Month[ch] || 0;
-        const qty = txMonth[up] || 0;
-        row[up] = qty > 0 ? Math.round(amt / qty) : 0;
-        totalAmount += amt;
-        totalQty    += qty;
-      });
-      row.TOTAL = totalQty > 0 ? Math.round(totalAmount / totalQty) : 0;
-      out[m] = row;
-    });
-    return out;
   }
 
   // Un mes está "vivo" (con datos 2026) si hay facturación registrada.
@@ -289,7 +302,7 @@
   function refreshObjTotal(m) {
     const d2026Month = state.d2026?.[m] || {};
     const tr = channels.reduce((s, ch) => s + (d2026Month[ch] || 0), 0);
-    const tt = channels.reduce((s, ch) => s + (state.targets[m][ch] || 0), 0);
+    const tt = totalTarget(m);
     const p = tt > 0 ? tr / tt * 100 : 0;
     const status = monthStatus(m);
 
@@ -298,7 +311,11 @@
     const gv = document.getElementById(`gv-tot-${m}`);
     const mt = document.getElementById(`mt-${m}`);
     if (!pb || !pv || !gv) return;
-    if (mt) mt.textContent = 'S/. ' + fmt(tt);
+    if (mt) {
+      const chSum = channelTargetSum(m);
+      mt.innerHTML = 'S/. ' + fmt(tt) +
+        (Math.abs(chSum - tt) >= 1 ? `<div class="ref-note">por canal: S/. ${fmt(chSum)}</div>` : '');
+    }
 
     if (status === 'future' || (status === 'current' && !isLiveMonth(m))) {
       pb.style.width = '0%'; pv.textContent = '—'; pv.style.color = 'var(--muted)';
@@ -320,15 +337,17 @@
     if (!el) return;
 
     const d2026Month = state.d2026?.[m] || {};
-    const tt        = channels.reduce((s, ch) => s + (state.targets[m][ch] || 0), 0);
+    const tt        = totalTarget(m);
+    const fromEERR  = state.targetTotal?.[m] != null;
     const real      = channels.reduce((s, ch) => s + (d2026Month[ch] || 0), 0);
     const status    = monthStatus(m);
     const remDays   = daysRemaining(m);
     const passed    = daysPassed(m);
     const faltante  = Math.max(0, tt - real);
     const dailyNeed = remDays > 0 ? faltante / remDays : 0;
-    const avgTk     = state.avgTickets[m]?.TOTAL || 0;
-    const txnsNeed  = dailyNeed > 0 && avgTk > 0 ? Math.ceil(dailyNeed / avgTk) : 0;
+    const avgTk     = avgTicket(m);
+    // La meta es sin IGV y el ticket del EERR con IGV
+    const txnsNeed  = dailyNeed > 0 && avgTk > 0 ? Math.ceil(dailyNeed * IGV / avgTk) : 0;
 
     const pctMet    = tt > 0 ? real / tt * 100 : 0;
     const dailyReal = passed > 0 ? real / passed : 0;
@@ -347,11 +366,11 @@
           </div>
           <div class="pace-card">
             <div class="pace-card-head">
-              <div class="pace-lbl">Meta propuesta</div>
-              <span class="pace-badge muted">editable</span>
+              <div class="pace-lbl">Meta del mes</div>
+              <span class="pace-badge muted">${fromEERR ? 'EERR' : 'suma canales'}</span>
             </div>
             <div class="pace-val brand">S/. ${fmt(tt)}</div>
-            <div class="pace-sub">ajustable abajo</div>
+            <div class="pace-sub">${fromEERR ? 'objetivo ventas netas del Excel' : 'suma de los objetivos por canal'}</div>
           </div>
           <div class="pace-card">
             <div class="pace-card-head">
@@ -377,8 +396,8 @@
       // Referencia: mes cerrado anterior (si hay). Si no, usa marzo de respaldo.
       const curIdx = months.indexOf(m);
       const refMonth = curIdx > 0 ? months[curIdx - 1] : 'Marzo';
-      const refTxns = Math.round(Object.values(state.transactions?.[refMonth] || {}).reduce((a, b) => a + b, 0) / (monthDays[refMonth] || 30));
-      const refTk   = state.avgTickets?.[refMonth]?.TOTAL || 0;
+      const refTxns = Math.round(monthOrders(refMonth) / (monthDays[refMonth] || 30));
+      const refTk   = avgTicket(refMonth);
 
       const pctPassed = Math.round(passed / monthDays[m] * 100);
       const pctMissing = faltante > 0 ? Math.round(faltante / tt * 100) : 0;
@@ -410,19 +429,20 @@
           </div>
           <div class="pace-card">
             <div class="pace-card-head">
-              <div class="pace-lbl">Transacciones necesarias</div>
+              <div class="pace-lbl">Pedidos necesarios</div>
               <span class="pace-badge muted">S/. ${avgTk} ticket</span>
             </div>
             <div class="pace-val brand">${txnsNeed}/día</div>
-            <div class="pace-sub">ticket promedio S/. ${avgTk}</div>
+            <div class="pace-sub">ticket medio S/. ${avgTk} con IGV</div>
           </div>
         </div>
         ${refTk > 0 ? `<div class="pace-footnote">
-          Referencia de ${refMonth.toLowerCase()}: <strong>${refTxns} transacciones/día</strong>
-          con ticket promedio <strong>S/. ${refTk}</strong> → para alcanzar la meta de ${m.toLowerCase()} necesitás mantener un ritmo similar o superior.
+          Referencia de ${refMonth.toLowerCase()}: <strong>${refTxns} pedidos/día</strong>
+          con ticket medio <strong>S/. ${refTk}</strong> con IGV → para alcanzar la meta de ${m.toLowerCase()} necesitás mantener un ritmo similar o superior.
         </div>` : ''}`;
     } else {
-      const totalTx = avgTk > 0 ? Math.round(real / avgTk) : 0;
+      const totalTx = monthOrders(m);
+      const txFromEERR = !!state.ordersTotal?.[m];
       const closeColor = real >= tt ? 'green' : pctMet >= 90 ? 'amber' : 'red';
       const closeBadgeLabel = closeColor === 'green' ? '✓ alcanzado' : closeColor === 'amber' ? '↑ casi' : '▼ brecha';
       el.innerHTML = `
@@ -453,11 +473,11 @@
           </div>
           <div class="pace-card">
             <div class="pace-card-head">
-              <div class="pace-lbl">Transacciones totales</div>
-              <span class="pace-badge muted">S/. ${state.avgTickets[m]?.TOTAL || 0} ticket</span>
+              <div class="pace-lbl">Número de pedidos</div>
+              <span class="pace-badge muted">${txFromEERR ? 'EERR' : 'hoja Ventas'}</span>
             </div>
             <div class="pace-val brand">${totalTx}</div>
-            <div class="pace-sub">ticket promedio S/. ${state.avgTickets[m]?.TOTAL || 0}</div>
+            <div class="pace-sub">ticket medio S/. ${avgTk} con IGV</div>
           </div>
         </div>`;
     }
@@ -692,7 +712,7 @@
     const weeks = state.weeklyData?.[m];
     if (!weeks || !weeks.length) { el.innerHTML = ''; return; }
 
-    const monthTarget = channels.reduce((s, ch) => s + (state.targets[m][ch] || 0), 0);
+    const monthTarget = totalTarget(m);
     if (monthTarget === 0) { el.innerHTML = ''; return; }
 
     // Meta semanal prorrateada: objetivo mensual × 7 / días del mes
@@ -839,18 +859,18 @@
       // Canal sin objetivo en el EERR → 0 (editable en la tabla)
       defaultTargets = Object.fromEntries(months.map(m => [m,
         Object.fromEntries(channels.map(ch => [ch, live.targets[m]?.[ch] || 0]))]));
-      if (!hasSavedTargets()) state.targets = copyTargets(defaultTargets);
     }
+    applyOverrides();
 
     state.isLive       = isLive;
     state.d2026        = d2026;
     state.weeklyData   = weeklyData;
     state.transactions = transactions;
+    state.ordersTotal  = isLive ? live.ordersTotal : (ds.objectiveOrdersTotal || {});
     state.weekly2025   = {};   // el EERR solo trae 2025 mensual
     state.ref2025      = isLive ? live.ref2025 : {};
-    state.targetTotal  = isLive ? live.targetTotal : {};
+    state.targetTotal  = isLive ? live.targetTotal : (ds.objectiveTargetTotal || {});
     state.undated      = isLive ? live.undated : {};
-    state.avgTickets   = computeAvgTickets(d2026, transactions);
 
     const channelSel = document.getElementById('chart-channel-select');
     if (channelSel && !channelSel.dataset.objectiveChannels) {
@@ -1212,7 +1232,7 @@
           : '';
 
       // El EERR fija un "OBJETIVO VENTAS NETAS" total aparte de los objetivos
-      // por canal; si no coinciden, se avisa (la tabla usa los de cada canal).
+      // por canal; si no coinciden, se avisa. El mes se mide contra el total.
       const eerrTotal  = state.targetTotal?.[m];
       const chTargets  = channels.reduce((s, ch) => s + (defaultTargets[m]?.[ch] || 0), 0);
       const sinMeta    = channels.filter(ch => !(defaultTargets[m]?.[ch] > 0) && (d2026Month[ch] || 0) > 0);
@@ -1222,7 +1242,7 @@
              pero los objetivos por canal suman <strong>S/. ${fmt(chTargets)}</strong>
              (${eerrTotal > chTargets ? 'faltan S/. ' + fmt(eerrTotal - chTargets) + ' por asignar' : 'S/. ' + fmt(chTargets - eerrTotal) + ' más'}).
              ${sinMeta.length ? `Sin objetivo en el EERR: ${sinMeta.join(', ')}.` : ''}
-             La tabla usa los objetivos por canal; se pueden ajustar abajo.
+             El avance y la brecha del mes se miden contra el total del EERR; cada canal, contra su propio objetivo.
            </div>`
         : '';
 
@@ -1244,7 +1264,7 @@
               <th class="r" title="Ventas netas 2025 de la hoja EERR del Excel">Ref. 2025</th>
               <th class="r" title="Venta neta sin IGV: suma de la columna TOTAL SIN IGV de la hoja Ventas por Canal (= VENTAS NETAS del EERR)">Real 2026</th>
               <th class="r">Participación</th>
-              <th class="r">Objetivo S/.</th>
+              <th class="r" title="Objetivos por canal de la hoja EERR (ajustables). La fila Total usa el OBJETIVO VENTAS NETAS del EERR">Objetivo S/.</th>
               <th class="r" style="min-width:140px;">Avance</th>
               <th class="r">Brecha</th>
             </tr></thead>

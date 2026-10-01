@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-30T17:13:48-05:00",
+  "generated": "2026-09-30T19:45:31-05:00",
   "source": {
     "name": "Ventas 2026 Dashboard.xlsx",
     "url": "https://docs.google.com/spreadsheets/d/1u1tWfos-R5MbN7z72i1X6_BSkzh3L_nF/edit"
@@ -207,6 +207,20 @@
       "FALABELLA": 0,
       "OTROS": 0
     }
+  },
+  "ordersTotal": {
+    "Enero": 415,
+    "Febrero": 542,
+    "Marzo": 719,
+    "Abril": 396,
+    "Mayo": 392,
+    "Junio": 282,
+    "Julio": 296,
+    "Agosto": 352,
+    "Septiembre": null,
+    "Octubre": null,
+    "Noviembre": null,
+    "Diciembre": null
   },
   "weekly": {
     "Enero": [

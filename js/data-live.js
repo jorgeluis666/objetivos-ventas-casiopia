@@ -3,8 +3,8 @@
    generado por scripts/fetch-casiopia.js desde el Excel
    "Ventas 2026 Dashboard.xlsx" (workflow sync-casiopia.yml).
    Expone window.DataLive.load() y DataLive.fromJson(json) →
-     { generated, d2026, weeklyData, transactions, targets,
-       targetTotal, ref2025, undated, source }
+     { generated, d2026, weeklyData, transactions, ordersTotal,
+       targets, targetTotal, ref2025, undated, source }
    ============================================================ */
 
 (function (global) {
@@ -17,6 +17,7 @@
       d2026:        json.actuals || {},
       weeklyData:   json.weekly || {},
       transactions: json.orders || {},
+      ordersTotal:  json.ordersTotal || {},
       targets:      json.targets || null,
       targetTotal:  json.targetTotal || {},
       ref2025:      json.ref2025 || {},

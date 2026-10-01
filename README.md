@@ -52,9 +52,14 @@ Ventas, objetivos y referencia 2025 salen del Excel [*Ventas 2026 Dashboard*](ht
 |---|---|
 | Real 2026 por canal y mes | Hoja **Ventas**: suma de la columna S *TOTAL SIN IGV* por mes (col. C) y *Canal* (col. V). Es el mismo cálculo que las líneas *VENTAS NETAS …* del EERR. Whatsapp + Instagram + Facebook = RRSS; Ripley + Otros = Otros. |
 | Semanas | Misma venta, repartida por la fecha del pedido (col. E de Ventas → col. E de **Base Ventas**). Semanas del mes: días 1–7, 8–14, 15–21, 22–28 y 29–fin. Google Sheets lee algunas fechas dd/mm como mm/dd (4 sep → 9 abr); se corrigen comparando con el mes de la fila. Los pedidos sin fecha quedan fuera de las semanas (el subtítulo del gráfico dice cuánto). |
-| Pedidos / ticket | Pedidos distintos (col. E) por mes y canal. |
-| Objetivos | Hoja **EERR**: filas *objetivo web*, *objetivo RRSS*, *objetivo La Mar*, *Objetivo El Polo*, *Objetivo Otros*. Si el *OBJETIVO VENTAS NETAS* total no coincide con la suma por canal, el mes lo avisa. |
+| Pedidos / ticket | Hoja **EERR**: *Número de pedidos* (se carga a mano; si el mes no lo trae, pedidos distintos de la col. E de Ventas). Ticket medio = venta neta × 1.18 / pedidos, con IGV, igual que *tiquet medio* del EERR. |
+| Meta del mes | Hoja **EERR**: *OBJETIVO VENTAS NETAS*. Mide el total del mes (avance, brecha, cierre y pace). Si los objetivos por canal no suman eso, el mes lo avisa y la fila Total muestra ambas cifras. |
+| Objetivos por canal | Hoja **EERR**: filas *objetivo web*, *objetivo RRSS*, *objetivo La Mar*, *Objetivo El Polo*, *Objetivo Otros*. Falabella no tiene fila. Canal sin objetivo = "sin objetivo". |
 | Ref. 2025 | Hoja **EERR**: *Ventas Netas 2025* (total), *Vntas Netas 2025 La Mar*, *Ventas Polo 2025* y *ventas web+rrss 2025* (Web y RRSS juntos). Falabella y Otros no tienen 2025. |
+
+Los objetivos por canal se pueden ajustar en la tabla para simular escenarios. El navegador guarda solo las celdas editadas junto con el valor del EERR sobre el que se hicieron: si el Excel cambia ese objetivo, el ajuste se descarta y vuelve a mandar el Excel. **Restablecer** borra todos los ajustes.
+
+La alerta semanal por email (`scripts/alertas.js`) lee el mismo `data/casiopia-ventas.json`, así que mide el mes contra el *OBJETIVO VENTAS NETAS* del EERR, igual que el tablero.
 
 ## Módulos Gasto publicitario y Archivo de Reportes
 

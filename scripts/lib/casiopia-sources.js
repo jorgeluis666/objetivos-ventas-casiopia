@@ -65,7 +65,8 @@ function cellValue(v) {
 //   La suma de S por mes y canal es exactamente lo que el EERR reporta
 //   como "VENTAS NETAS …" (fórmulas SUMIFS(Ventas!S:S, C, mes, V, canal)).
 //   Hoja "Base Ventas": fecha de cada pedido (B pedido · E fecha).
-//   Hoja "EERR": objetivos por canal y ventas netas 2025.
+//   Hoja "EERR": objetivo total y por canal, número de pedidos y ventas
+//   netas 2025.
 // ════════════════════════════════════════════════════════════
 const CHANNELS = ['Web', 'RRSS', 'La Mar', 'El Polo', 'Falabella', 'Otros'];
 const CH_UPPER = { Web: 'WEB', RRSS: 'RRSS', 'La Mar': 'LA_MAR', 'El Polo': 'EL_POLO', Falabella: 'FALABELLA', Otros: 'OTROS' };
@@ -93,6 +94,7 @@ const EERR_LINES = {
   'objetivo:La Mar': /^objetivo la mar$/,
   'objetivo:El Polo': /^objetivo el polo$/,
   'objetivo:Otros':  /^objetivo otros$/,
+  pedidos:           /^numero de pedidos$/,
   'ref:TOTAL':       /^ventas netas 2025$/,
   'ref:Web+RRSS':    /^ventas web\+rrss 2025$/,
   'ref:La Mar':      /^v[e]?ntas netas 2025 la mar$/,
@@ -188,11 +190,13 @@ function ventasFromWorkbook(wb, year = 2026) {
     }
   });
 
-  const out = { actuals: {}, orders: {}, weekly: {}, undated: {}, targets: {}, targetTotal: {}, ref2025: {} };
+  const out = { actuals: {}, orders: {}, ordersTotal: {}, weekly: {}, undated: {}, targets: {}, targetTotal: {}, ref2025: {} };
   MONTHS.forEach((m, i) => {
     const a = acc[m];
     out.actuals[m] = Object.fromEntries(CHANNELS.map(c => [c, round2(a?.net[c] || 0)]));
     out.orders[m] = Object.fromEntries(CHANNELS.map(c => [CH_UPPER[c], a?.orders[c]?.size || 0]));
+    // "Número de pedidos" del EERR (se carga a mano; null = mes sin dato)
+    out.ordersTotal[m] = eerr.pedidos?.[i] || null;
     out.weekly[m] = a ? a.weeks.map(w => Object.fromEntries(Object.entries(w).map(([k, v]) => [k, k === 'w' ? v : round2(v)]))) : [];
     out.undated[m] = round2(a?.undated || 0);
     // null = el EERR no fija objetivo para ese canal ese mes

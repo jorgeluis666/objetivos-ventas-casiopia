@@ -3,8 +3,9 @@
    scripts/alertas.js — Alerta semanal de objetivos de venta.
 
    Lee:
-     data/ventas-2026.json     → ventas reales acumuladas por canal
-     data/objetivos-2026.json  → metas por mes / canal
+     data/casiopia-ventas.json → ventas reales y objetivos por mes / canal
+                                 (hoja EERR del Excel "Ventas 2026 Dashboard",
+                                 los mismos datos que el tablero)
      data/alertas-config.json  → destinatarios y config de envío
 
    Envía email HTML via Resend API.
@@ -67,9 +68,8 @@ const CANAL_ICONS = {
 };
 
 // ── Cargar archivos ──────────────────────────────────────────
-const salesData  = readJson(path.join(ROOT, 'data/ventas-2026.json'));
-const objData    = readJson(path.join(ROOT, 'data/objetivos-2026.json'));
-const config     = readJson(path.join(ROOT, 'data/alertas-config.json'));
+const ventas     = readJson(path.join(ROOT, 'data/casiopia-ventas.json'));
+const config    = readJson(path.join(ROOT, 'data/alertas-config.json'));
 const enviosPath = path.join(ROOT, 'data/alertas-envios.json');
 const enviosData = readJson(enviosPath);
 
@@ -99,16 +99,17 @@ if (!FORCE && !DRY_RUN && enviosData.enviados[weekKey]) {
 }
 
 // ── Cálculo de métricas ──────────────────────────────────────
-const d2026   = objData.actuals2026 || salesData.d2026 || {};
-const targets = objData.targets  || {};
-const targetMonth = targets[curMonth] || targets[MONTHS.find(m => targets[m])] || {};
-const CHANNELS = Object.keys(targetMonth).length ? Object.keys(targetMonth) : DEFAULT_CHANNELS;
+const d2026       = ventas.actuals || {};
+const targets     = ventas.targets || {};
+const targetTotal = ventas.targetTotal || {};
+const CHANNELS    = ventas.channels || DEFAULT_CHANNELS;
 
 function calcMonth(m) {
   const data = d2026[m]   || {};
   const tgt  = targets[m] || {};
   const real = CHANNELS.reduce((s, ch) => s + (data[ch] || 0), 0);
-  const meta = CHANNELS.reduce((s, ch) => s + (tgt[ch]  || 0), 0);
+  // Meta del mes = "OBJETIVO VENTAS NETAS" del EERR (suma por canal si falta)
+  const meta = targetTotal[m] ?? CHANNELS.reduce((s, ch) => s + (tgt[ch] || 0), 0);
   const byChannel = CHANNELS
     .filter(ch => (tgt[ch] || 0) > 0)   // omitir canales sin objetivo
     .map(ch => ({

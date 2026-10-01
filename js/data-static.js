@@ -59,31 +59,46 @@
     Otros:     '#64748B',
   };
 
+  // Respaldo si no carga data/casiopia-ventas.json: copia de la hoja EERR del
+  // Excel "Ventas 2026 Dashboard" (corte 29-sep-2026). Canal sin objetivo = 0.
   const objectiveTargets = {
-    Enero:      { Web: 20000, RRSS: 10000, 'La Mar': 20000, 'El Polo': 30000,  Falabella: 0, Otros: 0 },
-    Febrero:    { Web: 30000, RRSS: 10000, 'La Mar': 17000, 'El Polo': 43000,  Falabella: 0, Otros: 0 },
-    Marzo:      { Web: 35000, RRSS: 10000, 'La Mar': 30000, 'El Polo': 45000,  Falabella: 0, Otros: 0 },
-    Abril:      { Web: 35000, RRSS: 10000, 'La Mar': 30000, 'El Polo': 45000,  Falabella: 0, Otros: 0 },
-    Mayo:       { Web: 40000, RRSS: 10000, 'La Mar': 25000, 'El Polo': 35000,  Falabella: 0, Otros: 0 },
-    Junio:      { Web: 40000, RRSS: 10000, 'La Mar': 25000, 'El Polo': 27000,  Falabella: 0, Otros: 0 },
-    Julio:      { Web: 40000, RRSS: 10000, 'La Mar': 20000, 'El Polo': 15000,  Falabella: 0, Otros: 0 },
-    Agosto:     { Web: 40000, RRSS: 10000, 'La Mar': 20000, 'El Polo': 26000,  Falabella: 0, Otros: 0 },
-    Septiembre: { Web: 0,     RRSS: 0,     'La Mar': 0,     'El Polo': 96000,  Falabella: 0, Otros: 0 },
-    Octubre:    { Web: 0,     RRSS: 0,     'La Mar': 0,     'El Polo': 113000, Falabella: 0, Otros: 0 },
-    Noviembre:  { Web: 0,     RRSS: 0,     'La Mar': 0,     'El Polo': 183000, Falabella: 0, Otros: 0 },
-    Diciembre:  { Web: 0,     RRSS: 0,     'La Mar': 0,     'El Polo': 255000, Falabella: 0, Otros: 0 },
+    Enero:      { Web: 20000, RRSS: 10000, 'La Mar': 20000, 'El Polo':  30000, Falabella: 0, Otros: 0 },
+    Febrero:    { Web: 30000, RRSS: 10000, 'La Mar': 17000, 'El Polo':  40000, Falabella: 0, Otros: 0 },
+    Marzo:      { Web: 35000, RRSS: 10000, 'La Mar': 30000, 'El Polo':  50000, Falabella: 0, Otros: 0 },
+    Abril:      { Web: 35000, RRSS: 10000, 'La Mar': 30000, 'El Polo':  45000, Falabella: 0, Otros: 0 },
+    Mayo:       { Web: 40000, RRSS: 10000, 'La Mar': 25000, 'El Polo':  40000, Falabella: 0, Otros: 0 },
+    Junio:      { Web: 40000, RRSS: 10000, 'La Mar': 25000, 'El Polo':  40000, Falabella: 0, Otros: 0 },
+    Julio:      { Web: 40000, RRSS: 10000, 'La Mar': 20000, 'El Polo':  40000, Falabella: 0, Otros: 0 },
+    Agosto:     { Web: 40000, RRSS: 10000, 'La Mar': 20000, 'El Polo':  55000, Falabella: 0, Otros: 0 },
+    Septiembre: { Web:     0, RRSS:     0, 'La Mar': 25000, 'El Polo':  40000, Falabella: 0, Otros: 0 },
+    Octubre:    { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':  70000, Falabella: 0, Otros: 0 },
+    Noviembre:  { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':  70000, Falabella: 0, Otros: 0 },
+    Diciembre:  { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo': 120000, Falabella: 0, Otros: 0 },
+  };
+
+  // "OBJETIVO VENTAS NETAS" del EERR: la meta del mes
+  const objectiveTargetTotal = {
+    Enero: 80000, Febrero: 100000, Marzo: 120000, Abril: 120000,
+    Mayo: 110000, Junio: 102000, Julio: 85000, Agosto: 96000,
+    Septiembre: 96000, Octubre: 113000, Noviembre: 183000, Diciembre: 255000,
+  };
+
+  // "Número de pedidos" del EERR
+  const objectiveOrdersTotal = {
+    Enero: 415, Febrero: 542, Marzo: 719, Abril: 396,
+    Mayo: 392, Junio: 282, Julio: 296, Agosto: 352,
   };
 
   const objectiveActuals2026 = {
-    Enero:      { Web: 26406, RRSS: 10161, 'La Mar': 17866, 'El Polo': 43246, Falabella:  598, Otros: 10848 },
-    Febrero:    { Web: 32935, RRSS:  4030, 'La Mar': 21116, 'El Polo': 29354, Falabella: 1053, Otros:  3159 },
-    Marzo:      { Web: 38188, RRSS:  7453, 'La Mar': 21389, 'El Polo': 42777, Falabella: 2555, Otros:  4072 },
-    Abril:      { Web: 36035, RRSS:  7083, 'La Mar': 17882, 'El Polo': 40293, Falabella: 2211, Otros:   238 },
-    Mayo:       { Web: 30741, RRSS:  7915, 'La Mar': 22060, 'El Polo': 38098, Falabella:  342, Otros:   855 },
-    Junio:      { Web: 20381, RRSS:  5326, 'La Mar': 19348, 'El Polo': 33597, Falabella:   38, Otros:   454 },
-    Julio:      { Web: 28718, RRSS:  8898, 'La Mar': 13455, 'El Polo': 52878, Falabella:  858, Otros:     0 },
-    Agosto:     { Web:   966, RRSS:  1076, 'La Mar':    68, 'El Polo':  4177, Falabella:   97, Otros:     0 },
-    Septiembre: { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
+    Enero:      { Web: 26406.30, RRSS: 10161.02, 'La Mar': 17865.51, 'El Polo': 43245.59, Falabella:  598.31, Otros: 10848.47 },
+    Febrero:    { Web: 32934.66, RRSS:  4030.42, 'La Mar': 21116.19, 'El Polo': 29354.15, Falabella: 1053.39, Otros:  3158.56 },
+    Marzo:      { Web: 38187.92, RRSS:  7452.54, 'La Mar': 21388.90, 'El Polo': 42776.95, Falabella: 2555.08, Otros:  4072.20 },
+    Abril:      { Web: 36035.09, RRSS:  7083.01, 'La Mar': 17881.91, 'El Polo': 40292.88, Falabella: 2211.10, Otros:   237.63 },
+    Mayo:       { Web: 30740.87, RRSS:  7914.92, 'La Mar': 22060.00, 'El Polo': 38097.93, Falabella:  342.37, Otros:   855.17 },
+    Junio:      { Web: 20380.51, RRSS:  5325.85, 'La Mar': 19348.47, 'El Polo': 33596.61, Falabella:   38.14, Otros:   454.32 },
+    Julio:      { Web: 28718.39, RRSS:  8898.31, 'La Mar': 13454.66, 'El Polo': 52878.39, Falabella:  857.63, Otros:     0 },
+    Agosto:     { Web: 27244.78, RRSS: 15456.78, 'La Mar': 26192.71, 'El Polo': 45738.98, Falabella: 1164.41, Otros:     0 },
+    Septiembre: { Web: 16482.62, RRSS:  6290.68, 'La Mar': 17539.15, 'El Polo': 23805.85, Falabella: 2052.54, Otros:     0 },
     Octubre:    { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
     Noviembre:  { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
     Diciembre:  { Web:     0, RRSS:     0, 'La Mar':     0, 'El Polo':     0, Falabella:    0, Otros:     0 },
@@ -119,7 +134,8 @@
   global.DataStatic = {
     channels, palette,
     d2025, defaultTargets, monthDays, months, monthsWith2026Data,
-    objectiveChannels, objectivePalette, objectiveTargets, objectiveActuals2026,
+    objectiveChannels, objectivePalette, objectiveTargets, objectiveTargetTotal,
+    objectiveOrdersTotal, objectiveActuals2026,
     STEP,
     chToUpper, objectiveChToUpper,
   };
