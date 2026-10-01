@@ -440,6 +440,12 @@
   </div>
 </div>
 
+<!-- Pantalla de acceso (mismo diseño que Rekluta). Solo se guarda la huella
+     SHA-256 de la clave; ver js/auth-login.js para generar una nueva. -->
+<script src="js/auth-login.js"></script>
+<script>
+  AuthLogin.init({ passwordHash: 'fae60e4bf2ca929d904e58a4785af755dca17191b9bfdcf3d95d89657b7705d5', brand: 'Lima Retail', title: 'Casiopia', accent: '#b91c1c', sessionKey: 'cs_auth' });
+</script>
 <script src="js/data-static.js"></script>
 
 <script src="js/data-live.js"></script>
