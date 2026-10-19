@@ -8,7 +8,6 @@
     'view-obj':  'Objetivos 2026',
     'view-rep':  'Gasto publicitario',
     'view-arch': 'Archivo de Reportes',
-    'view-config': 'Usuarios y Claves',
   };
 
   // Descripción corta para el panel MÓDULO ACTIVO del sidebar
@@ -16,7 +15,6 @@
     'view-obj':    'Seguimiento de metas mensuales',
     'view-rep':    'Meta Ads y Google Ads',
     'view-arch':   'Documentos en Drive',
-    'view-config': 'Gestión de accesos y alertas',
   };
 
   // Charts que hay que re-animar al mostrar cada vista.
@@ -24,12 +22,10 @@
     'view-obj':    ['chart-weekly-combined'],
     'view-rep':    [],  // Gasto.init() re-anima los charts de la pestaña activa
     'view-arch':   [],
-    'view-config': [],
   };
 
   const state = {
     generated: null,
-    configInited: false,
   };
 
   // ── Navegación ──
@@ -50,12 +46,6 @@
     const maDesc = document.getElementById('s-ma-desc');
     if (maName) maName.textContent = VIEW_TITLES[id]       || '';
     if (maDesc) maDesc.textContent = VIEW_DESCRIPTIONS[id] || '';
-
-    // Init perezoso del módulo de configuración
-    if (id === 'view-config' && !state.configInited) {
-      state.configInited = true;
-      window.Config?.init();
-    }
 
     // Init perezoso del módulo de reportes (sus charts se crean ya visibles)
     if (id === 'view-rep') window.Gasto?.init();
