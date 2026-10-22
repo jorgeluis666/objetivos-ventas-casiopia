@@ -148,7 +148,7 @@
   async function init() {
     Chart.register(ChartDataLabels);
     Chart.defaults.plugins.datalabels.display = false;
-    Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif';
+    Chart.defaults.font.family = 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
     wireNav();
     wireSidebarToggle();

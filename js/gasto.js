@@ -118,7 +118,7 @@
     const chart = global.Charts.getInstance(chartId);
     if (!chart) return;
     chart.options.scales.x.ticks.color = ctx => ctx.index === idx ? COLOR.ink : axisColor;
-    chart.options.scales.x.ticks.font = ctx => ({ size: 11, weight: ctx.index === idx ? 700 : 400 });
+    chart.options.scales.x.ticks.font = ctx => ({ size: 10, weight: ctx.index === idx ? 700 : 400 });
     chart.update('none');
   }
 
@@ -360,7 +360,7 @@
           } },
         },
         scales: {
-          x: { ticks: { color: axisColor, font: { size: 11 } }, grid: { display: false } },
+          x: { ticks: { color: axisColor, font: { size: 10 } }, grid: { display: false } },
           y0: { display: false, beginAtZero: true, grace: '18%' },
           y1: { display: false, beginAtZero: true, grace: '18%' },
         },
@@ -390,7 +390,7 @@
           } },
         },
         scales: {
-          x: { ticks: { color: axisColor, font: { size: 11 } }, grid: { display: false } },
+          x: { ticks: { color: axisColor, font: { size: 10 } }, grid: { display: false } },
           y: { beginAtZero: true, ticks: { color: axisColor, font: { size: 10 }, callback: moneyK }, grid: { color: gridColor } },
         },
       },
@@ -416,7 +416,7 @@
           } },
         },
         scales: {
-          x: { ticks: { color: axisColor, font: { size: 11 } }, grid: { display: false } },
+          x: { ticks: { color: axisColor, font: { size: 10 } }, grid: { display: false } },
           y: { beginAtZero: true, grace: '15%', ticks: { color: axisColor, font: { size: 10 }, callback: v => v + 'x' }, grid: { color: gridColor } },
         },
       },
@@ -523,7 +523,7 @@
           } },
         },
         scales: {
-          x: { ticks: { color: axisColor, font: { size: 11 } }, grid: { display: false } },
+          x: { ticks: { color: axisColor, font: { size: 10 } }, grid: { display: false } },
           y: { beginAtZero: true, ticks: { color: axisColor, font: { size: 10 }, callback: moneyK }, grid: { color: gridColor } },
         },
       },

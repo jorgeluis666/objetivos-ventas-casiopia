@@ -622,7 +622,7 @@
       html += `
         <div class="obj-alert obj-alert-green">
           <div class="obj-alert-head">
-            <span class="obj-alert-icon">🎯</span>
+            <span class="obj-alert-icon" aria-hidden="true">✓</span>
             <div class="obj-alert-text">
               <div class="obj-alert-title">Objetivo alcanzado</div>
               <div class="obj-alert-sub">
@@ -635,7 +635,7 @@
           </div>
           ${topNeed.length > 0 ? `
           <div class="obj-alert-sug">
-            <span>💡</span>
+            <span class="obj-alert-mark" aria-hidden="true">▸</span>
             <span>
               Excedente total <strong>S/. ${fmt(totalSurplus)}</strong>.
               Considerá traspasar presupuesto a
@@ -653,7 +653,7 @@
       html += `
         <div class="obj-alert obj-alert-amber">
           <div class="obj-alert-head">
-            <span class="obj-alert-icon">⚠️</span>
+            <span class="obj-alert-icon" aria-hidden="true">⚠&#xFE0E;</span>
             <div class="obj-alert-text">
               <div class="obj-alert-title">Brecha a mitad de mes · día ${passed} de ${totalDays}</div>
               <div class="obj-alert-sub">Canales por debajo del 80% del ritmo esperado</div>
@@ -672,7 +672,7 @@
               </div>`).join('')}
           </div>
           <div class="obj-alert-sug">
-            <span>💡</span>
+            <span class="obj-alert-mark" aria-hidden="true">▸</span>
             <span>
               Quedan <strong>${totalDays - passed} días</strong> en el mes.
               Para cerrar la brecha de
@@ -1063,7 +1063,7 @@
           </td>
           <td class="r mono text-2">${refCell}</td>
           <td class="r mono">${showReal ? 'S/. ' + fmt(real) : '<span class="muted">—</span>'}</td>
-          <td class="r">${showReal ? share + '%' : '—'}</td>
+          <td class="r mono">${showReal ? share + '%' : '—'}</td>
           <td class="r"><div class="stepper">
             <button class="step-btn" data-step="-${STEP}" data-month="${m}" data-ch="${ch}">−</button>
             <input class="obj-input" type="number" id="inp-${m}-${ch}" value="${state.targets[m][ch]}" min="0" step="${STEP}">
@@ -1136,11 +1136,11 @@
               <th class="r">Brecha</th>
             </tr></thead>
             <tbody>${rows}
-              <tr style="background:#F8FAFC;">
+              <tr class="ch-total-row">
                 <td><strong>Total</strong></td>
                 <td class="r mono text-2">${fmtRef(total2025)}</td>
                 <td class="r mono">${showReal ? 'S/. ' + fmt(monthTotal) : '<span class="muted">—</span>'}</td>
-                <td class="r">${showReal ? '100%' : '—'}</td>
+                <td class="r mono">${showReal ? '100%' : '—'}</td>
                 <td class="r mono text-2" id="mt-${m}"></td>
                 <td class="r" style="min-width:150px;">
                   <div class="pb-wrap">

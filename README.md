@@ -63,6 +63,8 @@ La alerta semanal por email (`scripts/alertas.js`) lee el mismo `data/casiopia-v
 
 **Gráfico de venta neta** (arriba de las pestañas de mes): vista **Semanal** (2026) o **Mensual** (2025 vs 2026, con la variación de cada mes de 2026 contra el mismo mes de 2025), por canal o total. Desde la v1.2.0 no hay vista *Acumulado*: un acumulado siempre sube y hace ver un crecimiento que no hay. Cada punto lleva su valor (arriba en un pico, abajo en un valle, con halo blanco y dentro del gráfico; sin etiqueta en los ceros y omitida si choca con otra, primero se ubica 2026). Ojo: en la vista Mensual el mes en curso de 2026 va a medias contra el mes completo de 2025 (el EERR no trae 2025 por día).
 
+**Estilo (v1.3.0, fase 1 de la alineación con Royal Baby).** La pestaña del mes elegido va en `--brand-soft` / `--brand-text` (el rojo de Casiopia) y el mes en curso ya no va en ámbar: lo marca " ◉". Encabezados de tabla en mayúsculas a 12px (10px en las tablas de Gasto), 700 y .08em sobre `#f8fbff`; cifras a la derecha en monoespaciada; fila Total en negrita sobre `#f8fbff`. Gráficos en Inter con ticks de 10px. Las alertas de Objetivos usan ✓, ⚠ y ▸ en vez de emoji. El tema, las tarjetas KPI y el selector de mes de Gasto quedan para la fase 2.
+
 ## Módulos Gasto publicitario y Archivo de Reportes
 
 ### Fuentes de Gasto publicitario (una pestaña por fuente)
