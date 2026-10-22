@@ -49,12 +49,14 @@
     return orders > 0 ? Math.round(tot(state.d2026?.[m] || {}) * IGV / orders) : 0;
   }
 
-  // Formato compacto para etiquetas dentro del gráfico (k / M)
+  // Formato compacto para etiquetas dentro del gráfico (k / M). Sin decimales,
+  // salvo montos chicos (S/. 4.50 no debe leerse S/. 5).
   const fmtShort = v => {
     if (v == null) return null;
     const a = Math.abs(v);
     if (a >= 1e6) return 'S/. ' + (v / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
     if (a >= 1e3) return 'S/. ' + Math.round(v / 1e3) + 'k';
+    if (a < 10) return 'S/. ' + v.toFixed(2);
     return 'S/. ' + Math.round(v);
   };
 
@@ -62,27 +64,19 @@
   const getChVal = (monthObj, chName) =>
     chName ? ((monthObj || {})[chName] || 0) : tot(monthObj || {});
 
-  // Aplica datalabels al gráfico semanal (2026 encima, 2025 sin label por densidad).
-  // Se llama después de cada render de combinedWeeklyChart.
+  // Valor en cada punto del gráfico semanal (plugin valueLabels de charts.js:
+  // arriba en un pico, abajo en un valle, sin ceros y omitido si choca).
+  // 2026 se ubica antes que 2025. Se llama después de cada render de
+  // combinedWeeklyChart.
   const applyWeeklyLabels = () => {
     const c = global.Charts?.getInstance('chart-weekly-combined');
     if (!c) return;
-    // 2025: sin etiqueta — 52 puntos, demasiado denso
-    c.data.datasets[0].datalabels = { display: false };
-    // 2026: valor compacto sobre cada nodo con dato real
-    c.data.datasets[1].datalabels = {
-      display: ctx => ctx.dataset.data[ctx.dataIndex] !== null,
-      color: '#2563eb',
-      anchor: 'end',
-      align: 'top',
-      offset: 3,
-      font: { size: 9, weight: '600' },
-      formatter: v => fmtShort(v),
-    };
-    c.options.plugins.datalabels = { display: true };
+    c.data.datasets[0].valueLabels = { color: '#94a3b8', priority: 1, font: weekLabelFont('400'), format: v => fmtShort(v) };
+    c.data.datasets[1].valueLabels = { color: '#2563eb', priority: 2, font: weekLabelFont('600'), format: v => fmtShort(v) };
     c.options.layout = { padding: { top: 24, bottom: 4 } };
     c.update('none'); // aplicar sin reanimar las líneas
   };
+  const weekLabelFont = weight => `${weight} 9px ${Chart.defaults.font.family}`;
 
   const pctFill  = p => p >= 100 ? 'var(--green)' : p >= 80 ? 'var(--amber)' : 'var(--brand)';
   const pctColor = p => p >= 100 ? 'var(--green-text)' : p >= 80 ? 'var(--amber-text)' : 'var(--brand-text)';
@@ -895,10 +889,10 @@
     // Título y subtítulo dicen qué se grafica y de dónde sale cada número.
     const setChartCaption = (mode, selCh) => {
       const chLabel = selCh || 'Total';
+      // Sin vista acumulada: siempre sube y hace ver un crecimiento que no hay.
       const titles = {
         weekly:     `Venta neta semanal · ${chLabel} · 2026`,
         monthly:    `Venta neta mensual · ${chLabel} · 2025 vs 2026`,
-        cumulative: `Venta neta acumulada · ${chLabel} · 2025 vs 2026`,
       };
       if (titleEl) titleEl.textContent = titles[mode];
       if (!subEl) return;
@@ -931,8 +925,6 @@
         const ALL_MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
         const MONTH_SHORT = { Enero:'Ene', Febrero:'Feb', Marzo:'Mar', Abril:'Abr', Mayo:'May', Junio:'Jun', Julio:'Jul', Agosto:'Ago', Septiembre:'Sep', Octubre:'Oct', Noviembre:'Nov', Diciembre:'Dic' };
 
-        const cumStrip = document.getElementById('cum-kpi-strip');
-
         // Helper: etiqueta del canal seleccionado para usar en títulos
         const getSelCh   = () => document.getElementById('chart-channel-select')?.value || '';
         const getChKey   = () => { const c = getSelCh(); return c ? chToUpper[c] : 'TOTAL'; };
@@ -950,8 +942,6 @@
             setChartCaption(btn.dataset.mode, selCh);
 
             if (btn.dataset.mode === 'monthly') {
-              if (cumStrip) cumStrip.style.display = 'none';
-
               const mData25 = ALL_MONTHS.map(m => {
                 const v = ref25(m, selCh);
                 return v == null ? null : Math.round(v);
@@ -965,147 +955,24 @@
               chart.data.datasets[0].data = mData25;
               chart.data.datasets[1].data = mData26;
 
-              // ── Datalabels: valor + delta por nodo ──
-              chart.data.datasets[0].datalabels = {
-                display: true,
-                color: '#94a3b8',
-                anchor: 'end',
-                align: 'bottom',
-                offset: 5,
-                font: { size: 10, weight: '400' },
-                formatter: v => fmtShort(v),
+              // ── Valor por nodo (2026 con su variación vs 2025) ──
+              chart.data.datasets[0].valueLabels = {
+                color: '#94a3b8', priority: 1, font: `400 10px ${Chart.defaults.font.family}`,
+                format: v => fmtShort(v),
               };
-              chart.data.datasets[1].datalabels = {
-                display: ctx => ctx.dataset.data[ctx.dataIndex] !== null,
-                color: '#2563eb',
-                anchor: 'end',
-                align: 'top',
-                offset: 5,
-                font: { size: 10, weight: '600' },
-                formatter: (v, ctx) => {
-                  if (v === null) return null;
-                  const ref = mData25[ctx.dataIndex];
+              chart.data.datasets[1].valueLabels = {
+                color: '#2563eb', priority: 2, font: `600 10px ${Chart.defaults.font.family}`,
+                format: (v, i) => {
+                  const ref = mData25[i];
                   if (!ref) return fmtShort(v);
                   const pct = (v - ref) / ref * 100;
-                  const sign = pct >= 0 ? '+' : '';
-                  return `${fmtShort(v)}\n${sign}${pct.toFixed(0)}%`;
+                  return [fmtShort(v), `${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%`];
                 },
               };
-              chart.options.plugins.datalabels = { display: true };
               chart.options.layout = { padding: { top: 32, bottom: 8 } };
               chart.update();
-
-            } else if (btn.dataset.mode === 'cumulative') {
-              // ── Calcular running totals por canal ──
-              let cum25 = 0, cum26 = 0;
-              const cum25Data = [], cum26Data = [];
-
-              ALL_MONTHS.forEach(m => {
-                const v25 = ref25(m, selCh);
-                cum25 += Math.round(v25 || 0);
-                const v26 = getChVal(state.d2026?.[m], selCh);
-                cum25Data.push(v25 == null ? null : cum25);
-                if (v26 > 0) {
-                  cum26 += Math.round(v26);
-                  cum26Data.push(cum26);
-                } else {
-                  cum26Data.push(null);
-                }
-              });
-
-              chart.data.labels = ALL_MONTHS.map(m => MONTH_SHORT[m]);
-
-              // Dataset 2025: línea gris más gruesa para que sea legible como acumulado
-              chart.data.datasets[0].data = cum25Data;
-              chart.data.datasets[0].borderWidth = 2;
-
-              // Dataset 2026: línea azul sólida
-              chart.data.datasets[1].data = cum26Data;
-              chart.data.datasets[1].borderWidth = 3;
-              chart.data.datasets[1].fill = false;
-
-              // ── Datalabels: acumulado + delta por nodo ──
-              chart.data.datasets[0].datalabels = {
-                display: true,
-                color: '#94a3b8',
-                anchor: 'end',
-                align: 'bottom',
-                offset: 5,
-                font: { size: 10, weight: '400' },
-                formatter: v => fmtShort(v),
-              };
-              chart.data.datasets[1].datalabels = {
-                display: ctx => ctx.dataset.data[ctx.dataIndex] !== null,
-                color: '#2563eb',
-                anchor: 'end',
-                align: 'top',
-                offset: 5,
-                font: { size: 10, weight: '600' },
-                formatter: (v, ctx) => {
-                  if (v === null) return null;
-                  const ref = cum25Data[ctx.dataIndex];
-                  if (!ref) return fmtShort(v);
-                  const pct = (v - ref) / ref * 100;
-                  const sign = pct >= 0 ? '+' : '';
-                  return `${fmtShort(v)}\n${sign}${pct.toFixed(0)}%`;
-                },
-              };
-              chart.options.plugins.datalabels = { display: true };
-              chart.options.layout = { padding: { top: 32, bottom: 8 } };
-              chart.update();
-
-              // ── KPI strip: diferencia YTD ──
-              const lastIdx = cum26Data.reduce((li, v, i) => v !== null ? i : li, -1);
-              if (cumStrip) cumStrip.style.display = 'none';
-              // Sin referencia 2025 para el canal no hay comparación que mostrar
-              if (cumStrip && lastIdx >= 0 && cum25Data[lastIdx] != null) {
-                const periodLabel = lastIdx === 0
-                  ? MONTH_SHORT[ALL_MONTHS[0]]
-                  : `Ene–${MONTH_SHORT[ALL_MONTHS[lastIdx]]}`;
-                const ytd25  = cum25Data[lastIdx];
-                const ytd26  = cum26Data[lastIdx];
-                const diff   = ytd26 - ytd25;
-                const diffPct = ytd25 > 0 ? diff / ytd25 * 100 : 0;
-                const isAhead = diff >= 0;
-                const diffColor = isAhead ? 'var(--green-text)' : 'var(--red-text)';
-                const diffBg    = isAhead ? 'var(--green-soft)' : 'var(--red-soft)';
-                const diffBorder= isAhead ? '#6ee7b7' : '#fca5a5';
-
-                cumStrip.style.display = '';
-                cumStrip.innerHTML = `
-                  <div class="cum-kpi-strip">
-                    <div class="cum-kpi-card">
-                      <div class="cum-kpi-lbl">2025 · ${periodLabel}</div>
-                      <div class="cum-kpi-val">S/. ${fmt(ytd25)}</div>
-                      <div class="cum-kpi-sub">acumulado referencia${selCh ? ' · ' + selCh : ''}</div>
-                    </div>
-                    <div class="cum-kpi-card cum-kpi-card-current">
-                      <div class="cum-kpi-lbl">2026 · ${periodLabel}</div>
-                      <div class="cum-kpi-val" style="color:var(--brand);">S/. ${fmt(ytd26)}</div>
-                      <div class="cum-kpi-sub">acumulado en curso${selCh ? ' · ' + selCh : ''}</div>
-                    </div>
-                    <div class="cum-kpi-card" style="background:${diffBg};border-color:${diffBorder};">
-                      <div class="cum-kpi-lbl">Diferencia YoY</div>
-                      <div class="cum-kpi-val" style="color:${diffColor};">${isAhead ? '+' : ''}S/. ${fmt(diff)}</div>
-                      <div class="cum-kpi-sub" style="color:${diffColor};font-weight:600;">
-                        ${isAhead ? '▲' : '▼'} ${Math.abs(diffPct).toFixed(1)}% vs 2025
-                      </div>
-                    </div>
-                  </div>`;
-              }
 
             } else {
-              if (cumStrip) cumStrip.style.display = 'none';
-              // Restaurar anchos de línea, datalabels y layout que pudieron modificarse
-              const chart2 = global.Charts?.getInstance('chart-weekly-combined');
-              if (chart2) {
-                chart2.data.datasets[0].borderWidth = 1.5;
-                chart2.data.datasets[1].borderWidth = 2;
-                chart2.data.datasets[0].datalabels = { display: false };
-                chart2.data.datasets[1].datalabels = { display: false };
-                chart2.options.plugins.datalabels = { display: false };
-                chart2.options.layout = { padding: 0 };
-              }
               global.Charts.combinedWeeklyChart(state.weekly2025, state.weeklyData, getChKey());
               applyWeeklyLabels();
             }

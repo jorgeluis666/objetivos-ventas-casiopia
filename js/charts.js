@@ -92,6 +92,66 @@
     });
   }
 
+  // ── Valor en cada punto de las líneas ──
+  // Cada dataset con valueLabels = { format(v, i) → texto o [líneas], color, priority, font } lleva su valor en
+  // cada punto, menos los ceros y los huecos. Va arriba en un pico y abajo en un valle, para no montarse en la
+  // línea, con halo blanco. Si choca con otra etiqueta o se sale del gráfico prueba el otro lado y, si tampoco
+  // cabe, se omite (queda en el tooltip). Se ubica primero el dataset de mayor priority (2026 antes que 2025).
+  const valueLabelsPlugin = {
+    id: 'valueLabels',
+    afterDatasetsDraw(chart) {
+      const sets = chart.data.datasets
+        .map((dataset, index) => ({ dataset, index }))
+        .filter(({ dataset, index }) => dataset.valueLabels && chart.isDatasetVisible(index))
+        .sort((a, b) => (b.dataset.valueLabels.priority || 0) - (a.dataset.valueLabels.priority || 0));
+      if (!sets.length) return;
+      const ctx = chart.ctx;
+      const placed = [];
+      const overlaps = box => placed.some(o => !(box.right < o.left || box.left > o.right || box.bottom < o.top || box.top > o.bottom));
+      const isNum = v => v != null && Number.isFinite(Number(v));
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(255,255,255,.92)';
+      sets.forEach(({ dataset, index }) => {
+        const opts = dataset.valueLabels;
+        const meta = chart.getDatasetMeta(index);
+        const scale = chart.scales[meta.yAxisID] || chart.chartArea;
+        ctx.font = opts.font || `600 10px ${Chart.defaults.font.family}`;
+        ctx.fillStyle = opts.color || '#334155';
+        meta.data.forEach((point, i) => {
+          const value = dataset.data[i];
+          // Durante la animación de entrada el punto todavía no tiene posición.
+          if (!isNum(value) || Number(value) === 0 || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
+          const lines = [].concat(opts.format ? opts.format(value, i) : String(value)).filter(Boolean);
+          if (!lines.length) return;
+          const half = Math.max(...lines.map(line => ctx.measureText(line).width)) / 2 + 2;
+          const height = lines.length * 12;
+          const before = dataset.data[i - 1];
+          const after = dataset.data[i + 1];
+          const valley = isNum(before) && isNum(after) && value < before && value < after;
+          const above = point.y - 7 - height / 2;
+          const below = point.y + 7 + height / 2;
+          // Pegada al borde, la etiqueta se corre hacia adentro para no cortarse.
+          const x = Math.min(Math.max(point.x, half), chart.width - half);
+          const box = (valley ? [below, above] : [above, below])
+            .map(y => ({ y, left: x - half, right: x + half, top: y - height / 2, bottom: y + height / 2 }))
+            .find(item => item.top >= 0 && item.bottom <= scale.bottom && !overlaps(item));
+          if (!box) return;
+          placed.push(box);
+          lines.forEach((line, k) => {
+            const y = box.top + 6 + k * 12;
+            ctx.strokeText(line, x, y);
+            ctx.fillText(line, x, y);
+          });
+        });
+      });
+      ctx.restore();
+    },
+  };
+
   // ── Helpers ──
   const tot = obj => obj ? channels.reduce((s, c) => s + (obj[c] || 0), 0) : 0;
   const fmt = n => Math.round(n).toLocaleString('es-PE');
@@ -174,8 +234,8 @@
           legend: { display: false },
           tooltip: {
             callbacks: {
-              // Semanal: rango de días; Mensual/Acumulado cambian los labels
-              // del chart y se muestra el label tal cual.
+              // Semanal: rango de días; Mensual cambia los labels del chart
+              // y se muestra el label tal cual.
               title: items => {
                 const it = items[0];
                 return it && it.chart.data.labels === axisLabels ? axisTitles[it.dataIndex] : it?.label;
@@ -208,11 +268,13 @@
           },
         },
       },
+      plugins: [valueLabelsPlugin],
     });
   }
 
   global.Charts = {
     combinedWeeklyChart,
+    valueLabelsPlugin,
     mount, destroy, replay,
     destroyAll: () => { instances.forEach(c => c.destroy()); instances.clear(); },
     getInstance: id => instances.get(id),

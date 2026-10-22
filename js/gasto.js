@@ -15,10 +15,13 @@
     google: 'data/casiopia-google.json',
   };
   const SYNC_WORKFLOW = 'sync-casiopia.yml';
-  const COLOR = { meta: '#b91c1c', google: '#D97706', ink: '#0f172a' };
+  // roas: color del ROAS cuando va junto a la inversión en un solo cuadro.
+  const COLOR = { meta: '#b91c1c', google: '#D97706', ink: '#0f172a', roas: '#0f766e' };
   const axisColor = '#94A3B8';
   const gridColor = 'rgba(15,23,42,0.06)';
   const TAB_KEY = 'gp-tab';
+  // Inversión y ROAS mensual de Meta en un solo cuadro (en vez de dos paneles).
+  const META_COMBINED_KEY = 'gp-meta-combined';
   const PANE_CHARTS = {
     meta:   ['chart-gp-meta-daily', 'chart-gp-meta-spend', 'chart-gp-meta-roas'],
     google: ['chart-gp-google-spend'],
@@ -30,7 +33,11 @@
   const state = {
     data: {}, tab: 'meta', rendered: {},
     metaSel: null, googleSel: null, syncing: false,
+    metaCombined: readFlag(META_COMBINED_KEY),
   };
+  function readFlag(key) {
+    try { return localStorage.getItem(key) === 'true'; } catch (e) { return false; }
+  }
 
   // ── Formato ──
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -138,6 +145,28 @@
   let metaBodyTpl = '';  // HTML original de #gp-meta-body (se guarda en init)
   const shortMonthKey = key => SHORT(MONTHS[+key.split('-')[1] - 1]);
 
+  // Base de comparación de cada suma. Mes cerrado: el mes anterior completo. Mes parcial: el mismo tramo de
+  // días del mes anterior (1–28 sep contra 1–28 ago) cuando ese mes trae el dato diario real de todos esos
+  // días; si no, el mes anterior completo, como antes (y la variación de compras queda en gris).
+  function compareBase(m, prev, parcial) {
+    const month = shortMonthKey(prev.key);
+    const full = { totals: prev.totals, real: {}, label: () => month };
+    if (!parcial) return full;
+    const from = +m.desde.slice(8);
+    const to = +m.hasta.slice(8);
+    const days = (prev.daily || []).filter(x => { const d = +x.d.slice(8); return d >= from && d <= to; });
+    if (days.length !== to - from + 1) return full;
+    const totals = { ...prev.totals };
+    const real = {};
+    ['spend', 'purchases'].forEach(key => {
+      if (!days.every(x => Number.isFinite(x[key]))) return;
+      totals[key] = days.reduce((s, x) => s + x[key], 0);
+      real[key] = true;
+    });
+    const tramo = `${from}–${to} ${month.toLowerCase()}`;
+    return { totals, real, label: key => (real[key] ? tramo : month) };
+  }
+
   function renderMeta() {
     const d = state.data.meta;
     const has = !!d?.months?.length;
@@ -171,11 +200,13 @@
       `Del ${fechaCorta(m.desde)} al ${fechaCorta(m.hasta)}${parcial ? ' <span class="pill amber">mes parcial</span>' : ''} · ${esc(m.archivos.join(', '))}`;
 
     const roas = ratio(t.value, t.spend);
+    const base = prev ? compareBase(m, prev, parcial) : null;
     document.getElementById('gp-meta-kpis').innerHTML = [
       kpi({ icon: 'red', label: 'Inversión', value: money(t.spend), valueCls: 'red',
-        sub: prev ? `${deltaPill(t.spend, prev.totals.spend, { neutral: true })} vs ${shortMonthKey(prev.key)}` : 'Importe gastado' }),
+        sub: base ? `${deltaPill(t.spend, base.totals.spend, { neutral: true })} vs ${base.label('spend')}` : 'Importe gastado' }),
+      // Contra el tramo real del mes anterior la variación de compras ya es comparable: deja de ir en gris.
       kpi({ icon: 'purple', label: 'Compras', value: num(t.purchases), valueCls: 'purple',
-        sub: `CPA ${money(ratio(t.spend, t.purchases), 2)}${prev ? ' · ' + deltaPill(t.purchases, prev.totals.purchases, { neutral: parcial }) : ''}` }),
+        sub: `CPA ${money(ratio(t.spend, t.purchases), 2)}${base ? ` · ${deltaPill(t.purchases, base.totals.purchases, { neutral: parcial && !base.real.purchases })} vs ${base.label('purchases')}` : ''}` }),
       kpi({ icon: 'green', label: 'Valor de conversión', value: money(t.value), valueCls: 'green',
         sub: `ROAS ${roasFmt(roas)} · atribución de Meta` }),
       kpi({ icon: 'slate', label: 'CTR del enlace', value: pct(ratio(t.clicks, t.impressions) * 100, 2),
@@ -278,8 +309,74 @@
     });
   }
 
+  // "Un solo cuadro": el primer panel pasa a Inversión y ROAS a todo el ancho y el panel del ROAS se oculta.
+  function applyMetaCombined() {
+    const on = state.metaCombined;
+    document.getElementById('gp-meta-trend')?.classList.toggle('gp-trend-combined', on);
+    const roasPanel = document.getElementById('gp-meta-roas-panel');
+    if (roasPanel) roasPanel.hidden = on;
+    const btn = document.getElementById('gp-meta-combine');
+    if (btn) {
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', String(on));
+      btn.title = on ? 'Volver a un cuadro por indicador' : 'Juntar inversión y ROAS en un solo cuadro';
+    }
+    const title = document.getElementById('gp-meta-spend-title');
+    if (title) title.textContent = on ? 'Inversión y ROAS mensual' : 'Inversión mensual';
+    const sub = document.getElementById('gp-meta-spend-sub');
+    if (sub) {
+      sub.innerHTML = on
+        ? `<b style="color:${COLOR.meta}">● Inversión</b> · <b style="color:${COLOR.roas}">● ROAS</b> · cada indicador con su escala: compara la forma y lee el valor en el punto`
+        : 'Importe gastado en Meta Ads por mes';
+    }
+    const wrap = document.getElementById('gp-meta-spend-wrap');
+    if (wrap) wrap.style.height = on ? '300px' : '';
+  }
+
+  // Inversión y ROAS por mes en un cuadro: un color por indicador y cada uno con su escala, sin eje visible
+  // (dos escalas a la vista sobre las mismas líneas confunden y el valor ya va en cada punto).
+  function metaCombinedChart(d, labels) {
+    const line = color => ({
+      borderColor: color, backgroundColor: color, borderWidth: 2, pointRadius: 4, pointHoverRadius: 6,
+      pointBackgroundColor: color, tension: 0.25,
+    });
+    global.Charts.mount('chart-gp-meta-spend', {
+      type: 'line',
+      data: { labels, datasets: [
+        { label: 'Inversión', data: d.months.map(m => m.totals.spend), yAxisID: 'y0', ...line(COLOR.meta),
+          valueLabels: { color: COLOR.meta, priority: 2, format: v => money(v, Math.abs(v) < 10 ? 2 : 0) } },
+        { label: 'ROAS', data: d.months.map(m => ratio(m.totals.value, m.totals.spend)), yAxisID: 'y1', ...line(COLOR.roas),
+          valueLabels: { color: COLOR.roas, priority: 1, format: v => v.toFixed(1) + 'x' } },
+      ] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        layout: { padding: { top: 22, left: 8, right: 8 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: {
+            label: c => (c.datasetIndex === 0 ? ` Inversión: ${money(c.parsed.y)}` : ` ROAS: ${roasFmt(c.parsed.y)}`),
+            footer: items => { const t = d.months[items[0].dataIndex].totals; return `Compras: ${t.purchases} · CPA ${money(ratio(t.spend, t.purchases), 2)}`; },
+          } },
+        },
+        scales: {
+          x: { ticks: { color: axisColor, font: { size: 11 } }, grid: { display: false } },
+          y0: { display: false, beginAtZero: true, grace: '18%' },
+          y1: { display: false, beginAtZero: true, grace: '18%' },
+        },
+      },
+      plugins: [global.Charts.valueLabelsPlugin],
+    });
+  }
+
   function metaTrendCharts(d) {
     const labels = d.months.map(m => shortMonthKey(m.key));
+    applyMetaCombined();
+    if (state.metaCombined) {
+      global.Charts.destroy('chart-gp-meta-roas');
+      metaCombinedChart(d, labels);
+      return;
+    }
     global.Charts.mount('chart-gp-meta-spend', {
       type: 'bar',
       data: { labels, datasets: [{ label: 'Inversión', data: d.months.map(m => m.totals.spend), backgroundColor: COLOR.meta, borderRadius: { topLeft: 4, topRight: 4 }, maxBarThickness: 36 }] },
@@ -304,26 +401,26 @@
         label: 'ROAS', data: d.months.map(m => ratio(m.totals.value, m.totals.spend)),
         borderColor: COLOR.meta, backgroundColor: COLOR.meta, borderWidth: 2, pointRadius: 4, pointHoverRadius: 6,
         pointBackgroundColor: '#ffffff', pointBorderWidth: 2, tension: 0.25,
+        // Valor en cada punto (plugin valueLabels de charts.js: pico arriba, valle abajo, sin ceros).
+        valueLabels: { color: '#475569', format: v => v.toFixed(1) },
       }] },
       options: {
         responsive: true, maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
+        layout: { padding: { top: 18 } },
         plugins: {
           legend: { display: false },
           tooltip: { callbacks: {
             label: c => ` ROAS: ${roasFmt(c.parsed.y)}`,
             footer: items => { const t = d.months[items[0].dataIndex].totals; return `Valor ${money(t.value)} ÷ inversión ${money(t.spend)}`; },
           } },
-          datalabels: {
-            display: true, align: 'top', offset: 4, color: '#475569', font: { size: 10, weight: 600 },
-            formatter: v => v == null ? '' : v.toFixed(1),
-          },
         },
         scales: {
           x: { ticks: { color: axisColor, font: { size: 11 } }, grid: { display: false } },
           y: { beginAtZero: true, grace: '15%', ticks: { color: axisColor, font: { size: 10 }, callback: v => v + 'x' }, grid: { color: gridColor } },
         },
       },
+      plugins: [global.Charts.valueLabelsPlugin],
     });
   }
 
@@ -542,6 +639,18 @@
     started = true;
     metaBodyTpl = document.getElementById('gp-meta-body').innerHTML;
     wireTabs();
+    // "Un solo cuadro" de Meta (delegado: el cuerpo se restaura desde metaBodyTpl tras un estado vacío).
+    document.getElementById('gp-meta-body').addEventListener('click', e => {
+      if (!e.target.closest('#gp-meta-combine') || !state.data.meta?.months?.length) return;
+      state.metaCombined = !state.metaCombined;
+      try { localStorage.setItem(META_COMBINED_KEY, String(state.metaCombined)); } catch (err) { /* storage bloqueado */ }
+      global.Charts.destroy('chart-gp-meta-spend');
+      global.Charts.destroy('chart-gp-meta-roas');
+      metaTrendCharts(state.data.meta);
+      const i = state.data.meta.months.findIndex(m => m.key === state.metaSel);
+      highlightX('chart-gp-meta-spend', i);
+      highlightX('chart-gp-meta-roas', i);
+    });
     document.getElementById('gp-sync-btn').addEventListener('click', () => global.Sheets.withPat(syncNow));
     const [meta, google] = await Promise.all([loadJson(FILES.meta), loadJson(FILES.google)]);
     try { state.tab = localStorage.getItem(TAB_KEY) || 'meta'; } catch (e) { /* storage bloqueado */ }

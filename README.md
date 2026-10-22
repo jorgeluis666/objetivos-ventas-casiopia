@@ -61,6 +61,8 @@ Los objetivos por canal se pueden ajustar en la tabla para simular escenarios. E
 
 La alerta semanal por email (`scripts/alertas.js`) lee el mismo `data/casiopia-ventas.json`, así que mide el mes contra el *OBJETIVO VENTAS NETAS* del EERR, igual que el tablero.
 
+**Gráfico de venta neta** (arriba de las pestañas de mes): vista **Semanal** (2026) o **Mensual** (2025 vs 2026, con la variación de cada mes de 2026 contra el mismo mes de 2025), por canal o total. Desde la v1.2.0 no hay vista *Acumulado*: un acumulado siempre sube y hace ver un crecimiento que no hay. Cada punto lleva su valor (arriba en un pico, abajo en un valle, con halo blanco y dentro del gráfico; sin etiqueta en los ceros y omitida si choca con otra, primero se ubica 2026). Ojo: en la vista Mensual el mes en curso de 2026 va a medias contra el mes completo de 2025 (el EERR no trae 2025 por día).
+
 ## Módulos Gasto publicitario y Archivo de Reportes
 
 ### Fuentes de Gasto publicitario (una pestaña por fuente)
@@ -76,6 +78,10 @@ Gasto publicitario **solo** toma en cuenta las carpetas de pauta en Drive:
 
 - **Automáticamente todos los días** a las 07:00 de Lima (cron `0 12 * * *` UTC; GitHub puede demorar los cron algunos minutos).
 - **A pedido** con el botón **Sincronizar ahora** del módulo: dispara el workflow vía la GitHub API, espera a que termine y recarga los datos sin esperar el deploy. Usa el mismo token que el botón *Actualizar* (se configura en ⚙; permisos *Actions: read and write* + *Contents: read* del repo). También se puede lanzar desde *Actions → Sincronizar datos Casiopia → Run workflow*.
+
+**Comparación con el mes anterior (Meta Ads).** Un mes cerrado se compara con el mes anterior completo. Un mes parcial (la exportación no llega al último día) compara inversión y compras con el **mismo tramo de días del mes anterior** ("vs 1–28 ago") cuando ese mes trae el dato diario de todos esos días; si no, con el mes anterior completo y la variación de compras en gris, como antes. Google Ads no trae dato diario: sigue contra el mes anterior completo.
+
+**Gráficos de Meta Ads.** Inversión mensual y ROAS mensual van en dos paneles; el botón **Un solo cuadro** los junta en uno a todo el ancho, un color por indicador y cada uno con su escala sin eje visible (se compara la forma y el valor se lee en el punto). Se recuerda en `localStorage` (`gp-meta-combined`). El ROAS y el cuadro combinado llevan el valor en cada punto; las barras de inversión, no.
 
 **No usa credenciales de Google**: las carpetas deben estar compartidas como *Cualquier persona con el enlace · Lector*; si alguna deja de estarlo, esa fuente conserva su último JSON y el workflow avisa cuál falló. Para desarrollo offline: `node scripts/fetch-casiopia.js --local=<dir>` con `<dir>/meta/*.csv` y `<dir>/google/*`.
 

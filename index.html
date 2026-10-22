@@ -25,7 +25,7 @@
       <div class="s-logo" role="img" aria-label="Casiopia Home"></div>
       <div class="s-brand-text">
         <div class="s-title">Casiopia</div>
-        <div class="s-sub">BI Agencia Lima Retail <span class="s-ver">v1.1.2</span></div>
+        <div class="s-sub">BI Agencia Lima Retail <span class="s-ver">v1.2.0</span></div>
       </div>
     </div>
 
@@ -126,7 +126,6 @@
               <div class="view-toggle" id="weekly-view-toggle">
                 <button class="vt-btn active" data-mode="weekly">Semanal</button>
                 <button class="vt-btn" data-mode="monthly">Mensual</button>
-                <button class="vt-btn" data-mode="cumulative">Acumulado</button>
               </div>
               <div class="chart-legend">
                 <span class="legend-item"><span class="ld" style="background:#94A3B8;border-top:1px dashed #94A3B8;"></span>2025 (referencia)</span>
@@ -135,9 +134,6 @@
             </div>
           </div>
           <div class="chart-wrap h-300"><canvas id="chart-weekly-combined" role="img" aria-label="Evolución semanal 2025 vs 2026"></canvas></div>
-
-          <!-- Strip de KPIs acumulados (visible solo en modo Acumulado) -->
-          <div id="cum-kpi-strip" style="display:none;"></div>
         </div>
 
         <div class="obj-toolbar" id="obj-toolbar">
@@ -236,15 +232,19 @@
                   <div id="gp-meta-audience"></div>
                 </div>
               </div>
-              <div class="grid-2">
+              <!-- "Un solo cuadro" junta Inversión y ROAS en el primer panel y oculta el segundo. -->
+              <div class="grid-2" id="gp-meta-trend">
                 <div class="panel">
-                  <div class="panel-head"><div>
-                    <div class="panel-title">Inversión mensual</div>
-                    <div class="panel-sub">Importe gastado en Meta Ads por mes</div>
-                  </div></div>
-                  <div class="chart-wrap h-220"><canvas id="chart-gp-meta-spend" role="img" aria-label="Inversión mensual en Meta Ads"></canvas></div>
+                  <div class="panel-head">
+                    <div>
+                      <div class="panel-title" id="gp-meta-spend-title">Inversión mensual</div>
+                      <div class="panel-sub" id="gp-meta-spend-sub">Importe gastado en Meta Ads por mes</div>
+                    </div>
+                    <div class="view-toggle"><button type="button" class="vt-btn" id="gp-meta-combine" aria-pressed="false" title="Juntar inversión y ROAS en un solo cuadro">Un solo cuadro</button></div>
+                  </div>
+                  <div class="chart-wrap h-220" id="gp-meta-spend-wrap"><canvas id="chart-gp-meta-spend" role="img" aria-label="Inversión mensual en Meta Ads"></canvas></div>
                 </div>
-                <div class="panel">
+                <div class="panel" id="gp-meta-roas-panel">
                   <div class="panel-head"><div>
                     <div class="panel-title">ROAS mensual</div>
                     <div class="panel-sub">Valor de conversión ÷ inversión (atribución de Meta)</div>
