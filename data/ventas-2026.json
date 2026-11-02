@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-27T02:17:56",
+  "generated": "2026-11-02T17:30:27",
   "d2026": {
     "Enero": {
       "WhatsApp": 0,
@@ -88,6 +88,14 @@
       "Showroom": 0,
       "Web": 0,
       "Tienda": 0
+    },
+    "Diciembre": {
+      "WhatsApp": 0,
+      "Instagram": 0,
+      "Facebook": 0,
+      "Showroom": 0,
+      "Web": 0,
+      "Tienda": 0
     }
   },
   "weeklyData": {
@@ -101,7 +109,8 @@
     "Agosto": [],
     "Septiembre": [],
     "Octubre": [],
-    "Noviembre": []
+    "Noviembre": [],
+    "Diciembre": []
   },
   "weekly2026": {
     "Enero": [],
@@ -114,7 +123,8 @@
     "Agosto": [],
     "Septiembre": [],
     "Octubre": [],
-    "Noviembre": []
+    "Noviembre": [],
+    "Diciembre": []
   },
   "transactions": {
     "Enero": {
@@ -198,6 +208,14 @@
       "TIENDA": 0
     },
     "Noviembre": {
+      "WHATSAPP": 0,
+      "INSTAGRAM": 0,
+      "FACEBOOK": 0,
+      "SHOWROOM": 0,
+      "WEB": 0,
+      "TIENDA": 0
+    },
+    "Diciembre": {
       "WHATSAPP": 0,
       "INSTAGRAM": 0,
       "FACEBOOK": 0,
